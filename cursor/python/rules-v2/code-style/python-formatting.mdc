@@ -2,8 +2,6 @@
 description: Правила форматирования Python кода, включая отступы, длину строк и пробелы
 globs: "*.py,*.pyi"
 alwaysApply: true
-related: ["code-style/python-code-style-core.mdc", "code-style/python-linting-tools.mdc"]
-priority: 7
 ---
 # Правила форматирования Python кода
 
