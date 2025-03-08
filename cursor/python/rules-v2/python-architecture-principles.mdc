@@ -1,0 +1,322 @@
+---
+description: Основные архитектурные принципы для Python приложений
+globs: "*.py,*.pyi"
+alwaysApply: true
+related: ["python-layered-architecture.mdc", "python-design-patterns.mdc", "python-dependency-injection.mdc"]
+priority: 9
+---
+# Основные архитектурные принципы для Python приложений
+
+Фундаментальные принципы и рекомендации по архитектуре Python приложений. Эти принципы обеспечивают масштабируемость, поддерживаемость и тестируемость кода.
+
+---
+
+## Основные принципы
+
+### SOLID принципы
+
+1. **Single Responsibility Principle (SRP)** - Принцип единственной ответственности
+   - Каждый класс должен иметь только одну причину для изменения
+   - Разделяйте большие классы на меньшие, каждый с четкой ответственностью
+
+```python
+# Неправильно: класс с несколькими ответственностями
+class User:
+    def __init__(self, name: str, email: str):
+        self.name = name
+        self.email = email
+    
+    def validate_email(self) -> bool:
+        # Валидация email
+        return "@" in self.email
+    
+    def save_to_database(self) -> None:
+        # Сохранение в базу данных
+        pass
+    
+    def send_welcome_email(self) -> None:
+        # Отправка email
+        pass
+
+# Правильно: разделение ответственностей
+class User:
+    def __init__(self, name: str, email: str):
+        self.name = name
+        self.email = email
+
+class EmailValidator:
+    @staticmethod
+    def validate(email: str) -> bool:
+        return "@" in email
+
+class UserRepository:
+    def save(self, user: User) -> None:
+        # Сохранение в базу данных
+        pass
+
+class EmailService:
+    def send_welcome_email(self, user: User) -> None:
+        # Отправка email
+        pass
+```
+
+2. **Open/Closed Principle (OCP)** - Принцип открытости/закрытости
+   - Классы должны быть открыты для расширения, но закрыты для модификации
+   - Используйте абстракции и полиморфизм для расширения функциональности
+
+```python
+from abc import ABC, abstractmethod
+
+# Правильно: использование абстракции для расширения
+class PaymentProcessor(ABC):
+    @abstractmethod
+    def process_payment(self, amount: float) -> bool:
+        pass
+
+class CreditCardProcessor(PaymentProcessor):
+    def process_payment(self, amount: float) -> bool:
+        # Обработка платежа кредитной картой
+        return True
+
+class PayPalProcessor(PaymentProcessor):
+    def process_payment(self, amount: float) -> bool:
+        # Обработка платежа через PayPal
+        return True
+
+# Добавление нового способа оплаты без изменения существующего кода
+class CryptoProcessor(PaymentProcessor):
+    def process_payment(self, amount: float) -> bool:
+        # Обработка платежа криптовалютой
+        return True
+```
+
+3. **Liskov Substitution Principle (LSP)** - Принцип подстановки Лисков
+   - Объекты базового класса должны быть заменяемы объектами производных классов без изменения корректности программы
+   - Подклассы должны соблюдать контракты базовых классов
+
+```python
+from abc import ABC, abstractmethod
+
+# Правильно: соблюдение контракта базового класса
+class Bird(ABC):
+    @abstractmethod
+    def fly(self) -> None:
+        pass
+
+class Sparrow(Bird):
+    def fly(self) -> None:
+        # Реализация полета для воробья
+        pass
+
+# Неправильно: нарушение LSP
+class Ostrich(Bird):
+    def fly(self) -> None:
+        raise NotImplementedError("Страусы не летают")
+
+# Правильно: пересмотр иерархии
+class Bird(ABC):
+    pass
+
+class FlyingBird(Bird):
+    @abstractmethod
+    def fly(self) -> None:
+        pass
+
+class NonFlyingBird(Bird):
+    pass
+
+class Sparrow(FlyingBird):
+    def fly(self) -> None:
+        # Реализация полета для воробья
+        pass
+
+class Ostrich(NonFlyingBird):
+    pass
+```
+
+4. **Interface Segregation Principle (ISP)** - Принцип разделения интерфейсов
+   - Клиенты не должны зависеть от интерфейсов, которые они не используют
+   - Разделяйте большие интерфейсы на более специфичные
+
+```python
+from abc import ABC, abstractmethod
+
+# Неправильно: слишком большой интерфейс
+class Worker(ABC):
+    @abstractmethod
+    def work(self) -> None:
+        pass
+    
+    @abstractmethod
+    def eat(self) -> None:
+        pass
+    
+    @abstractmethod
+    def sleep(self) -> None:
+        pass
+
+# Правильно: разделение интерфейсов
+class Workable(ABC):
+    @abstractmethod
+    def work(self) -> None:
+        pass
+
+class Eatable(ABC):
+    @abstractmethod
+    def eat(self) -> None:
+        pass
+
+class Sleepable(ABC):
+    @abstractmethod
+    def sleep(self) -> None:
+        pass
+
+class Human(Workable, Eatable, Sleepable):
+    def work(self) -> None:
+        # Реализация работы
+        pass
+    
+    def eat(self) -> None:
+        # Реализация еды
+        pass
+    
+    def sleep(self) -> None:
+        # Реализация сна
+        pass
+
+class Robot(Workable):
+    def work(self) -> None:
+        # Реализация работы
+        pass
+```
+
+5. **Dependency Inversion Principle (DIP)** - Принцип инверсии зависимостей
+   - Высокоуровневые модули не должны зависеть от низкоуровневых модулей. Оба должны зависеть от абстракций
+   - Абстракции не должны зависеть от деталей. Детали должны зависеть от абстракций
+
+```python
+from abc import ABC, abstractmethod
+
+# Правильно: использование абстракций для инверсии зависимостей
+class MessageSender(ABC):
+    @abstractmethod
+    def send(self, message: str, recipient: str) -> bool:
+        pass
+
+class EmailSender(MessageSender):
+    def send(self, message: str, recipient: str) -> bool:
+        # Отправка email
+        return True
+
+class SMSSender(MessageSender):
+    def send(self, message: str, recipient: str) -> bool:
+        # Отправка SMS
+        return True
+
+class NotificationService:
+    def __init__(self, sender: MessageSender):
+        self.sender = sender
+    
+    def notify(self, message: str, recipient: str) -> bool:
+        return self.sender.send(message, recipient)
+
+# Использование
+email_sender = EmailSender()
+notification_service = NotificationService(email_sender)
+notification_service.notify("Hello", "user@example.com")
+
+# Легко заменить способ отправки
+sms_sender = SMSSender()
+notification_service = NotificationService(sms_sender)
+notification_service.notify("Hello", "+1234567890")
+```
+
+### Другие важные принципы
+
+1. **DRY (Don't Repeat Yourself)** - Не повторяйся
+   - Избегайте дублирования кода
+   - Выносите повторяющуюся логику в отдельные функции или классы
+
+```python
+# Неправильно: повторение кода
+def validate_user(user):
+    if not user.name:
+        raise ValueError("Name is required")
+    if not "@" in user.email:
+        raise ValueError("Invalid email")
+    # Другие проверки
+
+def create_user(user):
+    if not user.name:
+        raise ValueError("Name is required")
+    if not "@" in user.email:
+        raise ValueError("Invalid email")
+    # Создание пользователя
+
+# Правильно: выделение общей логики
+def validate_user(user):
+    if not user.name:
+        raise ValueError("Name is required")
+    if not "@" in user.email:
+        raise ValueError("Invalid email")
+    # Другие проверки
+
+def create_user(user):
+    validate_user(user)
+    # Создание пользователя
+```
+
+2. **KISS (Keep It Simple, Stupid)** - Делай проще
+   - Избегайте ненужной сложности
+   - Предпочитайте простые решения сложным
+
+```python
+# Неправильно: излишняя сложность
+def get_user_status(user):
+    status = None
+    if user.is_active:
+        if user.is_admin:
+            if user.has_premium:
+                status = "active_admin_premium"
+            else:
+                status = "active_admin"
+        else:
+            if user.has_premium:
+                status = "active_premium"
+            else:
+                status = "active"
+    else:
+        status = "inactive"
+    return status
+
+# Правильно: более простое решение
+def get_user_status(user):
+    if not user.is_active:
+        return "inactive"
+    
+    status_parts = ["active"]
+    if user.is_admin:
+        status_parts.append("admin")
+    if user.has_premium:
+        status_parts.append("premium")
+    
+    return "_".join(status_parts)
+```
+
+3. **YAGNI (You Aren't Gonna Need It)** - Вам это не понадобится
+   - Не добавляйте функциональность, пока она действительно не нужна
+   - Избегайте преждевременной оптимизации и абстракции
+
+## Модульность и разделение ответственности
+
+- Разделяйте приложение на логические модули с четкими границами
+- Каждый модуль должен иметь четкую ответственность
+- Минимизируйте зависимости между модулями
+- Используйте инъекцию зависимостей для связывания модулей
+
+## Интеграция с другими правилами
+
+- **Слоистая архитектура**: Подробные рекомендации по организации слоев приложения описаны в @python-layered-architecture.mdc
+- **Паттерны проектирования**: Рекомендуемые паттерны проектирования описаны в @python-design-patterns.mdc
+- **Инъекция зависимостей**: Принципы и реализация инъекции зависимостей описаны в @python-dependency-injection.mdc
+- **Доступ к данным**: Правила работы с данными и ORM описаны в @python-data-access.mdc 

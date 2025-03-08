@@ -1,0 +1,226 @@
+---
+description: Правила типизации кода в Python, включая аннотации типов и проверку типов
+globs: "*.py,*.pyi"
+alwaysApply: true
+related: ["python-code-style-core.mdc", "python-linting-tools.mdc"]
+priority: 8
+---
+# Правила типизации в Python
+
+Правила и рекомендации по использованию аннотаций типов в Python коде. Типизация улучшает понимание кода, помогает находить ошибки на этапе разработки и улучшает документацию.
+
+---
+
+## Основные принципы типизации
+
+1. **Полнота** - все функции и методы должны иметь аннотации типов
+2. **Точность** - типы должны быть максимально точными
+3. **Проверяемость** - типы должны быть проверяемы с помощью mypy
+4. **Читаемость** - типизация не должна ухудшать читаемость кода
+
+## Аннотации типов
+
+### Базовые типы
+
+Использовать встроенные типы Python для базовых аннотаций:
+
+```python
+def calculate_total(price: float, quantity: int) -> float:
+    return price * quantity
+```
+
+### Сложные типы
+
+Для сложных типов использовать модуль `typing`:
+
+```python
+from typing import List, Dict, Tuple, Optional, Union, Any
+
+def process_items(items: List[str]) -> Dict[str, int]:
+    result: Dict[str, int] = {}
+    for item in items:
+        result[item] = len(item)
+    return result
+
+def get_user(user_id: int) -> Optional[Dict[str, Any]]:
+    # Implementation
+    pass
+
+def parse_value(value: Union[str, int, float]) -> float:
+    # Implementation
+    pass
+```
+
+### Типы для коллекций
+
+Начиная с Python 3.9, можно использовать встроенные типы для коллекций:
+
+```python
+# Python 3.9+
+def process_items(items: list[str]) -> dict[str, int]:
+    result: dict[str, int] = {}
+    for item in items:
+        result[item] = len(item)
+    return result
+```
+
+Для более ранних версий Python использовать модуль `typing`:
+
+```python
+# Python 3.6-3.8
+from typing import List, Dict
+
+def process_items(items: List[str]) -> Dict[str, int]:
+    result: Dict[str, int] = {}
+    for item in items:
+        result[item] = len(item)
+    return result
+```
+
+## Типизация функций
+
+### Аргументы функций
+
+Все аргументы функций должны иметь аннотации типов:
+
+```python
+def greet(name: str, age: int, is_admin: bool = False) -> str:
+    # Implementation
+    pass
+```
+
+### Возвращаемые значения
+
+Все функции должны иметь аннотации возвращаемых значений:
+
+```python
+def get_user_name() -> str:
+    return "John"
+
+def process_data() -> None:
+    # Implementation without return
+    pass
+```
+
+### Вариативные аргументы
+
+Для вариативных аргументов использовать соответствующие аннотации:
+
+```python
+from typing import Any
+
+def log(*args: Any, **kwargs: Any) -> None:
+    # Implementation
+    pass
+```
+
+## Типизация классов
+
+### Атрибуты класса
+
+Атрибуты класса должны быть типизированы:
+
+```python
+class User:
+    name: str
+    age: int
+    is_active: bool = True
+    
+    def __init__(self, name: str, age: int) -> None:
+        self.name = name
+        self.age = age
+```
+
+### Методы класса
+
+Методы класса должны быть типизированы так же, как и функции:
+
+```python
+class Calculator:
+    def add(self, a: float, b: float) -> float:
+        return a + b
+    
+    @classmethod
+    def create(cls) -> "Calculator":
+        return cls()
+    
+    @staticmethod
+    def is_positive(value: float) -> bool:
+        return value > 0
+```
+
+## Продвинутая типизация
+
+### Дженерики
+
+Использовать дженерики для типизации функций, работающих с разными типами:
+
+```python
+from typing import TypeVar, List, Callable
+
+T = TypeVar('T')
+
+def first_element(items: List[T]) -> T:
+    return items[0]
+
+def map_list(items: List[T], func: Callable[[T], T]) -> List[T]:
+    return [func(item) for item in items]
+```
+
+### Протоколы
+
+Использовать протоколы для структурной типизации:
+
+```python
+from typing import Protocol, List
+
+class Drawable(Protocol):
+    def draw(self) -> None:
+        ...
+
+def draw_all(items: List[Drawable]) -> None:
+    for item in items:
+        item.draw()
+```
+
+### Литералы типов
+
+Использовать литералы типов для ограничения возможных значений:
+
+```python
+from typing import Literal
+
+def set_alignment(alignment: Literal["left", "center", "right"]) -> None:
+    # Implementation
+    pass
+```
+
+## Файлы stub (.pyi)
+
+Для библиотек без типизации создавать файлы stub с расширением `.pyi`:
+
+```python
+# example.pyi
+def function(arg: str) -> int: ...
+
+class ExampleClass:
+    def __init__(self, value: str) -> None: ...
+    def method(self, arg: int) -> str: ...
+```
+
+## Проверка типов
+
+Использовать mypy для проверки типов:
+
+```bash
+# Проверка всего проекта
+mypy .
+
+# Проверка конкретного файла
+mypy file.py
+```
+
+## Интеграция с другими правилами
+
+- **Стиль кода**: Типизация должна соответствовать общим правилам стиля кода, описанным в @python-code-style-core.mdc
+- **Инструменты**: Для проверки типов использовать mypy, как описано в @python-linting-tools.mdc 

@@ -1,0 +1,216 @@
+---
+description: Инструменты для автоматической проверки и форматирования Python кода
+globs: "*.py,*.pyi,pyproject.toml,setup.cfg"
+alwaysApply: true
+related: ["python-code-style-core.mdc", "python-imports.mdc", "python-formatting.mdc"]
+priority: 6
+---
+# Инструменты для проверки и форматирования Python кода
+
+Рекомендации по использованию инструментов для автоматической проверки и форматирования Python кода. Эти инструменты помогают поддерживать единообразие стиля и качество кода.
+
+---
+
+## Обязательные инструменты
+
+Для автоматической проверки и форматирования кода необходимо использовать следующие инструменты:
+
+### black
+
+Black - это бескомпромиссный форматировщик кода Python. Он применяет единый стиль форматирования, который не зависит от предпочтений разработчика.
+
+- Автоматически форматирует код в соответствии с PEP 8
+- Обеспечивает единообразие стиля во всем проекте
+- Устраняет споры о стиле форматирования
+
+```bash
+# Установка
+pip install black
+
+# Использование
+black .
+```
+
+### isort
+
+isort - это инструмент для сортировки импортов в Python коде.
+
+- Автоматически сортирует импорты по группам
+- Удаляет неиспользуемые импорты
+- Объединяет импорты из одного модуля
+
+```bash
+# Установка
+pip install isort
+
+# Использование
+isort .
+```
+
+### flake8
+
+flake8 - это обертка вокруг PyFlakes, pycodestyle и McCabe, которая проверяет код на соответствие стилю и наличие ошибок.
+
+- Проверяет соответствие стилю PEP 8
+- Находит синтаксические ошибки
+- Обнаруживает неиспользуемые импорты (F401)
+- Выявляет сложные функции и методы
+
+```bash
+# Установка
+pip install flake8
+
+# Использование
+flake8 .
+```
+
+### mypy
+
+mypy - это статический анализатор типов для Python, который проверяет аннотации типов.
+
+- Проверяет соответствие типов
+- Находит потенциальные ошибки типизации
+- Улучшает документацию кода
+
+```bash
+# Установка
+pip install mypy
+
+# Использование
+mypy .
+```
+
+## Настройка инструментов
+
+### Настройка в pyproject.toml
+
+Рекомендуется настраивать инструменты в файле `pyproject.toml`:
+
+```toml
+[tool.black]
+line-length = 88
+target-version = ['py39']
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 88
+sections = ["FUTURE", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]
+
+[tool.flake8]
+max-line-length = 88
+extend-ignore = "E203"
+per-file-ignores = "__init__.py:F401"
+exclude = [
+    ".git",
+    "__pycache__",
+    "docs/source/conf.py",
+    "old",
+    "build",
+    "dist",
+    ".venv",
+]
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+strict_optional = true
+```
+
+### Настройка в setup.cfg
+
+Альтернативно, можно настраивать инструменты в файле `setup.cfg`:
+
+```ini
+[flake8]
+max-line-length = 88
+extend-ignore = E203
+per-file-ignores = __init__.py:F401
+exclude = .git,__pycache__,docs/source/conf.py,old,build,dist,.venv
+
+[mypy]
+python_version = 3.9
+warn_return_any = True
+warn_unused_configs = True
+disallow_untyped_defs = True
+disallow_incomplete_defs = True
+```
+
+## Интеграция с CI/CD
+
+Рекомендуется интегрировать проверку стиля в процесс CI/CD:
+
+```yaml
+# .github/workflows/lint.yml
+name: Lint
+
+on: [push, pull_request]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install black isort flake8 mypy
+      - name: Lint with black
+        run: black --check .
+      - name: Lint with isort
+        run: isort --check .
+      - name: Lint with flake8
+        run: flake8 .
+      - name: Type check with mypy
+        run: mypy .
+```
+
+## Интеграция с редактором
+
+Рекомендуется настроить автоматическое форматирование при сохранении файла в редакторе:
+
+### VSCode
+
+```json
+{
+  "python.formatting.provider": "black",
+  "editor.formatOnSave": true,
+  "python.linting.enabled": true,
+  "python.linting.flake8Enabled": true,
+  "python.linting.mypyEnabled": true,
+  "[python]": {
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": true
+    }
+  }
+}
+```
+
+## Интеграция с другими правилами
+
+- **Стиль кода**: Инструменты должны быть настроены в соответствии с правилами стиля кода, описанными в @python-code-style-core.mdc
+- **Импорты**: Настройки isort должны соответствовать правилам организации импортов, описанным в @python-imports.mdc
+- **Форматирование**: Настройки black должны соответствовать правилам форматирования, описанным в @python-formatting.mdc 

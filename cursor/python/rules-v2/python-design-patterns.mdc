@@ -1,0 +1,676 @@
+---
+description: Рекомендуемые паттерны проектирования для Python приложений
+globs: "*.py,*.pyi"
+alwaysApply: true
+related: ["python-architecture-principles.mdc", "python-dependency-injection.mdc"]
+priority: 7
+---
+# Паттерны проектирования в Python
+
+Рекомендации по использованию паттернов проектирования в Python приложениях. Паттерны проектирования представляют собой типовые решения часто встречающихся проблем в разработке программного обеспечения.
+
+---
+
+## Порождающие паттерны
+
+Паттерны, которые абстрагируют процесс создания объектов.
+
+### Фабричный метод (Factory Method)
+
+Определяет интерфейс для создания объекта, но позволяет подклассам решать, какой класс инстанцировать.
+
+```python
+from abc import ABC, abstractmethod
+
+# Абстрактный продукт
+class Document(ABC):
+    @abstractmethod
+    def show(self) -> None:
+        pass
+
+# Конкретные продукты
+class PDFDocument(Document):
+    def show(self) -> None:
+        print("Showing PDF document")
+
+class WordDocument(Document):
+    def show(self) -> None:
+        print("Showing Word document")
+
+# Абстрактная фабрика
+class DocumentCreator(ABC):
+    @abstractmethod
+    def create_document(self) -> Document:
+        pass
+
+# Конкретные фабрики
+class PDFDocumentCreator(DocumentCreator):
+    def create_document(self) -> Document:
+        return PDFDocument()
+
+class WordDocumentCreator(DocumentCreator):
+    def create_document(self) -> Document:
+        return WordDocument()
+
+# Использование
+creator = PDFDocumentCreator()
+document = creator.create_document()
+document.show()  # Showing PDF document
+```
+
+### Абстрактная фабрика (Abstract Factory)
+
+Предоставляет интерфейс для создания семейств взаимосвязанных объектов без указания их конкретных классов.
+
+```python
+from abc import ABC, abstractmethod
+
+# Абстрактные продукты
+class Button(ABC):
+    @abstractmethod
+    def paint(self) -> None:
+        pass
+
+class Checkbox(ABC):
+    @abstractmethod
+    def paint(self) -> None:
+        pass
+
+# Конкретные продукты
+class WindowsButton(Button):
+    def paint(self) -> None:
+        print("Rendering a Windows button")
+
+class WindowsCheckbox(Checkbox):
+    def paint(self) -> None:
+        print("Rendering a Windows checkbox")
+
+class MacOSButton(Button):
+    def paint(self) -> None:
+        print("Rendering a MacOS button")
+
+class MacOSCheckbox(Checkbox):
+    def paint(self) -> None:
+        print("Rendering a MacOS checkbox")
+
+# Абстрактная фабрика
+class GUIFactory(ABC):
+    @abstractmethod
+    def create_button(self) -> Button:
+        pass
+    
+    @abstractmethod
+    def create_checkbox(self) -> Checkbox:
+        pass
+
+# Конкретные фабрики
+class WindowsFactory(GUIFactory):
+    def create_button(self) -> Button:
+        return WindowsButton()
+    
+    def create_checkbox(self) -> Checkbox:
+        return WindowsCheckbox()
+
+class MacOSFactory(GUIFactory):
+    def create_button(self) -> Button:
+        return MacOSButton()
+    
+    def create_checkbox(self) -> Checkbox:
+        return MacOSCheckbox()
+
+# Использование
+def create_ui(factory: GUIFactory) -> None:
+    button = factory.create_button()
+    checkbox = factory.create_checkbox()
+    
+    button.paint()
+    checkbox.paint()
+
+# Создание Windows UI
+create_ui(WindowsFactory())
+
+# Создание MacOS UI
+create_ui(MacOSFactory())
+```
+
+### Одиночка (Singleton)
+
+Гарантирует, что класс имеет только один экземпляр, и предоставляет глобальную точку доступа к нему.
+
+```python
+class Singleton:
+    _instance = None
+    
+    def __new__(cls, *args, **kwargs):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
+
+# Использование
+s1 = Singleton()
+s2 = Singleton()
+print(s1 is s2)  # True
+
+# Более современный подход с использованием метакласса
+class SingletonMeta(type):
+    _instances = {}
+    
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super().__call__(*args, **kwargs)
+        return cls._instances[cls]
+
+class Database(metaclass=SingletonMeta):
+    def __init__(self, connection_string: str = "default"):
+        self.connection_string = connection_string
+
+# Использование
+db1 = Database("connection1")
+db2 = Database("connection2")  # Игнорируется, возвращается существующий экземпляр
+print(db1 is db2)  # True
+print(db1.connection_string)  # "connection1"
+```
+
+### Строитель (Builder)
+
+Разделяет создание сложного объекта и его представление, позволяя создавать разные представления объекта, используя один и тот же процесс построения.
+
+```python
+from dataclasses import dataclass
+from typing import Optional, List
+
+@dataclass
+class Car:
+    seats: int
+    engine: str
+    trip_computer: bool
+    gps: bool
+
+class CarBuilder:
+    def __init__(self):
+        self.reset()
+    
+    def reset(self) -> None:
+        self._car = Car(
+            seats=0,
+            engine="",
+            trip_computer=False,
+            gps=False
+        )
+    
+    def set_seats(self, seats: int) -> 'CarBuilder':
+        self._car.seats = seats
+        return self
+    
+    def set_engine(self, engine: str) -> 'CarBuilder':
+        self._car.engine = engine
+        return self
+    
+    def set_trip_computer(self, has_trip_computer: bool) -> 'CarBuilder':
+        self._car.trip_computer = has_trip_computer
+        return self
+    
+    def set_gps(self, has_gps: bool) -> 'CarBuilder':
+        self._car.gps = has_gps
+        return self
+    
+    def build(self) -> Car:
+        result = self._car
+        self.reset()
+        return result
+
+# Использование
+builder = CarBuilder()
+car = builder.set_seats(4).set_engine("V8").set_trip_computer(True).set_gps(True).build()
+print(car)  # Car(seats=4, engine='V8', trip_computer=True, gps=True)
+```
+
+## Структурные паттерны
+
+Паттерны, которые определяют, как объекты и классы могут быть объединены в более крупные структуры.
+
+### Адаптер (Adapter)
+
+Позволяет объектам с несовместимыми интерфейсами работать вместе.
+
+```python
+# Существующий класс с несовместимым интерфейсом
+class ThirdPartyAnalytics:
+    def send_data(self, data: dict) -> bool:
+        print(f"Sending data to third-party analytics: {data}")
+        return True
+
+# Целевой интерфейс
+class EventTracker:
+    def track_event(self, event_name: str, event_properties: dict) -> None:
+        pass
+
+# Адаптер
+class AnalyticsAdapter(EventTracker):
+    def __init__(self, analytics: ThirdPartyAnalytics):
+        self.analytics = analytics
+    
+    def track_event(self, event_name: str, event_properties: dict) -> None:
+        data = {
+            "event": event_name,
+            "properties": event_properties
+        }
+        self.analytics.send_data(data)
+
+# Использование
+analytics = ThirdPartyAnalytics()
+tracker = AnalyticsAdapter(analytics)
+tracker.track_event("button_click", {"button_id": "submit", "page": "checkout"})
+```
+
+### Декоратор (Decorator)
+
+Динамически добавляет объекту новую функциональность, не изменяя его интерфейс.
+
+```python
+from abc import ABC, abstractmethod
+from typing import Callable, Any
+import time
+import functools
+
+# Базовый компонент
+class DataSource(ABC):
+    @abstractmethod
+    def write_data(self, data: str) -> None:
+        pass
+    
+    @abstractmethod
+    def read_data(self) -> str:
+        pass
+
+# Конкретный компонент
+class FileDataSource(DataSource):
+    def __init__(self, filename: str):
+        self.filename = filename
+    
+    def write_data(self, data: str) -> None:
+        with open(self.filename, 'w') as f:
+            f.write(data)
+    
+    def read_data(self) -> str:
+        with open(self.filename, 'r') as f:
+            return f.read()
+
+# Базовый декоратор
+class DataSourceDecorator(DataSource):
+    def __init__(self, source: DataSource):
+        self.wrapped = source
+    
+    def write_data(self, data: str) -> None:
+        self.wrapped.write_data(data)
+    
+    def read_data(self) -> str:
+        return self.wrapped.read_data()
+
+# Конкретные декораторы
+class EncryptionDecorator(DataSourceDecorator):
+    def write_data(self, data: str) -> None:
+        encrypted = self._encrypt(data)
+        self.wrapped.write_data(encrypted)
+    
+    def read_data(self) -> str:
+        encrypted = self.wrapped.read_data()
+        return self._decrypt(encrypted)
+    
+    def _encrypt(self, data: str) -> str:
+        # Простая "шифрация" для примера
+        return ''.join([chr(ord(c) + 1) for c in data])
+    
+    def _decrypt(self, data: str) -> str:
+        # Простая "дешифрация" для примера
+        return ''.join([chr(ord(c) - 1) for c in data])
+
+class CompressionDecorator(DataSourceDecorator):
+    def write_data(self, data: str) -> None:
+        compressed = self._compress(data)
+        self.wrapped.write_data(compressed)
+    
+    def read_data(self) -> str:
+        compressed = self.wrapped.read_data()
+        return self._decompress(compressed)
+    
+    def _compress(self, data: str) -> str:
+        # Простое "сжатие" для примера
+        return data.replace("aaaaa", "5a")
+    
+    def _decompress(self, data: str) -> str:
+        # Простая "декомпрессия" для примера
+        return data.replace("5a", "aaaaa")
+
+# Использование
+source = FileDataSource("data.txt")
+source = EncryptionDecorator(source)
+source = CompressionDecorator(source)
+
+source.write_data("Hello, World!")
+data = source.read_data()
+print(data)  # "Hello, World!"
+
+# Декоратор функций (встроенный в Python)
+def timing_decorator(func: Callable) -> Callable:
+    @functools.wraps(func)
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
+        start_time = time.time()
+        result = func(*args, **kwargs)
+        end_time = time.time()
+        print(f"Function {func.__name__} took {end_time - start_time:.2f} seconds to run")
+        return result
+    return wrapper
+
+@timing_decorator
+def slow_function() -> None:
+    time.sleep(1)
+
+slow_function()  # Function slow_function took 1.00 seconds to run
+```
+
+### Фасад (Facade)
+
+Предоставляет унифицированный интерфейс к набору интерфейсов в подсистеме.
+
+```python
+# Сложная подсистема
+class CPU:
+    def freeze(self) -> None:
+        print("CPU: Freezing")
+    
+    def jump(self, position: str) -> None:
+        print(f"CPU: Jumping to {position}")
+    
+    def execute(self) -> None:
+        print("CPU: Executing")
+
+class Memory:
+    def load(self, position: str, data: str) -> None:
+        print(f"Memory: Loading {data} to {position}")
+
+class HardDrive:
+    def read(self, sector: str, size: int) -> str:
+        print(f"HardDrive: Reading {size} bytes from {sector}")
+        return "data"
+
+# Фасад
+class ComputerFacade:
+    def __init__(self):
+        self.cpu = CPU()
+        self.memory = Memory()
+        self.hard_drive = HardDrive()
+    
+    def start(self) -> None:
+        self.cpu.freeze()
+        self.memory.load("0x00", self.hard_drive.read("boot_sector", 8))
+        self.cpu.jump("0x00")
+        self.cpu.execute()
+
+# Использование
+computer = ComputerFacade()
+computer.start()
+```
+
+## Поведенческие паттерны
+
+Паттерны, которые определяют способы взаимодействия между объектами.
+
+### Стратегия (Strategy)
+
+Определяет семейство алгоритмов, инкапсулирует каждый из них и делает их взаимозаменяемыми.
+
+```python
+from abc import ABC, abstractmethod
+from typing import List
+
+# Интерфейс стратегии
+class SortStrategy(ABC):
+    @abstractmethod
+    def sort(self, data: List[int]) -> List[int]:
+        pass
+
+# Конкретные стратегии
+class BubbleSortStrategy(SortStrategy):
+    def sort(self, data: List[int]) -> List[int]:
+        print("Sorting using bubble sort")
+        return sorted(data)  # Для простоты используем встроенную функцию
+
+class QuickSortStrategy(SortStrategy):
+    def sort(self, data: List[int]) -> List[int]:
+        print("Sorting using quick sort")
+        return sorted(data)  # Для простоты используем встроенную функцию
+
+class MergeSortStrategy(SortStrategy):
+    def sort(self, data: List[int]) -> List[int]:
+        print("Sorting using merge sort")
+        return sorted(data)  # Для простоты используем встроенную функцию
+
+# Контекст
+class Sorter:
+    def __init__(self, strategy: SortStrategy = None):
+        self._strategy = strategy or BubbleSortStrategy()
+    
+    def set_strategy(self, strategy: SortStrategy) -> None:
+        self._strategy = strategy
+    
+    def sort(self, data: List[int]) -> List[int]:
+        return self._strategy.sort(data)
+
+# Использование
+sorter = Sorter()
+data = [5, 3, 1, 4, 2]
+
+# Используем стратегию по умолчанию (пузырьковая сортировка)
+sorted_data = sorter.sort(data)
+
+# Меняем стратегию на быструю сортировку
+sorter.set_strategy(QuickSortStrategy())
+sorted_data = sorter.sort(data)
+
+# Меняем стратегию на сортировку слиянием
+sorter.set_strategy(MergeSortStrategy())
+sorted_data = sorter.sort(data)
+```
+
+### Наблюдатель (Observer)
+
+Определяет зависимость "один-ко-многим" между объектами, так что при изменении состояния одного объекта все зависящие от него объекты уведомляются и обновляются автоматически.
+
+```python
+from abc import ABC, abstractmethod
+from typing import List, Any
+
+# Интерфейс наблюдателя
+class Observer(ABC):
+    @abstractmethod
+    def update(self, subject: 'Subject') -> None:
+        pass
+
+# Интерфейс субъекта
+class Subject(ABC):
+    @abstractmethod
+    def attach(self, observer: Observer) -> None:
+        pass
+    
+    @abstractmethod
+    def detach(self, observer: Observer) -> None:
+        pass
+    
+    @abstractmethod
+    def notify(self) -> None:
+        pass
+
+# Конкретный субъект
+class WeatherStation(Subject):
+    def __init__(self):
+        self._observers: List[Observer] = []
+        self._temperature = 0
+    
+    def attach(self, observer: Observer) -> None:
+        if observer not in self._observers:
+            self._observers.append(observer)
+    
+    def detach(self, observer: Observer) -> None:
+        self._observers.remove(observer)
+    
+    def notify(self) -> None:
+        for observer in self._observers:
+            observer.update(self)
+    
+    def set_temperature(self, temperature: float) -> None:
+        self._temperature = temperature
+        self.notify()
+    
+    @property
+    def temperature(self) -> float:
+        return self._temperature
+
+# Конкретные наблюдатели
+class TemperatureDisplay(Observer):
+    def update(self, subject: Subject) -> None:
+        if isinstance(subject, WeatherStation):
+            print(f"Temperature Display: {subject.temperature}°C")
+
+class Fan(Observer):
+    def update(self, subject: Subject) -> None:
+        if isinstance(subject, WeatherStation):
+            if subject.temperature > 25:
+                print("Fan: Turning on")
+            else:
+                print("Fan: Turning off")
+
+# Использование
+weather_station = WeatherStation()
+
+display = TemperatureDisplay()
+fan = Fan()
+
+weather_station.attach(display)
+weather_station.attach(fan)
+
+weather_station.set_temperature(20)  # Temperature Display: 20°C, Fan: Turning off
+weather_station.set_temperature(30)  # Temperature Display: 30°C, Fan: Turning on
+```
+
+### Команда (Command)
+
+Инкапсулирует запрос как объект, позволяя параметризовать клиентов с различными запросами, ставить запросы в очередь или протоколировать их, а также поддерживать отмену операций.
+
+```python
+from abc import ABC, abstractmethod
+from typing import List, Optional
+
+# Интерфейс команды
+class Command(ABC):
+    @abstractmethod
+    def execute(self) -> None:
+        pass
+    
+    @abstractmethod
+    def undo(self) -> None:
+        pass
+
+# Получатель
+class Editor:
+    def __init__(self):
+        self._text = ""
+    
+    def get_text(self) -> str:
+        return self._text
+    
+    def set_text(self, text: str) -> None:
+        self._text = text
+
+# Конкретные команды
+class CopyCommand(Command):
+    def __init__(self, editor: Editor):
+        self.editor = editor
+        self.backup = ""
+    
+    def execute(self) -> None:
+        # В реальном приложении здесь был бы код для копирования текста в буфер обмена
+        print(f"Copying text: {self.editor.get_text()}")
+    
+    def undo(self) -> None:
+        # Для команды копирования отмена не требуется
+        pass
+
+class PasteCommand(Command):
+    def __init__(self, editor: Editor, text: str):
+        self.editor = editor
+        self.text = text
+        self.backup = ""
+    
+    def execute(self) -> None:
+        self.backup = self.editor.get_text()
+        self.editor.set_text(self.backup + self.text)
+        print(f"Pasting text. New text: {self.editor.get_text()}")
+    
+    def undo(self) -> None:
+        self.editor.set_text(self.backup)
+        print(f"Undoing paste. Text restored: {self.editor.get_text()}")
+
+class CutCommand(Command):
+    def __init__(self, editor: Editor):
+        self.editor = editor
+        self.backup = ""
+    
+    def execute(self) -> None:
+        self.backup = self.editor.get_text()
+        # В реальном приложении здесь был бы код для копирования текста в буфер обмена
+        self.editor.set_text("")
+        print(f"Cutting text. New text: {self.editor.get_text()}")
+    
+    def undo(self) -> None:
+        self.editor.set_text(self.backup)
+        print(f"Undoing cut. Text restored: {self.editor.get_text()}")
+
+# Инвокер
+class CommandHistory:
+    def __init__(self):
+        self._history: List[Command] = []
+    
+    def push(self, command: Command) -> None:
+        self._history.append(command)
+    
+    def pop(self) -> Optional[Command]:
+        if not self._history:
+            return None
+        return self._history.pop()
+
+class Application:
+    def __init__(self):
+        self.editor = Editor()
+        self.history = CommandHistory()
+    
+    def execute_command(self, command: Command) -> None:
+        command.execute()
+        self.history.push(command)
+    
+    def undo(self) -> None:
+        command = self.history.pop()
+        if command:
+            command.undo()
+
+# Использование
+app = Application()
+app.editor.set_text("Hello, World!")
+
+copy_command = CopyCommand(app.editor)
+app.execute_command(copy_command)
+
+cut_command = CutCommand(app.editor)
+app.execute_command(cut_command)
+
+paste_command = PasteCommand(app.editor, "Hello, World!")
+app.execute_command(paste_command)
+
+app.undo()  # Отмена вставки
+app.undo()  # Отмена вырезания
+```
+
+## Интеграция с другими правилами
+
+- **Архитектурные принципы**: Паттерны проектирования должны соответствовать основным архитектурным принципам, описанным в @python-architecture-principles.mdc
+- **Инъекция зависимостей**: Паттерны проектирования часто используются вместе с инъекцией зависимостей, как описано в @python-dependency-injection.mdc 

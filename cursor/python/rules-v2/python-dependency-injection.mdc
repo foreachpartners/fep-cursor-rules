@@ -1,0 +1,289 @@
+---
+description: Принципы и реализация инъекции зависимостей в Python
+globs: "*.py,*.pyi"
+alwaysApply: true
+related: ["python-architecture-principles.mdc", "python-layered-architecture.mdc", "python-testing-mocks.mdc"]
+priority: 7
+---
+# Инъекция зависимостей в Python
+
+Принципы и рекомендации по реализации инъекции зависимостей (Dependency Injection, DI) в Python приложениях. Инъекция зависимостей улучшает тестируемость, модульность и гибкость кода.
+
+---
+
+## Основные принципы инъекции зависимостей
+
+1. **Инверсия зависимостей** - Высокоуровневые модули не должны зависеть от низкоуровневых модулей. Оба должны зависеть от абстракций
+2. **Инъекция через конструктор** - Зависимости должны передаваться через конструктор класса
+3. **Использование абстракций** - Зависеть от абстракций (интерфейсов), а не от конкретных реализаций
+4. **Разделение ответственности** - Создание объектов должно быть отделено от их использования
+
+## Способы инъекции зависимостей
+
+### 1. Инъекция через конструктор (Constructor Injection)
+
+Наиболее предпочтительный способ инъекции зависимостей. Зависимости передаются через конструктор класса.
+
+```python
+from abc import ABC, abstractmethod
+
+# Абстракция
+class UserRepository(ABC):
+    @abstractmethod
+    def get_by_id(self, user_id: int):
+        pass
+
+# Конкретная реализация
+class SQLUserRepository(UserRepository):
+    def get_by_id(self, user_id: int):
+        # Реализация
+        pass
+
+# Использование инъекции через конструктор
+class UserService:
+    def __init__(self, user_repository: UserRepository):
+        self.user_repository = user_repository
+    
+    def get_user(self, user_id: int):
+        return self.user_repository.get_by_id(user_id)
+
+# Создание и использование
+repository = SQLUserRepository()
+service = UserService(repository)
+user = service.get_user(1)
+```
+
+### 2. Инъекция через сеттер (Setter Injection)
+
+Зависимости устанавливаются через методы-сеттеры. Менее предпочтительный способ, так как объект может быть создан в неполном состоянии.
+
+```python
+class UserService:
+    def __init__(self):
+        self.user_repository = None
+    
+    def set_user_repository(self, user_repository: UserRepository):
+        self.user_repository = user_repository
+    
+    def get_user(self, user_id: int):
+        if self.user_repository is None:
+            raise ValueError("UserRepository is not set")
+        return self.user_repository.get_by_id(user_id)
+
+# Создание и использование
+service = UserService()
+service.set_user_repository(SQLUserRepository())
+user = service.get_user(1)
+```
+
+### 3. Инъекция через метод (Method Injection)
+
+Зависимости передаются непосредственно в методы, которые их используют.
+
+```python
+class UserService:
+    def get_user(self, user_id: int, user_repository: UserRepository):
+        return user_repository.get_by_id(user_id)
+
+# Использование
+service = UserService()
+user = service.get_user(1, SQLUserRepository())
+```
+
+## Реализация контейнера зависимостей
+
+Для управления зависимостями в больших приложениях рекомендуется использовать контейнер зависимостей.
+
+### Простой контейнер зависимостей
+
+```python
+class Container:
+    def __init__(self):
+        self._services = {}
+    
+    def register(self, interface, implementation):
+        self._services[interface] = implementation
+    
+    def resolve(self, interface):
+        if interface not in self._services:
+            raise ValueError(f"No implementation registered for {interface}")
+        return self._services[interface]
+
+# Использование
+container = Container()
+container.register(UserRepository, SQLUserRepository())
+
+user_service = UserService(container.resolve(UserRepository))
+```
+
+### Использование библиотеки dependency-injector
+
+Для более сложных сценариев рекомендуется использовать специализированные библиотеки, например, `dependency-injector`.
+
+```python
+from dependency_injector import containers, providers
+from dependency_injector.wiring import inject, Provide
+
+class Container(containers.DeclarativeContainer):
+    config = providers.Configuration()
+    
+    db = providers.Singleton(
+        Database,
+        connection_string=config.db.connection_string
+    )
+    
+    user_repository = providers.Factory(
+        SQLUserRepository,
+        db=db
+    )
+    
+    user_service = providers.Factory(
+        UserService,
+        user_repository=user_repository
+    )
+
+# Использование
+container = Container()
+container.config.from_dict({
+    "db": {
+        "connection_string": "postgresql://user:password@localhost/db"
+    }
+})
+
+# Получение сервиса из контейнера
+user_service = container.user_service()
+
+# Или с использованием инъекции через декоратор
+@inject
+def get_user(user_id: int, user_service: UserService = Provide[Container.user_service]):
+    return user_service.get_user(user_id)
+```
+
+## Лучшие практики
+
+### 1. Используйте типизацию
+
+Всегда указывайте типы зависимостей для улучшения читаемости и проверки типов.
+
+```python
+def __init__(self, user_repository: UserRepository, email_service: EmailService):
+    self.user_repository = user_repository
+    self.email_service = email_service
+```
+
+### 2. Инъекция через конструктор
+
+Предпочитайте инъекцию через конструктор другим способам инъекции.
+
+### 3. Минимизируйте количество зависимостей
+
+Если класс имеет слишком много зависимостей, это может быть признаком нарушения принципа единственной ответственности.
+
+### 4. Используйте значения по умолчанию для необязательных зависимостей
+
+```python
+def __init__(self, user_repository: UserRepository, logger: Logger = None):
+    self.user_repository = user_repository
+    self.logger = logger or NullLogger()
+```
+
+### 5. Избегайте сервис-локаторов
+
+Сервис-локаторы скрывают зависимости класса и затрудняют тестирование.
+
+```python
+# Неправильно: использование сервис-локатора
+class UserService:
+    def get_user(self, user_id: int):
+        repository = ServiceLocator.get(UserRepository)
+        return repository.get_by_id(user_id)
+
+# Правильно: явная инъекция зависимостей
+class UserService:
+    def __init__(self, user_repository: UserRepository):
+        self.user_repository = user_repository
+    
+    def get_user(self, user_id: int):
+        return self.user_repository.get_by_id(user_id)
+```
+
+## Инъекция зависимостей в тестах
+
+Инъекция зависимостей значительно упрощает тестирование, позволяя заменять реальные зависимости на моки или стабы.
+
+```python
+from unittest.mock import Mock
+
+def test_get_user():
+    # Создание мока репозитория
+    mock_repository = Mock(spec=UserRepository)
+    mock_repository.get_by_id.return_value = {"id": 1, "name": "John"}
+    
+    # Инъекция мока в тестируемый сервис
+    service = UserService(mock_repository)
+    
+    # Тестирование
+    user = service.get_user(1)
+    
+    # Проверки
+    assert user == {"id": 1, "name": "John"}
+    mock_repository.get_by_id.assert_called_once_with(1)
+```
+
+## Интеграция с фреймворками
+
+### FastAPI
+
+```python
+from fastapi import FastAPI, Depends
+from dependency_injector.wiring import inject, Provide
+
+app = FastAPI()
+container = Container()
+
+# Функция-провайдер для инъекции зависимостей
+def get_user_service():
+    return container.user_service()
+
+@app.get("/users/{user_id}")
+def get_user(user_id: int, user_service: UserService = Depends(get_user_service)):
+    return user_service.get_user(user_id)
+
+# Или с использованием dependency-injector
+@app.get("/users/{user_id}")
+@inject
+def get_user(user_id: int, user_service: UserService = Provide[Container.user_service]):
+    return user_service.get_user(user_id)
+```
+
+### Flask
+
+```python
+from flask import Flask, g
+from dependency_injector.wiring import inject, Provide
+
+app = Flask(__name__)
+container = Container()
+
+def get_user_service():
+    if not hasattr(g, 'user_service'):
+        g.user_service = container.user_service()
+    return g.user_service
+
+@app.route("/users/<int:user_id>")
+def get_user(user_id):
+    user_service = get_user_service()
+    return user_service.get_user(user_id)
+
+# Или с использованием dependency-injector
+@app.route("/users/<int:user_id>")
+@inject
+def get_user(user_id, user_service: UserService = Provide[Container.user_service]):
+    return user_service.get_user(user_id)
+```
+
+## Интеграция с другими правилами
+
+- **Архитектурные принципы**: Инъекция зависимостей должна соответствовать основным архитектурным принципам, описанным в @python-architecture-principles.mdc
+- **Слоистая архитектура**: Инъекция зависимостей используется для связывания компонентов разных слоев, как описано в @python-layered-architecture.mdc
+- **Тестирование**: Инъекция зависимостей упрощает тестирование с использованием моков, как описано в @python-testing-mocks.mdc 

@@ -1,0 +1,499 @@
+---
+description: Правила доступа к данным и работы с ORM в Python приложениях
+globs: "*.py,*.pyi,models.py,repositories.py"
+alwaysApply: true
+related: ["python-layered-architecture.mdc", "python-architecture-principles.mdc"]
+priority: 6
+---
+# Правила доступа к данным в Python
+
+Рекомендации по организации доступа к данным и работе с ORM в Python приложениях. Эти правила обеспечивают чистую архитектуру, тестируемость и поддерживаемость кода.
+
+---
+
+## Основные принципы
+
+1. **Разделение ответственности** - Код доступа к данным должен быть отделен от бизнес-логики
+2. **Абстракция** - Использование абстракций для скрытия деталей реализации доступа к данным
+3. **Тестируемость** - Код доступа к данным должен быть легко тестируемым
+4. **Производительность** - Эффективное использование ресурсов базы данных
+
+## Паттерн Repository
+
+Паттерн Repository обеспечивает абстракцию доступа к данным и скрывает детали реализации хранилища данных.
+
+### Интерфейс репозитория
+
+```python
+from abc import ABC, abstractmethod
+from typing import List, Optional, TypeVar, Generic
+
+T = TypeVar('T')
+
+class Repository(Generic[T], ABC):
+    @abstractmethod
+    def get_by_id(self, id: int) -> Optional[T]:
+        pass
+    
+    @abstractmethod
+    def get_all(self) -> List[T]:
+        pass
+    
+    @abstractmethod
+    def add(self, entity: T) -> T:
+        pass
+    
+    @abstractmethod
+    def update(self, entity: T) -> T:
+        pass
+    
+    @abstractmethod
+    def delete(self, entity: T) -> None:
+        pass
+```
+
+### Реализация репозитория с SQLAlchemy
+
+```python
+from typing import List, Optional, Type
+from sqlalchemy.orm import Session
+
+from src.domain.models.user import User
+from src.application.interfaces.user_repository import UserRepository
+from src.infrastructure.database.models.user_model import UserModel
+
+class SQLAlchemyUserRepository(UserRepository):
+    def __init__(self, session: Session):
+        self.session = session
+    
+    def get_by_id(self, id: int) -> Optional[User]:
+        user_model = self.session.query(UserModel).filter(UserModel.id == id).first()
+        if user_model is None:
+            return None
+        return self._to_domain(user_model)
+    
+    def get_all(self) -> List[User]:
+        user_models = self.session.query(UserModel).all()
+        return [self._to_domain(user_model) for user_model in user_models]
+    
+    def add(self, user: User) -> User:
+        user_model = UserModel(
+            name=user.name,
+            email=str(user.email),
+            password_hash=user.password_hash
+        )
+        self.session.add(user_model)
+        self.session.commit()
+        
+        user.id = user_model.id
+        return user
+    
+    def update(self, user: User) -> User:
+        user_model = self.session.query(UserModel).filter(UserModel.id == user.id).first()
+        if user_model is None:
+            raise ValueError(f"User with id {user.id} not found")
+        
+        user_model.name = user.name
+        user_model.email = str(user.email)
+        user_model.password_hash = user.password_hash
+        
+        self.session.commit()
+        return user
+    
+    def delete(self, user: User) -> None:
+        user_model = self.session.query(UserModel).filter(UserModel.id == user.id).first()
+        if user_model is None:
+            raise ValueError(f"User with id {user.id} not found")
+        
+        self.session.delete(user_model)
+        self.session.commit()
+    
+    def _to_domain(self, user_model: UserModel) -> User:
+        from src.domain.value_objects.email import Email
+        
+        return User(
+            id=user_model.id,
+            name=user_model.name,
+            email=Email(user_model.email),
+            password_hash=user_model.password_hash
+        )
+```
+
+## Модели ORM
+
+### Отделение моделей домена от моделей ORM
+
+Модели домена и модели ORM должны быть разделены:
+
+- **Модели домена** - Содержат бизнес-логику и бизнес-правила
+- **Модели ORM** - Отвечают за маппинг данных из базы данных
+
+```python
+# Модель домена
+from dataclasses import dataclass
+from typing import Optional
+
+@dataclass
+class User:
+    name: str
+    email: str
+    password_hash: Optional[str] = None
+    id: Optional[int] = None
+    
+    def verify_password(self, password: str) -> bool:
+        # Бизнес-логика проверки пароля
+        pass
+
+# Модель ORM
+from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy.ext.declarative import declarative_base
+
+Base = declarative_base()
+
+class UserModel(Base):
+    __tablename__ = "users"
+    
+    id = Column(Integer, primary_key=True)
+    name = Column(String, nullable=False)
+    email = Column(String, nullable=False, unique=True)
+    password_hash = Column(String, nullable=True)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+```
+
+### Маппинг между моделями
+
+Для преобразования между моделями домена и моделями ORM используйте методы маппинга:
+
+```python
+def to_domain(user_model: UserModel) -> User:
+    return User(
+        id=user_model.id,
+        name=user_model.name,
+        email=user_model.email,
+        password_hash=user_model.password_hash
+    )
+
+def to_orm(user: User) -> UserModel:
+    return UserModel(
+        id=user.id,
+        name=user.name,
+        email=user.email,
+        password_hash=user.password_hash
+    )
+```
+
+## Unit of Work
+
+Паттерн Unit of Work обеспечивает атомарность операций с базой данных и управление транзакциями.
+
+```python
+from sqlalchemy.orm import Session
+from contextlib import contextmanager
+from typing import Generator, Any
+
+class UnitOfWork:
+    def __init__(self, session_factory):
+        self.session_factory = session_factory
+    
+    @contextmanager
+    def start(self) -> Generator['UnitOfWorkContext', Any, None]:
+        session = self.session_factory()
+        try:
+            uow = UnitOfWorkContext(session)
+            yield uow
+            uow.commit()
+        except Exception:
+            uow.rollback()
+            raise
+        finally:
+            uow.close()
+
+class UnitOfWorkContext:
+    def __init__(self, session: Session):
+        self.session = session
+        self.users = SQLAlchemyUserRepository(session)
+        self.orders = SQLAlchemyOrderRepository(session)
+    
+    def commit(self) -> None:
+        self.session.commit()
+    
+    def rollback(self) -> None:
+        self.session.rollback()
+    
+    def close(self) -> None:
+        self.session.close()
+
+# Использование
+def create_user(name: str, email: str, uow: UnitOfWork) -> User:
+    with uow.start() as context:
+        user = User(name=name, email=email)
+        user = context.users.add(user)
+        return user
+```
+
+## Работа с SQLAlchemy
+
+### Настройка сессии
+
+```python
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, scoped_session
+from sqlalchemy.ext.declarative import declarative_base
+
+Base = declarative_base()
+
+def create_session_factory(connection_string: str):
+    engine = create_engine(connection_string)
+    Base.metadata.create_all(engine)
+    session_factory = sessionmaker(bind=engine)
+    return scoped_session(session_factory)
+
+# Использование
+session_factory = create_session_factory("postgresql://user:password@localhost/db")
+session = session_factory()
+```
+
+### Запросы
+
+Используйте методы Query для построения запросов:
+
+```python
+# Простой запрос
+users = session.query(UserModel).all()
+
+# Фильтрация
+active_users = session.query(UserModel).filter(UserModel.is_active == True).all()
+
+# Сортировка
+sorted_users = session.query(UserModel).order_by(UserModel.name).all()
+
+# Пагинация
+page_size = 10
+page_number = 2
+users = session.query(UserModel).limit(page_size).offset((page_number - 1) * page_size).all()
+
+# Соединения
+users_with_orders = (
+    session.query(UserModel, OrderModel)
+    .join(OrderModel, UserModel.id == OrderModel.user_id)
+    .all()
+)
+
+# Агрегация
+from sqlalchemy import func
+user_count = session.query(func.count(UserModel.id)).scalar()
+```
+
+### Транзакции
+
+Используйте контекстный менеджер для управления транзакциями:
+
+```python
+from sqlalchemy.orm import Session
+
+def transfer_money(from_account_id: int, to_account_id: int, amount: float, session: Session) -> None:
+    try:
+        from_account = session.query(AccountModel).filter(AccountModel.id == from_account_id).first()
+        to_account = session.query(AccountModel).filter(AccountModel.id == to_account_id).first()
+        
+        if from_account is None or to_account is None:
+            raise ValueError("Account not found")
+        
+        if from_account.balance < amount:
+            raise ValueError("Insufficient funds")
+        
+        from_account.balance -= amount
+        to_account.balance += amount
+        
+        session.commit()
+    except Exception:
+        session.rollback()
+        raise
+```
+
+## Работа с Django ORM
+
+### Модели
+
+```python
+from django.db import models
+
+class User(models.Model):
+    name = models.CharField(max_length=100)
+    email = models.EmailField(unique=True)
+    password_hash = models.CharField(max_length=100, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return self.name
+```
+
+### Репозиторий
+
+```python
+from typing import List, Optional
+from django.db.models import QuerySet
+
+from src.domain.models.user import User as DomainUser
+from src.application.interfaces.user_repository import UserRepository
+from src.infrastructure.database.models import User as DjangoUser
+
+class DjangoUserRepository(UserRepository):
+    def get_by_id(self, id: int) -> Optional[DomainUser]:
+        try:
+            user_model = DjangoUser.objects.get(id=id)
+            return self._to_domain(user_model)
+        except DjangoUser.DoesNotExist:
+            return None
+    
+    def get_all(self) -> List[DomainUser]:
+        user_models = DjangoUser.objects.all()
+        return [self._to_domain(user_model) for user_model in user_models]
+    
+    def add(self, user: DomainUser) -> DomainUser:
+        user_model = DjangoUser(
+            name=user.name,
+            email=user.email,
+            password_hash=user.password_hash
+        )
+        user_model.save()
+        
+        user.id = user_model.id
+        return user
+    
+    def update(self, user: DomainUser) -> DomainUser:
+        try:
+            user_model = DjangoUser.objects.get(id=user.id)
+        except DjangoUser.DoesNotExist:
+            raise ValueError(f"User with id {user.id} not found")
+        
+        user_model.name = user.name
+        user_model.email = user.email
+        user_model.password_hash = user.password_hash
+        user_model.save()
+        
+        return user
+    
+    def delete(self, user: DomainUser) -> None:
+        try:
+            user_model = DjangoUser.objects.get(id=user.id)
+            user_model.delete()
+        except DjangoUser.DoesNotExist:
+            raise ValueError(f"User with id {user.id} not found")
+    
+    def _to_domain(self, user_model: DjangoUser) -> DomainUser:
+        return DomainUser(
+            id=user_model.id,
+            name=user_model.name,
+            email=user_model.email,
+            password_hash=user_model.password_hash
+        )
+```
+
+## Лучшие практики
+
+### 1. Используйте миграции
+
+Для управления схемой базы данных используйте миграции:
+
+```python
+# SQLAlchemy Alembic
+# alembic/env.py
+from alembic import context
+from sqlalchemy import engine_from_config, pool
+
+from src.infrastructure.database.models import Base
+
+target_metadata = Base.metadata
+
+# Django
+# python manage.py makemigrations
+# python manage.py migrate
+```
+
+### 2. Используйте пулы соединений
+
+Для эффективного использования соединений с базой данных используйте пулы соединений:
+
+```python
+from sqlalchemy import create_engine
+from sqlalchemy.pool import QueuePool
+
+engine = create_engine(
+    "postgresql://user:password@localhost/db",
+    poolclass=QueuePool,
+    pool_size=5,
+    max_overflow=10,
+    pool_timeout=30,
+    pool_recycle=1800
+)
+```
+
+### 3. Избегайте N+1 запросов
+
+Используйте жадную загрузку (eager loading) для избежания проблемы N+1 запросов:
+
+```python
+# SQLAlchemy
+from sqlalchemy.orm import joinedload
+
+users_with_orders = (
+    session.query(UserModel)
+    .options(joinedload(UserModel.orders))
+    .all()
+)
+
+# Django
+users_with_orders = User.objects.prefetch_related('orders').all()
+```
+
+### 4. Используйте индексы
+
+Добавляйте индексы для часто используемых полей в запросах:
+
+```python
+# SQLAlchemy
+class UserModel(Base):
+    __tablename__ = "users"
+    
+    id = Column(Integer, primary_key=True)
+    email = Column(String, nullable=False, unique=True, index=True)
+    name = Column(String, nullable=False, index=True)
+
+# Django
+class User(models.Model):
+    email = models.EmailField(unique=True, db_index=True)
+    name = models.CharField(max_length=100, db_index=True)
+```
+
+### 5. Используйте пагинацию
+
+Для больших наборов данных используйте пагинацию:
+
+```python
+# SQLAlchemy
+def get_users_paginated(page: int, page_size: int, session: Session) -> List[User]:
+    user_models = (
+        session.query(UserModel)
+        .order_by(UserModel.id)
+        .limit(page_size)
+        .offset((page - 1) * page_size)
+        .all()
+    )
+    return [to_domain(user_model) for user_model in user_models]
+
+# Django
+def get_users_paginated(page: int, page_size: int) -> List[User]:
+    from django.core.paginator import Paginator
+    
+    queryset = User.objects.all().order_by('id')
+    paginator = Paginator(queryset, page_size)
+    page_obj = paginator.get_page(page)
+    
+    return [to_domain(user_model) for user_model in page_obj]
+```
+
+## Интеграция с другими правилами
+
+- **Слоистая архитектура**: Доступ к данным должен быть организован в соответствии с принципами слоистой архитектуры, описанными в @python-layered-architecture.mdc
+- **Архитектурные принципы**: Доступ к данным должен соответствовать основным архитектурным принципам, описанным в @python-architecture-principles.mdc 

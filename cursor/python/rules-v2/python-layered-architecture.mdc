@@ -1,0 +1,330 @@
+---
+description: Правила организации слоистой архитектуры в Python приложениях
+globs: "*.py,*.pyi"
+alwaysApply: true
+related: ["python-architecture-principles.mdc", "python-project-layout.mdc", "python-dependency-injection.mdc"]
+priority: 8
+---
+# Правила организации слоистой архитектуры в Python
+
+Рекомендации по организации слоистой архитектуры в Python приложениях. Слоистая архитектура обеспечивает разделение ответственности, улучшает тестируемость и поддерживаемость кода.
+
+---
+
+## Основные слои приложения
+
+Приложение должно быть разделено на следующие основные слои:
+
+1. **Presentation Layer (Слой представления)** - Отвечает за взаимодействие с пользователем
+2. **Application Layer (Слой приложения)** - Содержит бизнес-процессы и координирует работу других слоев
+3. **Domain Layer (Слой домена)** - Содержит бизнес-логику и бизнес-правила
+4. **Infrastructure Layer (Слой инфраструктуры)** - Отвечает за взаимодействие с внешними системами
+
+### Зависимости между слоями
+
+Зависимости между слоями должны идти только в одном направлении - сверху вниз:
+
+```
+Presentation Layer → Application Layer → Domain Layer → Infrastructure Layer
+```
+
+Нижележащие слои не должны зависеть от вышележащих слоев. Для обратной связи используйте инверсию зависимостей.
+
+## Слой представления (Presentation Layer)
+
+Отвечает за взаимодействие с пользователем или внешними системами.
+
+### Компоненты
+
+- **Controllers/Views** - Обрабатывают запросы пользователя и формируют ответы
+- **DTOs (Data Transfer Objects)** - Объекты для передачи данных между слоями
+- **Validators** - Валидация входных данных
+
+### Пример структуры
+
+```
+src/
+└── presentation/
+    ├── api/
+    │   ├── __init__.py
+    │   ├── controllers/
+    │   │   ├── __init__.py
+    │   │   ├── user_controller.py
+    │   │   └── auth_controller.py
+    │   └── dtos/
+    │       ├── __init__.py
+    │       ├── user_dto.py
+    │       └── auth_dto.py
+    └── web/
+        ├── __init__.py
+        ├── views/
+        │   ├── __init__.py
+        │   ├── user_view.py
+        │   └── auth_view.py
+        └── forms/
+            ├── __init__.py
+            ├── user_form.py
+            └── auth_form.py
+```
+
+### Пример кода
+
+```python
+# src/presentation/api/controllers/user_controller.py
+from typing import List
+
+from src.application.services.user_service import UserService
+from src.presentation.api.dtos.user_dto import UserDTO, CreateUserDTO
+
+class UserController:
+    def __init__(self, user_service: UserService):
+        self.user_service = user_service
+    
+    def get_users(self) -> List[UserDTO]:
+        users = self.user_service.get_all_users()
+        return [UserDTO.from_domain(user) for user in users]
+    
+    def create_user(self, dto: CreateUserDTO) -> UserDTO:
+        user = self.user_service.create_user(
+            name=dto.name,
+            email=dto.email,
+            password=dto.password
+        )
+        return UserDTO.from_domain(user)
+```
+
+## Слой приложения (Application Layer)
+
+Содержит бизнес-процессы и координирует работу других слоев.
+
+### Компоненты
+
+- **Services** - Реализуют бизнес-процессы, координируя работу репозиториев и доменных объектов
+- **Use Cases** - Реализуют конкретные сценарии использования приложения
+- **Interfaces** - Определяют интерфейсы для инфраструктурных сервисов
+
+### Пример структуры
+
+```
+src/
+└── application/
+    ├── __init__.py
+    ├── services/
+    │   ├── __init__.py
+    │   ├── user_service.py
+    │   └── auth_service.py
+    ├── use_cases/
+    │   ├── __init__.py
+    │   ├── create_user.py
+    │   └── authenticate_user.py
+    └── interfaces/
+        ├── __init__.py
+        ├── user_repository.py
+        └── email_service.py
+```
+
+### Пример кода
+
+```python
+# src/application/services/user_service.py
+from typing import List, Optional
+
+from src.domain.models.user import User
+from src.application.interfaces.user_repository import UserRepository
+from src.application.interfaces.email_service import EmailService
+
+class UserService:
+    def __init__(self, user_repository: UserRepository, email_service: EmailService):
+        self.user_repository = user_repository
+        self.email_service = email_service
+    
+    def get_all_users(self) -> List[User]:
+        return self.user_repository.get_all()
+    
+    def get_user_by_id(self, user_id: int) -> Optional[User]:
+        return self.user_repository.get_by_id(user_id)
+    
+    def create_user(self, name: str, email: str, password: str) -> User:
+        user = User(name=name, email=email)
+        user.set_password(password)
+        
+        created_user = self.user_repository.create(user)
+        self.email_service.send_welcome_email(created_user)
+        
+        return created_user
+```
+
+## Слой домена (Domain Layer)
+
+Содержит бизнес-логику и бизнес-правила.
+
+### Компоненты
+
+- **Entities** - Основные бизнес-объекты с идентификаторами
+- **Value Objects** - Неизменяемые объекты без идентификаторов
+- **Domain Services** - Сервисы, реализующие бизнес-логику, не привязанную к конкретной сущности
+- **Aggregates** - Группы связанных объектов, рассматриваемых как единое целое
+
+### Пример структуры
+
+```
+src/
+└── domain/
+    ├── __init__.py
+    ├── models/
+    │   ├── __init__.py
+    │   ├── user.py
+    │   └── order.py
+    ├── value_objects/
+    │   ├── __init__.py
+    │   ├── email.py
+    │   └── money.py
+    └── services/
+        ├── __init__.py
+        └── order_processor.py
+```
+
+### Пример кода
+
+```python
+# src/domain/models/user.py
+import hashlib
+from dataclasses import dataclass
+from datetime import datetime
+from typing import Optional
+
+from src.domain.value_objects.email import Email
+
+@dataclass
+class User:
+    name: str
+    email: Email
+    password_hash: Optional[str] = None
+    created_at: datetime = datetime.now()
+    id: Optional[int] = None
+    
+    def set_password(self, password: str) -> None:
+        self.password_hash = hashlib.sha256(password.encode()).hexdigest()
+    
+    def verify_password(self, password: str) -> bool:
+        return self.password_hash == hashlib.sha256(password.encode()).hexdigest()
+```
+
+## Слой инфраструктуры (Infrastructure Layer)
+
+Отвечает за взаимодействие с внешними системами.
+
+### Компоненты
+
+- **Repositories** - Реализуют доступ к данным
+- **External Services** - Интеграция с внешними сервисами
+- **ORM Models** - Модели для работы с ORM
+- **Adapters** - Адаптеры для внешних библиотек и сервисов
+
+### Пример структуры
+
+```
+src/
+└── infrastructure/
+    ├── __init__.py
+    ├── database/
+    │   ├── __init__.py
+    │   ├── models/
+    │   │   ├── __init__.py
+    │   │   └── user_model.py
+    │   └── repositories/
+    │       ├── __init__.py
+    │       └── user_repository.py
+    ├── email/
+    │   ├── __init__.py
+    │   └── email_service.py
+    └── auth/
+        ├── __init__.py
+        └── jwt_service.py
+```
+
+### Пример кода
+
+```python
+# src/infrastructure/database/repositories/user_repository.py
+from typing import List, Optional
+
+from sqlalchemy.orm import Session
+
+from src.domain.models.user import User
+from src.application.interfaces.user_repository import UserRepository
+from src.infrastructure.database.models.user_model import UserModel
+
+class SQLAlchemyUserRepository(UserRepository):
+    def __init__(self, session: Session):
+        self.session = session
+    
+    def get_all(self) -> List[User]:
+        user_models = self.session.query(UserModel).all()
+        return [self._to_domain(user_model) for user_model in user_models]
+    
+    def get_by_id(self, user_id: int) -> Optional[User]:
+        user_model = self.session.query(UserModel).filter(UserModel.id == user_id).first()
+        if user_model is None:
+            return None
+        return self._to_domain(user_model)
+    
+    def create(self, user: User) -> User:
+        user_model = UserModel(
+            name=user.name,
+            email=str(user.email),
+            password_hash=user.password_hash,
+            created_at=user.created_at
+        )
+        self.session.add(user_model)
+        self.session.commit()
+        
+        user.id = user_model.id
+        return user
+    
+    def _to_domain(self, user_model: UserModel) -> User:
+        from src.domain.value_objects.email import Email
+        
+        return User(
+            id=user_model.id,
+            name=user_model.name,
+            email=Email(user_model.email),
+            password_hash=user_model.password_hash,
+            created_at=user_model.created_at
+        )
+```
+
+## Инверсия зависимостей
+
+Для обеспечения независимости слоев используйте инверсию зависимостей:
+
+1. Определите интерфейсы в слое приложения
+2. Реализуйте интерфейсы в слое инфраструктуры
+3. Используйте инъекцию зависимостей для связывания компонентов
+
+```python
+# src/application/interfaces/user_repository.py
+from abc import ABC, abstractmethod
+from typing import List, Optional
+
+from src.domain.models.user import User
+
+class UserRepository(ABC):
+    @abstractmethod
+    def get_all(self) -> List[User]:
+        pass
+    
+    @abstractmethod
+    def get_by_id(self, user_id: int) -> Optional[User]:
+        pass
+    
+    @abstractmethod
+    def create(self, user: User) -> User:
+        pass
+```
+
+## Интеграция с другими правилами
+
+- **Архитектурные принципы**: Слоистая архитектура должна соответствовать основным архитектурным принципам, описанным в @python-architecture-principles.mdc
+- **Структура проекта**: Организация файлов и директорий должна соответствовать правилам структуры проекта, описанным в @python-project-layout.mdc
+- **Инъекция зависимостей**: Для связывания компонентов разных слоев используйте инъекцию зависимостей, как описано в @python-dependency-injection.mdc 

@@ -1,0 +1,187 @@
+---
+description: Правила форматирования Python кода, включая отступы, длину строк и пробелы
+globs: "*.py,*.pyi"
+alwaysApply: true
+related: ["code-style/python-code-style-core.mdc", "code-style/python-linting-tools.mdc"]
+priority: 7
+---
+# Правила форматирования Python кода
+
+Правила и рекомендации по форматированию кода в Python проектах. Правильное форматирование улучшает читаемость и поддерживаемость кода.
+
+---
+
+## Отступы и пробелы
+
+### Отступы
+
+- Использовать 4 пробела для отступов
+- Не использовать табуляцию
+- Быть последовательным в использовании отступов
+
+```python
+# Правильно
+def function():
+    if condition:
+        do_something()
+```
+
+### Пробелы
+
+- Не оставлять пробелы в конце строк
+- Окружать операторы пробелами: `x = 1 + 2`
+- Не использовать пробелы внутри скобок: `func(arg1, arg2)`
+- Использовать пробелы после запятых: `func(arg1, arg2)`
+- Не использовать пробелы перед запятыми и двоеточиями: `dict = {"key": value}`
+
+```python
+# Правильно
+x = 1 + 2
+y = (1 + 2) * 3
+list = [1, 2, 3]
+dict = {"key": "value"}
+
+# Неправильно
+x=1+2
+y = ( 1+2 ) * 3
+list = [1,2,3]
+dict = {"key" :"value"}
+```
+
+## Длина строк
+
+- Максимальная длина строки: 88 символов
+- Для длинных строк использовать перенос с отступом
+
+### Перенос строк
+
+#### Для вызовов функций
+
+```python
+# Правильно
+def long_function_name(
+    arg1: str,
+    arg2: int,
+    arg3: float,
+) -> bool:
+    return True
+
+result = long_function_name(
+    "value1",
+    2,
+    3.0,
+)
+```
+
+#### Для длинных выражений
+
+```python
+# Правильно
+total = (
+    value1
+    + value2
+    + value3
+    + value4
+)
+
+# Или
+total = (
+    value1 +
+    value2 +
+    value3 +
+    value4
+)
+```
+
+#### Для условий
+
+```python
+# Правильно
+if (
+    condition1
+    and condition2
+    and condition3
+):
+    do_something()
+```
+
+## Пустые строки
+
+- Использовать 2 пустые строки перед определениями классов и функций верхнего уровня
+- Использовать 1 пустую строку перед определениями методов внутри класса
+- Использовать пустые строки для логического разделения кода внутри функций
+
+```python
+def function1():
+    do_something()
+
+
+def function2():
+    do_something_else()
+
+
+class MyClass:
+    def __init__(self):
+        self.value = 0
+    
+    def method1(self):
+        do_something()
+    
+    def method2(self):
+        do_something_else()
+```
+
+## Комментарии
+
+- Комментарии должны быть только на английском языке
+- Комментарии должны начинаться с символа `#` и пробела
+- Комментарии должны быть на отдельной строке перед кодом, который они описывают
+- Комментарии должны объяснять "почему", а не "что" делает код
+- Устаревшие комментарии должны быть удалены
+
+```python
+# This is a good comment explaining why we need this calculation
+total = price * quantity * (1 + tax_rate)
+```
+
+## Строки документации (docstrings)
+
+- Использовать тройные двойные кавычки `"""` для docstrings
+- Однострочные docstrings должны быть на одной строке
+- Многострочные docstrings должны иметь краткое описание, пустую строку и подробное описание
+
+```python
+def calculate_total(price, quantity, tax_rate):
+    """Calculate the total price including tax."""
+    return price * quantity * (1 + tax_rate)
+
+
+def complex_function(param1, param2):
+    """
+    Perform a complex calculation.
+    
+    This function takes two parameters and performs a complex
+    calculation based on them.
+    
+    Args:
+        param1: The first parameter
+        param2: The second parameter
+        
+    Returns:
+        The result of the calculation
+    """
+    # Implementation
+    pass
+```
+
+## Инструменты для форматирования
+
+Для автоматического форматирования кода рекомендуется использовать:
+
+- **black** - для форматирования кода
+- **isort** - для сортировки импортов
+
+## Интеграция с другими правилами
+
+- **Стиль кода**: Форматирование должно соответствовать общим правилам стиля кода, описанным в @python-code-style-core.mdc
+- **Инструменты**: Для автоматизации форматирования используйте инструменты, описанные в @python-linting-tools.mdc 

@@ -1,0 +1,213 @@
+---
+description: Правила использования констант и перечислений вместо строковых литералов
+globs: "*.py,*.pyi"
+alwaysApply: true
+related: ["python-code-style-core.mdc", "python-naming.mdc"]
+priority: 7
+---
+# Правила использования констант и перечислений в Python
+
+Правила и рекомендации по использованию констант и перечислений вместо строковых литералов и "магических чисел" в Python коде. Это улучшает типобезопасность, читаемость и поддерживаемость кода.
+
+---
+
+## Запрет строковых литералов
+
+Строковые литералы не должны использоваться в коде в качестве идентификаторов, ключей или других значений, которые могут быть типизированы. Вместо этого необходимо использовать константы, перечисления (`Enum`) и другие строготипизированные механизмы.
+
+### Неправильно:
+
+```python
+if "status" in response and response["status"] == "success":
+    process_success(response["data"])
+elif "status" in response and response["status"] == "error":
+    handle_error(response["error_message"])
+```
+
+### Правильно:
+
+```python
+class ResponseKey(str, Enum):
+    STATUS = "status"
+    DATA = "data"
+    ERROR_MESSAGE = "error_message"
+
+class StatusValue(str, Enum):
+    SUCCESS = "success"
+    ERROR = "error"
+
+if ResponseKey.STATUS in response and response[ResponseKey.STATUS] == StatusValue.SUCCESS:
+    process_success(response[ResponseKey.DATA])
+elif ResponseKey.STATUS in response and response[ResponseKey.STATUS] == StatusValue.ERROR:
+    handle_error(response[ResponseKey.ERROR_MESSAGE])
+```
+
+## Преимущества использования констант и перечислений
+
+1. **Типобезопасность** - ошибки обнаруживаются на этапе компиляции, а не во время выполнения
+2. **Автодополнение в IDE** - IDE может предлагать доступные значения
+3. **Централизованное управление** - все константы определены в одном месте
+4. **Защита от опечаток** - опечатки в строковых литералах не обнаруживаются компилятором
+5. **Рефакторинг** - изменение значения константы автоматически применяется во всех местах использования
+
+## Константы
+
+### Определение констант
+
+Константы должны быть определены на уровне модуля или класса и использовать `UPPER_CASE_WITH_UNDERSCORES`:
+
+```python
+# На уровне модуля
+MAX_CONNECTIONS = 100
+DEFAULT_TIMEOUT = 30
+API_BASE_URL = "https://api.example.com"
+
+# В классе
+class Config:
+    MAX_CONNECTIONS = 100
+    DEFAULT_TIMEOUT = 30
+    API_BASE_URL = "https://api.example.com"
+```
+
+### Организация констант
+
+Для большого количества констант рекомендуется создавать отдельный модуль `constants.py`:
+
+```python
+# constants.py
+# Сетевые константы
+MAX_CONNECTIONS = 100
+DEFAULT_TIMEOUT = 30
+RETRY_ATTEMPTS = 3
+
+# URL константы
+API_BASE_URL = "https://api.example.com"
+AUTH_ENDPOINT = "/auth"
+USER_ENDPOINT = "/users"
+```
+
+## Перечисления (Enum)
+
+### Базовые перечисления
+
+Использовать `Enum` для связанных констант:
+
+```python
+from enum import Enum, auto
+
+class Color(Enum):
+    RED = auto()
+    GREEN = auto()
+    BLUE = auto()
+
+def set_color(color: Color) -> None:
+    # Implementation
+    pass
+
+# Использование
+set_color(Color.RED)
+```
+
+### Строковые перечисления
+
+Для строковых перечислений наследоваться от `str, Enum`:
+
+```python
+from enum import Enum
+
+class HttpMethod(str, Enum):
+    GET = "GET"
+    POST = "POST"
+    PUT = "PUT"
+    DELETE = "DELETE"
+
+def make_request(url: str, method: HttpMethod) -> None:
+    # Implementation
+    pass
+
+# Использование
+make_request("https://api.example.com", HttpMethod.GET)
+```
+
+### Числовые перечисления
+
+Для числовых перечислений использовать `IntEnum`:
+
+```python
+from enum import IntEnum
+
+class ErrorCode(IntEnum):
+    SUCCESS = 0
+    INVALID_INPUT = 1
+    NETWORK_ERROR = 2
+    DATABASE_ERROR = 3
+
+def handle_error(code: ErrorCode) -> None:
+    # Implementation
+    pass
+
+# Использование
+handle_error(ErrorCode.NETWORK_ERROR)
+```
+
+### Автоматическая нумерация
+
+Использовать `auto()` для автоматической нумерации в перечислениях, где значения не важны:
+
+```python
+from enum import Enum, auto
+
+class LogLevel(Enum):
+    DEBUG = auto()
+    INFO = auto()
+    WARNING = auto()
+    ERROR = auto()
+    CRITICAL = auto()
+```
+
+## Флаги (Flag)
+
+Использовать `Flag` для битовых флагов:
+
+```python
+from enum import Flag, auto
+
+class Permission(Flag):
+    READ = auto()
+    WRITE = auto()
+    EXECUTE = auto()
+    ALL = READ | WRITE | EXECUTE
+
+def check_permission(user_permission: Permission, required_permission: Permission) -> bool:
+    return user_permission & required_permission == required_permission
+
+# Использование
+user_permission = Permission.READ | Permission.WRITE
+has_permission = check_permission(user_permission, Permission.READ)  # True
+```
+
+## Типизация с перечислениями
+
+Использовать перечисления в аннотациях типов:
+
+```python
+from enum import Enum
+from typing import Dict, List
+
+class UserRole(str, Enum):
+    ADMIN = "admin"
+    USER = "user"
+    GUEST = "guest"
+
+def get_users_by_role(role: UserRole) -> List[Dict[str, str]]:
+    # Implementation
+    pass
+
+# Использование
+admins = get_users_by_role(UserRole.ADMIN)
+```
+
+## Интеграция с другими правилами
+
+- **Стиль кода**: Константы и перечисления должны соответствовать общим правилам стиля кода, описанным в @python-code-style-core.mdc
+- **Именование**: Константы и перечисления должны соответствовать правилам именования, описанным в @python-naming.mdc 
