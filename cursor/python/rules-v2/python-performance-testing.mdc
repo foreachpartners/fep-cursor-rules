@@ -1,0 +1,793 @@
+---
+description: Правила тестирования производительности Python приложений
+globs: "test_*.py,*_test.py,tests/*.py,benchmark_*.py,*_benchmark.py"
+alwaysApply: true
+related: ["python-testing-principles.mdc", "python-unit-testing.mdc", "python-integration-testing.mdc"]
+priority: 7
+---
+# Правила тестирования производительности в Python
+
+Рекомендации по тестированию производительности Python приложений. Тестирование производительности позволяет выявить узкие места, оптимизировать код и обеспечить соответствие требованиям к скорости работы.
+
+---
+
+## Основные принципы тестирования производительности
+
+1. **Измеримость**: Тесты должны предоставлять количественные метрики производительности.
+2. **Воспроизводимость**: Результаты тестов должны быть воспроизводимыми при одинаковых условиях.
+3. **Изоляция**: Тесты должны выполняться в изолированной среде для минимизации влияния внешних факторов.
+4. **Сравнимость**: Результаты тестов должны быть сравнимы с предыдущими запусками и эталонными значениями.
+5. **Автоматизация**: Тесты производительности должны быть автоматизированы и интегрированы в процесс разработки.
+
+## Инструменты для тестирования производительности
+
+### Профилирование с cProfile
+
+```python
+import cProfile
+import pstats
+import io
+
+def profile_function(func, *args, **kwargs):
+    """Профилирование функции с использованием cProfile."""
+    # Создание профилировщика
+    pr = cProfile.Profile()
+    
+    # Запуск профилировщика
+    pr.enable()
+    
+    # Выполнение функции
+    result = func(*args, **kwargs)
+    
+    # Остановка профилировщика
+    pr.disable()
+    
+    # Вывод результатов
+    s = io.StringIO()
+    ps = pstats.Stats(pr, stream=s).sort_stats('cumulative')
+    ps.print_stats(20)  # Вывод топ-20 функций по времени выполнения
+    print(s.getvalue())
+    
+    return result
+
+# Пример использования
+def expensive_function(n):
+    """Функция для профилирования."""
+    result = 0
+    for i in range(n):
+        result += i ** 2
+    return result
+
+# Профилирование функции
+profile_function(expensive_function, 1000000)
+```
+
+### Профилирование с line_profiler
+
+```python
+# Установка: pip install line_profiler
+# Использование в коде
+@profile
+def expensive_function(n):
+    """Функция для профилирования по строкам."""
+    result = 0
+    for i in range(n):
+        result += i ** 2
+    return result
+
+# Запуск: kernprof -l script.py
+# Просмотр результатов: python -m line_profiler script.py.lprof
+```
+
+### Бенчмаркинг с timeit
+
+```python
+import timeit
+
+def benchmark_function(func, *args, number=1000, repeat=5, **kwargs):
+    """Бенчмаркинг функции с использованием timeit."""
+    # Создание тестовой функции
+    def test_func():
+        return func(*args, **kwargs)
+    
+    # Запуск бенчмарка
+    times = timeit.repeat(test_func, number=number, repeat=repeat)
+    
+    # Вывод результатов
+    print(f"Min time: {min(times) / number:.6f} sec per call")
+    print(f"Max time: {max(times) / number:.6f} sec per call")
+    print(f"Avg time: {sum(times) / len(times) / number:.6f} sec per call")
+    
+    return min(times) / number
+
+# Пример использования
+def function_to_benchmark(n):
+    """Функция для бенчмаркинга."""
+    return sum(i ** 2 for i in range(n))
+
+# Бенчмаркинг функции
+benchmark_function(function_to_benchmark, 1000)
+```
+
+### Бенчмаркинг с pytest-benchmark
+
+```python
+# Установка: pip install pytest-benchmark
+import pytest
+
+def test_performance(benchmark):
+    """Тест производительности с использованием pytest-benchmark."""
+    # Функция для бенчмаркинга
+    def func():
+        return sum(i ** 2 for i in range(1000))
+    
+    # Запуск бенчмарка
+    result = benchmark(func)
+    
+    # Проверка результата
+    assert result == 332833500
+
+# Запуск: pytest test_file.py -v
+```
+
+### Мониторинг памяти с memory_profiler
+
+```python
+# Установка: pip install memory_profiler
+from memory_profiler import profile
+
+@profile
+def memory_intensive_function():
+    """Функция для профилирования использования памяти."""
+    # Создание большого списка
+    big_list = [i for i in range(1000000)]
+    
+    # Создание словаря
+    big_dict = {i: i ** 2 for i in range(100000)}
+    
+    # Создание строки
+    big_string = "x" * 10000000
+    
+    return len(big_list) + len(big_dict) + len(big_string)
+
+# Запуск: python -m memory_profiler script.py
+```
+
+## Структура тестов производительности
+
+### Базовый тест производительности
+
+```python
+import time
+import statistics
+
+class PerformanceTest:
+    """Базовый класс для тестов производительности."""
+    
+    def __init__(self, name, iterations=10):
+        self.name = name
+        self.iterations = iterations
+        self.results = []
+    
+    def setup(self):
+        """Настройка перед запуском теста."""
+        pass
+    
+    def teardown(self):
+        """Очистка после запуска теста."""
+        pass
+    
+    def run_test(self):
+        """Запуск теста."""
+        raise NotImplementedError("Subclasses must implement run_test method")
+    
+    def run(self):
+        """Запуск теста с измерением времени."""
+        self.setup()
+        
+        for _ in range(self.iterations):
+            start_time = time.time()
+            self.run_test()
+            end_time = time.time()
+            self.results.append(end_time - start_time)
+        
+        self.teardown()
+        
+        # Вычисление статистики
+        min_time = min(self.results)
+        max_time = max(self.results)
+        avg_time = sum(self.results) / len(self.results)
+        median_time = statistics.median(self.results)
+        stddev = statistics.stdev(self.results) if len(self.results) > 1 else 0
+        
+        # Вывод результатов
+        print(f"Performance test: {self.name}")
+        print(f"Iterations: {self.iterations}")
+        print(f"Min time: {min_time:.6f} sec")
+        print(f"Max time: {max_time:.6f} sec")
+        print(f"Avg time: {avg_time:.6f} sec")
+        print(f"Median time: {median_time:.6f} sec")
+        print(f"StdDev: {stddev:.6f} sec")
+        
+        return {
+            "name": self.name,
+            "iterations": self.iterations,
+            "min_time": min_time,
+            "max_time": max_time,
+            "avg_time": avg_time,
+            "median_time": median_time,
+            "stddev": stddev,
+            "results": self.results
+        }
+
+# Пример использования
+class SortingTest(PerformanceTest):
+    """Тест производительности сортировки."""
+    
+    def __init__(self, size=10000, iterations=10):
+        super().__init__(f"Sorting test (size={size})", iterations)
+        self.size = size
+        self.data = None
+    
+    def setup(self):
+        """Создание тестовых данных."""
+        import random
+        self.data = [random.randint(0, 1000000) for _ in range(self.size)]
+    
+    def run_test(self):
+        """Запуск сортировки."""
+        sorted_data = sorted(self.data)
+        return sorted_data
+
+# Запуск теста
+test = SortingTest(size=100000, iterations=5)
+results = test.run()
+```
+
+### Тестирование производительности API
+
+```python
+import requests
+import time
+import statistics
+import concurrent.futures
+
+class APIPerformanceTest:
+    """Класс для тестирования производительности API."""
+    
+    def __init__(self, url, method="GET", data=None, headers=None, 
+                 concurrent_users=1, requests_per_user=10):
+        self.url = url
+        self.method = method
+        self.data = data or {}
+        self.headers = headers or {}
+        self.concurrent_users = concurrent_users
+        self.requests_per_user = requests_per_user
+        self.results = []
+    
+    def make_request(self):
+        """Выполнение одного запроса."""
+        start_time = time.time()
+        
+        if self.method == "GET":
+            response = requests.get(self.url, headers=self.headers)
+        elif self.method == "POST":
+            response = requests.post(self.url, json=self.data, headers=self.headers)
+        elif self.method == "PUT":
+            response = requests.put(self.url, json=self.data, headers=self.headers)
+        elif self.method == "DELETE":
+            response = requests.delete(self.url, headers=self.headers)
+        else:
+            raise ValueError(f"Unsupported method: {self.method}")
+        
+        end_time = time.time()
+        
+        return {
+            "status_code": response.status_code,
+            "response_time": end_time - start_time,
+            "content_length": len(response.content)
+        }
+    
+    def user_session(self):
+        """Имитация сессии пользователя."""
+        results = []
+        for _ in range(self.requests_per_user):
+            result = self.make_request()
+            results.append(result)
+        return results
+    
+    def run(self):
+        """Запуск теста производительности."""
+        print(f"API Performance Test: {self.url}")
+        print(f"Method: {self.method}")
+        print(f"Concurrent users: {self.concurrent_users}")
+        print(f"Requests per user: {self.requests_per_user}")
+        print(f"Total requests: {self.concurrent_users * self.requests_per_user}")
+        
+        start_time = time.time()
+        
+        # Запуск параллельных пользовательских сессий
+        with concurrent.futures.ThreadPoolExecutor(max_workers=self.concurrent_users) as executor:
+            futures = [executor.submit(self.user_session) for _ in range(self.concurrent_users)]
+            for future in concurrent.futures.as_completed(futures):
+                self.results.extend(future.result())
+        
+        end_time = time.time()
+        total_time = end_time - start_time
+        
+        # Вычисление статистики
+        response_times = [r["response_time"] for r in self.results]
+        status_codes = [r["status_code"] for r in self.results]
+        content_lengths = [r["content_length"] for r in self.results]
+        
+        # Статистика по времени ответа
+        min_time = min(response_times)
+        max_time = max(response_times)
+        avg_time = sum(response_times) / len(response_times)
+        median_time = statistics.median(response_times)
+        p95_time = sorted(response_times)[int(len(response_times) * 0.95)]
+        
+        # Статистика по статус-кодам
+        status_code_counts = {}
+        for code in status_codes:
+            status_code_counts[code] = status_code_counts.get(code, 0) + 1
+        
+        # Вывод результатов
+        print("\nResults:")
+        print(f"Total time: {total_time:.2f} sec")
+        print(f"Requests per second: {len(self.results) / total_time:.2f}")
+        print("\nResponse time statistics:")
+        print(f"Min: {min_time:.6f} sec")
+        print(f"Max: {max_time:.6f} sec")
+        print(f"Avg: {avg_time:.6f} sec")
+        print(f"Median: {median_time:.6f} sec")
+        print(f"95th percentile: {p95_time:.6f} sec")
+        print("\nStatus code distribution:")
+        for code, count in status_code_counts.items():
+            print(f"  {code}: {count} ({count / len(status_codes) * 100:.2f}%)")
+        
+        return {
+            "url": self.url,
+            "method": self.method,
+            "concurrent_users": self.concurrent_users,
+            "requests_per_user": self.requests_per_user,
+            "total_requests": len(self.results),
+            "total_time": total_time,
+            "requests_per_second": len(self.results) / total_time,
+            "response_time_stats": {
+                "min": min_time,
+                "max": max_time,
+                "avg": avg_time,
+                "median": median_time,
+                "p95": p95_time
+            },
+            "status_code_counts": status_code_counts,
+            "results": self.results
+        }
+
+# Пример использования
+test = APIPerformanceTest(
+    url="https://jsonplaceholder.typicode.com/posts",
+    method="GET",
+    concurrent_users=10,
+    requests_per_user=5
+)
+results = test.run()
+```
+
+### Тестирование производительности базы данных
+
+```python
+import time
+import statistics
+import sqlalchemy
+from sqlalchemy import create_engine, text
+
+class DatabasePerformanceTest:
+    """Класс для тестирования производительности базы данных."""
+    
+    def __init__(self, connection_string, query, params=None, iterations=10):
+        self.connection_string = connection_string
+        self.query = query
+        self.params = params or {}
+        self.iterations = iterations
+        self.results = []
+        self.engine = None
+    
+    def setup(self):
+        """Настройка подключения к базе данных."""
+        self.engine = create_engine(self.connection_string)
+    
+    def teardown(self):
+        """Закрытие подключения к базе данных."""
+        if self.engine:
+            self.engine.dispose()
+    
+    def run_query(self):
+        """Выполнение запроса."""
+        with self.engine.connect() as connection:
+            start_time = time.time()
+            result = connection.execute(text(self.query), self.params)
+            rows = result.fetchall()
+            end_time = time.time()
+            
+            return {
+                "execution_time": end_time - start_time,
+                "row_count": len(rows)
+            }
+    
+    def run(self):
+        """Запуск теста производительности."""
+        print(f"Database Performance Test")
+        print(f"Query: {self.query}")
+        print(f"Iterations: {self.iterations}")
+        
+        self.setup()
+        
+        for _ in range(self.iterations):
+            result = self.run_query()
+            self.results.append(result)
+        
+        self.teardown()
+        
+        # Вычисление статистики
+        execution_times = [r["execution_time"] for r in self.results]
+        row_counts = [r["row_count"] for r in self.results]
+        
+        min_time = min(execution_times)
+        max_time = max(execution_times)
+        avg_time = sum(execution_times) / len(execution_times)
+        median_time = statistics.median(execution_times)
+        
+        # Вывод результатов
+        print("\nResults:")
+        print(f"Min execution time: {min_time:.6f} sec")
+        print(f"Max execution time: {max_time:.6f} sec")
+        print(f"Avg execution time: {avg_time:.6f} sec")
+        print(f"Median execution time: {median_time:.6f} sec")
+        print(f"Row count: {row_counts[0]}")
+        
+        return {
+            "query": self.query,
+            "iterations": self.iterations,
+            "execution_time_stats": {
+                "min": min_time,
+                "max": max_time,
+                "avg": avg_time,
+                "median": median_time
+            },
+            "row_count": row_counts[0],
+            "results": self.results
+        }
+
+# Пример использования
+test = DatabasePerformanceTest(
+    connection_string="sqlite:///example.db",
+    query="SELECT * FROM users WHERE age > :min_age",
+    params={"min_age": 18},
+    iterations=5
+)
+results = test.run()
+```
+
+## Нагрузочное тестирование
+
+### Нагрузочное тестирование с Locust
+
+```python
+# Установка: pip install locust
+# Файл: locustfile.py
+from locust import HttpUser, task, between
+
+class WebsiteUser(HttpUser):
+    """Класс для нагрузочного тестирования веб-сайта."""
+    
+    # Время ожидания между задачами (от 1 до 5 секунд)
+    wait_time = between(1, 5)
+    
+    @task(2)
+    def index_page(self):
+        """Задача: открытие главной страницы."""
+        self.client.get("/")
+    
+    @task(1)
+    def view_products(self):
+        """Задача: просмотр страницы продуктов."""
+        self.client.get("/products")
+    
+    @task(1)
+    def view_product(self):
+        """Задача: просмотр страницы продукта."""
+        product_id = 1
+        self.client.get(f"/products/{product_id}")
+    
+    @task(1)
+    def add_to_cart(self):
+        """Задача: добавление продукта в корзину."""
+        product_id = 1
+        self.client.post("/cart/add", json={"product_id": product_id, "quantity": 1})
+    
+    @task(1)
+    def view_cart(self):
+        """Задача: просмотр корзины."""
+        self.client.get("/cart")
+
+# Запуск: locust -f locustfile.py --host=http://localhost:8000
+```
+
+### Нагрузочное тестирование с wrk
+
+```bash
+# Установка wrk (Linux):
+# sudo apt-get install wrk
+
+# Запуск нагрузочного теста:
+wrk -t12 -c400 -d30s http://localhost:8000/api/users
+
+# -t12: 12 потоков
+# -c400: 400 одновременных соединений
+# -d30s: длительность теста 30 секунд
+```
+
+### Нагрузочное тестирование с Apache Benchmark (ab)
+
+```bash
+# Установка Apache Benchmark (Linux):
+# sudo apt-get install apache2-utils
+
+# Запуск нагрузочного теста:
+ab -n 1000 -c 100 http://localhost:8000/api/users
+
+# -n 1000: 1000 запросов
+# -c 100: 100 одновременных соединений
+```
+
+## Лучшие практики
+
+### 1. Изоляция тестовой среды
+
+```python
+import os
+import tempfile
+import pytest
+
+@pytest.fixture
+def isolated_environment():
+    """Фикстура для создания изолированной среды."""
+    # Сохранение текущих переменных окружения
+    original_env = os.environ.copy()
+    
+    # Создание временной директории
+    temp_dir = tempfile.mkdtemp()
+    os.environ["TEST_DATA_DIR"] = temp_dir
+    
+    yield temp_dir
+    
+    # Восстановление переменных окружения
+    os.environ.clear()
+    os.environ.update(original_env)
+    
+    # Удаление временной директории
+    import shutil
+    shutil.rmtree(temp_dir)
+
+def test_file_io_performance(isolated_environment, benchmark):
+    """Тест производительности операций с файлами."""
+    # Функция для бенчмаркинга
+    def write_and_read_file():
+        file_path = os.path.join(isolated_environment, "test.txt")
+        
+        # Запись в файл
+        with open(file_path, "w") as f:
+            for i in range(10000):
+                f.write(f"Line {i}\n")
+        
+        # Чтение из файла
+        with open(file_path, "r") as f:
+            lines = f.readlines()
+        
+        return len(lines)
+    
+    # Запуск бенчмарка
+    result = benchmark(write_and_read_file)
+    
+    # Проверка результата
+    assert result == 10000
+```
+
+### 2. Сравнение с эталонными значениями
+
+```python
+import pytest
+
+def test_algorithm_performance(benchmark):
+    """Тест производительности алгоритма с проверкой эталонного значения."""
+    # Функция для бенчмаркинга
+    def sort_large_list():
+        import random
+        data = [random.randint(0, 1000000) for _ in range(10000)]
+        return sorted(data)
+    
+    # Запуск бенчмарка
+    result = benchmark(sort_large_list)
+    
+    # Проверка, что время выполнения не превышает эталонное значение
+    # Примечание: это значение нужно определить экспериментально
+    assert benchmark.stats.stats.mean < 0.01  # Среднее время < 10 мс
+```
+
+### 3. Параметризация тестов производительности
+
+```python
+import pytest
+
+@pytest.mark.parametrize("size", [100, 1000, 10000, 100000])
+def test_sorting_performance(benchmark, size):
+    """Параметризованный тест производительности сортировки."""
+    # Функция для бенчмаркинга
+    def sort_list():
+        import random
+        data = [random.randint(0, 1000000) for _ in range(size)]
+        return sorted(data)
+    
+    # Запуск бенчмарка
+    result = benchmark(sort_list)
+    
+    # Проверка результата
+    assert len(result) == size
+```
+
+### 4. Мониторинг использования ресурсов
+
+```python
+import psutil
+import time
+import threading
+import statistics
+
+class ResourceMonitor:
+    """Класс для мониторинга использования ресурсов."""
+    
+    def __init__(self, interval=0.1):
+        self.interval = interval
+        self.cpu_usage = []
+        self.memory_usage = []
+        self.running = False
+        self.thread = None
+    
+    def _monitor(self):
+        """Функция мониторинга ресурсов."""
+        process = psutil.Process()
+        
+        while self.running:
+            # Измерение использования CPU
+            cpu_percent = process.cpu_percent(interval=0)
+            self.cpu_usage.append(cpu_percent)
+            
+            # Измерение использования памяти
+            memory_info = process.memory_info()
+            self.memory_usage.append(memory_info.rss)
+            
+            time.sleep(self.interval)
+    
+    def start(self):
+        """Запуск мониторинга."""
+        self.running = True
+        self.thread = threading.Thread(target=self._monitor)
+        self.thread.daemon = True
+        self.thread.start()
+    
+    def stop(self):
+        """Остановка мониторинга."""
+        self.running = False
+        if self.thread:
+            self.thread.join()
+    
+    def get_stats(self):
+        """Получение статистики использования ресурсов."""
+        if not self.cpu_usage or not self.memory_usage:
+            return None
+        
+        # Статистика по CPU
+        cpu_min = min(self.cpu_usage)
+        cpu_max = max(self.cpu_usage)
+        cpu_avg = sum(self.cpu_usage) / len(self.cpu_usage)
+        
+        # Статистика по памяти (в МБ)
+        memory_min = min(self.memory_usage) / (1024 * 1024)
+        memory_max = max(self.memory_usage) / (1024 * 1024)
+        memory_avg = sum(self.memory_usage) / len(self.memory_usage) / (1024 * 1024)
+        
+        return {
+            "cpu": {
+                "min": cpu_min,
+                "max": cpu_max,
+                "avg": cpu_avg
+            },
+            "memory_mb": {
+                "min": memory_min,
+                "max": memory_max,
+                "avg": memory_avg
+            }
+        }
+
+# Пример использования
+def test_with_resource_monitoring():
+    """Тест с мониторингом использования ресурсов."""
+    # Создание монитора ресурсов
+    monitor = ResourceMonitor(interval=0.1)
+    
+    # Запуск мониторинга
+    monitor.start()
+    
+    try:
+        # Выполнение тестируемой функции
+        result = expensive_function(1000000)
+        
+        # Проверка результата
+        assert result is not None
+    finally:
+        # Остановка мониторинга
+        monitor.stop()
+    
+    # Получение статистики
+    stats = monitor.get_stats()
+    
+    # Вывод статистики
+    print("\nResource usage statistics:")
+    print(f"CPU: min={stats['cpu']['min']:.2f}%, max={stats['cpu']['max']:.2f}%, avg={stats['cpu']['avg']:.2f}%")
+    print(f"Memory: min={stats['memory_mb']['min']:.2f} MB, max={stats['memory_mb']['max']:.2f} MB, avg={stats['memory_mb']['avg']:.2f} MB")
+    
+    # Проверка, что использование ресурсов не превышает допустимые значения
+    assert stats['cpu']['avg'] < 90  # Среднее использование CPU < 90%
+    assert stats['memory_mb']['max'] < 1000  # Максимальное использование памяти < 1000 МБ
+```
+
+### 5. Автоматизация тестов производительности
+
+```python
+# Файл: performance_tests.py
+import pytest
+import json
+import os
+from datetime import datetime
+
+# Тесты производительности
+@pytest.mark.benchmark
+def test_algorithm_1(benchmark):
+    """Тест производительности алгоритма 1."""
+    result = benchmark(lambda: sum(i ** 2 for i in range(10000)))
+    assert result == 333283335000
+
+@pytest.mark.benchmark
+def test_algorithm_2(benchmark):
+    """Тест производительности алгоритма 2."""
+    result = benchmark(lambda: sum(i ** 3 for i in range(1000)))
+    assert result == 249500
+
+# Хук для сохранения результатов
+@pytest.hookimpl(tryfirst=True)
+def pytest_benchmark_generate_json(config, benchmarks, output_json):
+    """Хук для сохранения результатов бенчмарков."""
+    # Создание директории для результатов
+    results_dir = os.path.join(os.path.dirname(__file__), "benchmark_results")
+    os.makedirs(results_dir, exist_ok=True)
+    
+    # Имя файла с результатами
+    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    result_file = os.path.join(results_dir, f"benchmark_{timestamp}.json")
+    
+    # Сохранение результатов
+    with open(result_file, "w") as f:
+        json.dump(output_json, f, indent=4)
+    
+    print(f"\nBenchmark results saved to: {result_file}")
+
+# Запуск: pytest performance_tests.py -v --benchmark-json=benchmark_results.json
+```
+
+## Интеграция с другими правилами
+
+- **Принципы тестирования**: Основные принципы тестирования описаны в @python-testing-principles.mdc
+- **Модульное тестирование**: Подробные рекомендации по написанию модульных тестов описаны в @python-unit-testing.mdc
+- **Интеграционное тестирование**: Рекомендации по написанию интеграционных тестов описаны в @python-integration-testing.mdc 

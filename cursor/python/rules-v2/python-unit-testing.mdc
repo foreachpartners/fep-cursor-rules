@@ -1,0 +1,490 @@
+---
+description: Правила написания модульных тестов для Python кода
+globs: "test_*.py,*_test.py,tests/*.py"
+alwaysApply: true
+related: ["python-testing-principles.mdc", "python-testing-fixtures.mdc", "python-tdd.mdc"]
+priority: 8
+---
+# Правила написания модульных тестов в Python
+
+Рекомендации по написанию эффективных модульных тестов для Python кода. Модульные тесты проверяют отдельные компоненты (функции, классы, методы) в изоляции от остальной системы.
+
+---
+
+## Основные принципы модульного тестирования
+
+1. **Изоляция** - Тестируйте компоненты в изоляции от их зависимостей
+2. **Независимость** - Тесты не должны зависеть друг от друга
+3. **Детерминированность** - Тесты должны давать одинаковые результаты при многократном запуске
+4. **Быстрота** - Модульные тесты должны выполняться быстро
+5. **Полнота** - Тесты должны покрывать все важные сценарии использования компонента
+
+## Структура модульных тестов
+
+### Организация файлов
+
+Тесты должны быть организованы в отдельных файлах, соответствующих тестируемым модулям:
+
+```
+src/
+├── myapp/
+│   ├── __init__.py
+│   ├── calculator.py
+│   └── utils.py
+tests/
+├── __init__.py
+├── test_calculator.py
+└── test_utils.py
+```
+
+### Именование тестов
+
+Имена тестовых функций должны быть описательными и отражать тестируемую функциональность:
+
+```python
+# Неправильно
+def test_1():
+    pass
+
+# Правильно
+def test_add_positive_numbers():
+    pass
+
+def test_add_negative_numbers():
+    pass
+
+def test_add_returns_zero_when_both_inputs_are_zero():
+    pass
+```
+
+### Структура теста
+
+Каждый тест должен следовать паттерну AAA (Arrange-Act-Assert):
+
+```python
+def test_calculate_total():
+    # Arrange - подготовка данных и объектов
+    price = 100
+    quantity = 2
+    tax_rate = 0.1
+    expected = 220  # 100 * 2 * (1 + 0.1)
+    
+    # Act - выполнение тестируемого действия
+    result = calculate_total(price, quantity, tax_rate)
+    
+    # Assert - проверка результатов
+    assert result == expected
+```
+
+## Фреймворки для модульного тестирования
+
+### pytest
+
+Рекомендуемый фреймворк для модульного тестирования в Python.
+
+```python
+# test_calculator.py
+def test_add():
+    assert add(2, 3) == 5
+
+def test_subtract():
+    assert subtract(5, 3) == 2
+
+def test_multiply():
+    assert multiply(2, 3) == 6
+
+def test_divide():
+    assert divide(6, 3) == 2
+    assert divide(5, 2) == 2.5
+```
+
+### unittest
+
+Встроенный в Python фреймворк для тестирования.
+
+```python
+# test_calculator.py
+import unittest
+from myapp.calculator import Calculator
+
+class TestCalculator(unittest.TestCase):
+    def setUp(self):
+        self.calculator = Calculator()
+    
+    def test_add(self):
+        self.assertEqual(self.calculator.add(2, 3), 5)
+    
+    def test_subtract(self):
+        self.assertEqual(self.calculator.subtract(5, 3), 2)
+    
+    def test_multiply(self):
+        self.assertEqual(self.calculator.multiply(2, 3), 6)
+    
+    def test_divide(self):
+        self.assertEqual(self.calculator.divide(6, 3), 2)
+        self.assertEqual(self.calculator.divide(5, 2), 2.5)
+
+if __name__ == '__main__':
+    unittest.main()
+```
+
+## Утверждения (Assertions)
+
+### Базовые утверждения
+
+```python
+# Проверка равенства
+assert result == expected
+assert result != expected
+
+# Проверка истинности/ложности
+assert result is True
+assert result is False
+assert result is None
+assert result is not None
+
+# Проверка вхождения
+assert item in collection
+assert item not in collection
+
+# Проверка исключений
+with pytest.raises(ValueError):
+    function_that_raises_value_error()
+```
+
+### Утверждения в unittest
+
+```python
+# Проверка равенства
+self.assertEqual(result, expected)
+self.assertNotEqual(result, expected)
+
+# Проверка истинности/ложности
+self.assertTrue(result)
+self.assertFalse(result)
+self.assertIsNone(result)
+self.assertIsNotNone(result)
+
+# Проверка вхождения
+self.assertIn(item, collection)
+self.assertNotIn(item, collection)
+
+# Проверка исключений
+with self.assertRaises(ValueError):
+    function_that_raises_value_error()
+```
+
+## Изоляция тестов с помощью моков
+
+### Использование unittest.mock
+
+```python
+from unittest.mock import Mock, patch
+
+# Создание мока
+mock_repository = Mock()
+mock_repository.get_by_id.return_value = {"id": 1, "name": "John"}
+
+# Использование мока
+service = UserService(repository=mock_repository)
+user = service.get_user(1)
+
+# Проверка вызовов мока
+mock_repository.get_by_id.assert_called_once_with(1)
+```
+
+### Патчинг
+
+```python
+# Патчинг функции
+@patch('myapp.utils.get_current_time')
+def test_create_user(mock_get_current_time):
+    # Настройка мока
+    mock_get_current_time.return_value = datetime(2023, 1, 1, 12, 0, 0)
+    
+    # Тестирование
+    user = create_user("John")
+    
+    # Проверка
+    assert user.created_at == datetime(2023, 1, 1, 12, 0, 0)
+    mock_get_current_time.assert_called_once()
+
+# Патчинг метода класса
+@patch.object(UserRepository, 'save')
+def test_user_service_create(mock_save):
+    # Настройка мока
+    mock_save.return_value = {"id": 1, "name": "John"}
+    
+    # Тестирование
+    service = UserService(repository=UserRepository())
+    user = service.create_user("John")
+    
+    # Проверка
+    assert user["id"] == 1
+    assert user["name"] == "John"
+    mock_save.assert_called_once()
+```
+
+### Моки с контекстным менеджером
+
+```python
+def test_user_service_with_context_manager():
+    with patch('myapp.repositories.UserRepository') as MockRepository:
+        # Настройка мока
+        mock_repository = MockRepository.return_value
+        mock_repository.get_by_id.return_value = {"id": 1, "name": "John"}
+        
+        # Тестирование
+        service = UserService()
+        user = service.get_user(1)
+        
+        # Проверка
+        assert user["id"] == 1
+        assert user["name"] == "John"
+        mock_repository.get_by_id.assert_called_once_with(1)
+```
+
+## Параметризованные тесты
+
+### Параметризация с pytest
+
+```python
+import pytest
+
+@pytest.mark.parametrize("a,b,expected", [
+    (1, 2, 3),
+    (0, 0, 0),
+    (-1, 1, 0),
+    (100, 200, 300)
+])
+def test_add(a, b, expected):
+    assert add(a, b) == expected
+
+@pytest.mark.parametrize("email,is_valid", [
+    ("test@example.com", True),
+    ("invalid-email", False),
+    ("test@example", False),
+    ("test@.com", False),
+    ("@example.com", False)
+])
+def test_validate_email(email, is_valid):
+    assert validate_email(email) is is_valid
+```
+
+### Параметризация с unittest
+
+```python
+import unittest
+
+class TestAdd(unittest.TestCase):
+    def test_add_positive_numbers(self):
+        self.assertEqual(add(1, 2), 3)
+    
+    def test_add_zero(self):
+        self.assertEqual(add(0, 0), 0)
+    
+    def test_add_negative_numbers(self):
+        self.assertEqual(add(-1, 1), 0)
+    
+    def test_add_large_numbers(self):
+        self.assertEqual(add(100, 200), 300)
+```
+
+## Тестирование исключений
+
+### Тестирование исключений с pytest
+
+```python
+import pytest
+
+def test_divide_by_zero():
+    with pytest.raises(ZeroDivisionError):
+        divide(10, 0)
+
+def test_invalid_input():
+    with pytest.raises(ValueError) as excinfo:
+        validate_age(-5)
+    assert "Age cannot be negative" in str(excinfo.value)
+```
+
+### Тестирование исключений с unittest
+
+```python
+import unittest
+
+class TestDivide(unittest.TestCase):
+    def test_divide_by_zero(self):
+        with self.assertRaises(ZeroDivisionError):
+            divide(10, 0)
+    
+    def test_invalid_input(self):
+        with self.assertRaises(ValueError) as context:
+            validate_age(-5)
+        self.assertIn("Age cannot be negative", str(context.exception))
+```
+
+## Фикстуры
+
+### Фикстуры в pytest
+
+```python
+import pytest
+
+@pytest.fixture
+def user_data():
+    return {"name": "John", "email": "john@example.com"}
+
+@pytest.fixture
+def user_service():
+    # Setup
+    service = UserService()
+    
+    # Provide the fixture value
+    yield service
+    
+    # Teardown (optional)
+    service.cleanup()
+
+def test_create_user(user_service, user_data):
+    user = user_service.create_user(user_data["name"], user_data["email"])
+    assert user.name == user_data["name"]
+    assert user.email == user_data["email"]
+```
+
+### Фикстуры в unittest
+
+```python
+import unittest
+
+class TestUserService(unittest.TestCase):
+    def setUp(self):
+        self.user_data = {"name": "John", "email": "john@example.com"}
+        self.service = UserService()
+    
+    def tearDown(self):
+        self.service.cleanup()
+    
+    def test_create_user(self):
+        user = self.service.create_user(self.user_data["name"], self.user_data["email"])
+        self.assertEqual(user.name, self.user_data["name"])
+        self.assertEqual(user.email, self.user_data["email"])
+```
+
+## Лучшие практики
+
+### 1. Тестируйте граничные случаи
+
+```python
+def test_validate_age_boundary_cases():
+    # Нижняя граница (минимальный допустимый возраст)
+    assert validate_age(0) is True
+    
+    # Чуть ниже нижней границы (недопустимый возраст)
+    assert validate_age(-1) is False
+    
+    # Верхняя граница (максимальный допустимый возраст)
+    assert validate_age(120) is True
+    
+    # Чуть выше верхней границы (недопустимый возраст)
+    assert validate_age(121) is False
+    
+    # Типичное значение внутри диапазона
+    assert validate_age(30) is True
+```
+
+### 2. Тестируйте все ветви кода
+
+```python
+def test_calculate_discount_branches():
+    # Ветвь 1: сумма меньше 100
+    assert calculate_discount(50) == 0
+    
+    # Ветвь 2: сумма от 100 до 1000
+    assert calculate_discount(500) == 50  # 10% от 500
+    
+    # Ветвь 3: сумма больше 1000
+    assert calculate_discount(2000) == 300  # 15% от 2000
+```
+
+### 3. Используйте фабрики для создания тестовых данных
+
+```python
+def create_user_data(**kwargs):
+    """Фабрика для создания тестовых данных пользователя."""
+    default_data = {
+        "name": "John Doe",
+        "email": "john@example.com",
+        "age": 30,
+        "is_active": True
+    }
+    default_data.update(kwargs)
+    return default_data
+
+def test_create_user():
+    # Использование фабрики с дефолтными значениями
+    user_data = create_user_data()
+    user = create_user(user_data)
+    assert user.name == "John Doe"
+    
+    # Использование фабрики с переопределенными значениями
+    custom_data = create_user_data(name="Jane Doe", age=25)
+    user = create_user(custom_data)
+    assert user.name == "Jane Doe"
+    assert user.age == 25
+```
+
+### 4. Используйте вспомогательные функции для повторяющихся проверок
+
+```python
+def assert_valid_user(user, expected_data):
+    """Вспомогательная функция для проверки пользователя."""
+    assert user is not None
+    assert user.name == expected_data["name"]
+    assert user.email == expected_data["email"]
+    assert user.is_active == expected_data.get("is_active", True)
+
+def test_create_user():
+    user_data = create_user_data()
+    user = create_user(user_data)
+    assert_valid_user(user, user_data)
+
+def test_update_user():
+    user_data = create_user_data()
+    user = create_user(user_data)
+    
+    updated_data = create_user_data(name="Jane Doe")
+    updated_user = update_user(user.id, updated_data)
+    assert_valid_user(updated_user, updated_data)
+```
+
+### 5. Используйте временные файлы и директории
+
+```python
+import tempfile
+import os
+
+def test_save_to_file():
+    # Создание временного файла
+    with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+        temp_file_path = temp_file.name
+    
+    try:
+        # Тестирование
+        data = "Hello, World!"
+        save_to_file(data, temp_file_path)
+        
+        # Проверка
+        with open(temp_file_path, 'r') as f:
+            content = f.read()
+        assert content == data
+    finally:
+        # Удаление временного файла
+        os.unlink(temp_file_path)
+```
+
+## Интеграция с другими правилами
+
+- **Принципы тестирования**: Основные принципы тестирования описаны в @python-testing-principles.mdc
+- **Фикстуры и моки**: Подробные рекомендации по использованию фикстур и моков описаны в @python-testing-fixtures.mdc
+- **TDD**: Принципы и практики разработки через тестирование описаны в @python-tdd.mdc
+- **Покрытие кода**: Рекомендации по измерению и поддержанию покрытия кода тестами описаны в @python-test-coverage.mdc 

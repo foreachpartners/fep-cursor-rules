@@ -1,0 +1,395 @@
+---
+description: Основные принципы и подходы к тестированию Python кода
+globs: "*.py,test_*.py,*_test.py,tests/*.py"
+alwaysApply: true
+related: ["python-unit-testing.mdc", "python-tdd.mdc", "python-testing-fixtures.mdc"]
+priority: 9
+---
+# Основные принципы тестирования Python кода
+
+Фундаментальные принципы и рекомендации по тестированию Python кода. Эти принципы обеспечивают надежность, поддерживаемость и качество кода.
+
+---
+
+## Основные принципы
+
+1. **Автоматизация** - Тесты должны запускаться автоматически
+2. **Изоляция** - Тесты должны быть независимыми друг от друга
+3. **Повторяемость** - Тесты должны давать одинаковые результаты при многократном запуске
+4. **Самодостаточность** - Тесты должны содержать все необходимые данные и настройки
+5. **Быстрота** - Тесты должны выполняться быстро
+
+## Виды тестов
+
+### Модульные тесты (Unit Tests)
+
+Тестируют отдельные компоненты (функции, классы, методы) в изоляции от остальной системы.
+
+```python
+# Пример модульного теста
+def test_add_numbers():
+    # Arrange
+    a = 2
+    b = 3
+    expected = 5
+    
+    # Act
+    result = add_numbers(a, b)
+    
+    # Assert
+    assert result == expected
+```
+
+### Интеграционные тесты (Integration Tests)
+
+Тестируют взаимодействие между компонентами системы.
+
+```python
+# Пример интеграционного теста
+def test_user_service_with_repository():
+    # Arrange
+    db_session = create_test_session()
+    repository = UserRepository(db_session)
+    service = UserService(repository)
+    
+    # Act
+    user = service.create_user("John", "john@example.com")
+    
+    # Assert
+    assert user.id is not None
+    assert user.name == "John"
+    assert user.email == "john@example.com"
+    
+    # Cleanup
+    db_session.close()
+```
+
+### Функциональные тесты (Functional Tests)
+
+Тестируют функциональность системы с точки зрения пользователя.
+
+```python
+# Пример функционального теста с использованием pytest и requests
+def test_user_api():
+    # Arrange
+    api_url = "http://localhost:8000/api/users"
+    user_data = {
+        "name": "John",
+        "email": "john@example.com"
+    }
+    
+    # Act
+    response = requests.post(api_url, json=user_data)
+    
+    # Assert
+    assert response.status_code == 201
+    data = response.json()
+    assert data["name"] == "John"
+    assert data["email"] == "john@example.com"
+    assert "id" in data
+```
+
+## Подход к тестированию
+
+### Test-Driven Development (TDD)
+
+Разработка через тестирование - подход, при котором сначала пишутся тесты, а затем код, который эти тесты проходит.
+
+1. **Red** - Написать тест, который не проходит
+2. **Green** - Написать минимальный код, который проходит тест
+3. **Refactor** - Улучшить код, сохраняя его функциональность
+
+```python
+# Пример TDD
+# 1. Red - Написать тест, который не проходит
+def test_calculate_total():
+    assert calculate_total(100, 0.1) == 110
+
+# 2. Green - Написать минимальный код, который проходит тест
+def calculate_total(amount, tax_rate):
+    return amount * (1 + tax_rate)
+
+# 3. Refactor - Улучшить код, сохраняя его функциональность
+def calculate_total(amount, tax_rate):
+    """
+    Calculate total amount including tax.
+    
+    Args:
+        amount: Base amount
+        tax_rate: Tax rate as a decimal (e.g., 0.1 for 10%)
+        
+    Returns:
+        Total amount including tax
+    """
+    return amount * (1 + tax_rate)
+```
+
+### Behavior-Driven Development (BDD)
+
+Разработка, основанная на поведении - подход, при котором тесты описывают поведение системы с точки зрения пользователя.
+
+```python
+# Пример BDD с использованием pytest-bdd
+# features/calculator.feature
+"""
+Feature: Calculator
+  Scenario: Add two numbers
+    Given I have entered 50 into the calculator
+    And I have entered 70 into the calculator
+    When I press add
+    Then the result should be 120 on the screen
+"""
+
+# test_calculator.py
+from pytest_bdd import scenario, given, when, then
+
+@scenario('features/calculator.feature', 'Add two numbers')
+def test_add():
+    pass
+
+@given("I have entered 50 into the calculator")
+def input_50(calculator):
+    calculator.input(50)
+
+@given("I have entered 70 into the calculator")
+def input_70(calculator):
+    calculator.input(70)
+
+@when("I press add")
+def press_add(calculator):
+    calculator.add()
+
+@then("the result should be 120 on the screen")
+def result_120(calculator):
+    assert calculator.display() == 120
+```
+
+## Структура тестов
+
+### AAA (Arrange-Act-Assert)
+
+Структура теста должна следовать паттерну AAA:
+
+1. **Arrange** - Подготовка данных и объектов для теста
+2. **Act** - Выполнение тестируемого действия
+3. **Assert** - Проверка результатов
+
+```python
+def test_user_registration():
+    # Arrange
+    email = "test@example.com"
+    password = "password123"
+    user_service = UserService()
+    
+    # Act
+    user = user_service.register(email, password)
+    
+    # Assert
+    assert user is not None
+    assert user.email == email
+    assert user.is_active is True
+```
+
+### Given-When-Then
+
+Альтернативная структура теста, особенно популярная в BDD:
+
+1. **Given** - Начальное состояние системы
+2. **When** - Действие, которое выполняется
+3. **Then** - Ожидаемый результат
+
+```python
+def test_user_login():
+    # Given
+    email = "test@example.com"
+    password = "password123"
+    user_service = UserService()
+    user_service.register(email, password)
+    
+    # When
+    result = user_service.login(email, password)
+    
+    # Then
+    assert result.success is True
+    assert result.user.email == email
+    assert result.token is not None
+```
+
+## Инструменты для тестирования
+
+### pytest
+
+Рекомендуемый фреймворк для тестирования Python кода.
+
+```bash
+# Установка
+pip install pytest
+
+# Запуск тестов
+pytest
+```
+
+### unittest
+
+Встроенный в Python фреймворк для тестирования.
+
+```python
+import unittest
+
+class TestCalculator(unittest.TestCase):
+    def test_add(self):
+        self.assertEqual(add(2, 3), 5)
+    
+    def test_subtract(self):
+        self.assertEqual(subtract(5, 3), 2)
+
+if __name__ == '__main__':
+    unittest.main()
+```
+
+### pytest-cov
+
+Расширение для pytest, которое измеряет покрытие кода тестами.
+
+```bash
+# Установка
+pip install pytest-cov
+
+# Запуск тестов с измерением покрытия
+pytest --cov=myapp tests/
+```
+
+## Лучшие практики
+
+### 1. Тестируйте один аспект за раз
+
+Каждый тест должен проверять только один аспект функциональности.
+
+```python
+# Неправильно: тестирование нескольких аспектов в одном тесте
+def test_user_registration_and_login():
+    # Test registration
+    user = user_service.register("test@example.com", "password123")
+    assert user is not None
+    
+    # Test login
+    result = user_service.login("test@example.com", "password123")
+    assert result.success is True
+
+# Правильно: разделение на отдельные тесты
+def test_user_registration():
+    user = user_service.register("test@example.com", "password123")
+    assert user is not None
+
+def test_user_login():
+    user_service.register("test@example.com", "password123")
+    result = user_service.login("test@example.com", "password123")
+    assert result.success is True
+```
+
+### 2. Используйте фикстуры для повторного использования кода
+
+Фикстуры позволяют повторно использовать код для настройки и очистки тестового окружения.
+
+```python
+import pytest
+
+@pytest.fixture
+def user_service():
+    # Setup
+    service = UserService()
+    
+    # Provide the fixture value
+    yield service
+    
+    # Teardown (optional)
+    service.cleanup()
+
+def test_user_registration(user_service):
+    user = user_service.register("test@example.com", "password123")
+    assert user is not None
+```
+
+### 3. Используйте моки для изоляции тестов
+
+Моки позволяют изолировать тестируемый код от его зависимостей.
+
+```python
+from unittest.mock import Mock, patch
+
+def test_user_service_with_mock_repository():
+    # Create a mock repository
+    mock_repository = Mock()
+    mock_repository.save.return_value = {"id": 1, "email": "test@example.com"}
+    
+    # Inject the mock into the service
+    user_service = UserService(repository=mock_repository)
+    
+    # Test the service
+    user = user_service.register("test@example.com", "password123")
+    
+    # Assert the service behavior
+    assert user["id"] == 1
+    assert user["email"] == "test@example.com"
+    
+    # Assert the repository was called correctly
+    mock_repository.save.assert_called_once()
+    args, kwargs = mock_repository.save.call_args
+    assert args[0]["email"] == "test@example.com"
+```
+
+### 4. Используйте параметризованные тесты
+
+Параметризованные тесты позволяют запускать один и тот же тест с разными входными данными.
+
+```python
+import pytest
+
+@pytest.mark.parametrize("a,b,expected", [
+    (1, 2, 3),
+    (0, 0, 0),
+    (-1, 1, 0),
+    (100, 200, 300)
+])
+def test_add(a, b, expected):
+    assert add(a, b) == expected
+```
+
+### 5. Используйте TDD для разработки
+
+Разработка через тестирование помогает создавать более качественный и тестируемый код.
+
+```python
+# 1. Написать тест
+def test_is_palindrome():
+    assert is_palindrome("radar") is True
+    assert is_palindrome("hello") is False
+
+# 2. Написать код, который проходит тест
+def is_palindrome(text):
+    return text == text[::-1]
+
+# 3. Улучшить код
+def is_palindrome(text):
+    """
+    Check if a string is a palindrome.
+    
+    A palindrome is a string that reads the same backward as forward.
+    
+    Args:
+        text: The string to check
+        
+    Returns:
+        True if the string is a palindrome, False otherwise
+    """
+    # Convert to lowercase and remove non-alphanumeric characters
+    text = ''.join(c.lower() for c in text if c.isalnum())
+    return text == text[::-1]
+```
+
+## Интеграция с другими правилами
+
+- **Модульное тестирование**: Подробные рекомендации по написанию модульных тестов описаны в @python-unit-testing.mdc
+- **TDD**: Принципы и практики разработки через тестирование описаны в @python-tdd.mdc
+- **Фикстуры и моки**: Рекомендации по использованию фикстур и моков описаны в @python-testing-fixtures.mdc
+- **Покрытие кода**: Рекомендации по измерению и поддержанию покрытия кода тестами описаны в @python-test-coverage.mdc 

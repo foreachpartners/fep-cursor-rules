@@ -2,8 +2,6 @@
 description: Правила типизации кода в Python, включая аннотации типов и проверку типов
 globs: "*.py,*.pyi"
 alwaysApply: true
-related: ["python-code-style-core.mdc", "python-linting-tools.mdc"]
-priority: 8
 ---
 # Правила типизации в Python
 
