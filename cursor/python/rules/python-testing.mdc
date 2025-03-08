@@ -1,0 +1,296 @@
+---
+description: Разработка и управление юнит-тестами в Python проектах
+globs: 
+alwaysApply: false
+---
+# Разработка и управление юнит-тестами в Python проектах
+
+Правила и лучшие практики для разработки, организации и запуска юнит-тестов в Python проектах. Данный подход основан на принципах TDD (Test-Driven Development) и обеспечивает высокое качество кода.
+
+---
+
+## Основные принципы TDD
+
+1. **Red-Green-Refactor** - основной цикл разработки:
+   - **Red**: Сначала написать тест, который не проходит
+   - **Green**: Написать минимальный код для прохождения теста
+   - **Refactor**: Улучшить код, сохранив функциональность
+
+2. **Тесты перед кодом**: Сначала тесты, потом функционал.
+3. **Короткие итерации** - разработка ведётся небольшими шагами.
+4. **Полное покрытие** - каждое изменение кода должно быть покрыто тестами.
+
+## Структура и организация тестов
+
+Тесты должны быть размещены в отдельной директории `tests/` в корне проекта, зеркально отображая структуру основного кода:
+
+```plaintext
+my_project/
+├── core/
+│   └── utils.py
+tests/
+├── core/
+│   └── test_utils.py
+```
+
+- Каждый тестовый файл должен соответствовать тестируемому модулю.
+- Имена тестовых файлов должны начинаться с префикса `test_`.
+
+## Технические аспекты написания тестов
+
+Используйте `pytest` как основной инструмент.
+
+### Пример структуры теста с pytest
+
+```python
+import pytest
+from my_project.core.utils import some_function
+
+@pytest.fixture
+def input_data():
+    return "test"
+
+def test_some_function_returns_uppercase(input_data):
+    assert some_function(input_data) == "TEST"
+```
+
+### Лучшие практики
+
+1. **Понятные имена тестов**:
+   ```python
+   def test_some_function_returns_uppercase():
+       assert some_function("test") == "TEST"
+   ```
+
+2. **Один тест – один аспект поведения**:
+   - Избегайте сложных тестов, проверяющих несколько вещей сразу.
+
+3. **Изоляция тестов**:
+   - Используйте `fixture` для изоляции:
+   ```python
+   @pytest.fixture
+   def prepared_data():
+       return "test"
+   ```
+
+4. **Использование моков для внешних зависимостей**:
+   - Используйте только для внешних сервисов:
+     ```python
+     from unittest.mock import patch
+
+     def test_external_api_call():
+         with patch("requests.get") as mocked_get:
+             mocked_get.return_value.json.return_value = {"status": "ok"}
+             result = call_api()
+             assert result == expected_result
+     ```
+
+5. **Тестирование граничных случаев**:
+   - Всегда проверяйте исключения и краевые условия.
+
+6. **Использование фикстур**:
+   ```python
+   @pytest.fixture
+   def setup_data():
+       return {'key': 'value'}
+
+   def test_using_fixture(setup_data):
+       assert setup_data['key'] == 'value'
+   ```
+
+7. **Параметризованные тесты**:
+   ```python
+   @pytest.mark.parametrize("input_data, expected", [
+       ("test", "TEST"),
+       ("hello", "HELLO")
+   ])
+   def test_some_function(input_value, expected):
+       assert some_function(input_value) == expected
+   ```
+
+## Асинхронные тесты
+
+Используйте `pytest-asyncio` для тестирования асинхронного кода. Для избежания повторного добавления декоратора `@pytest.mark.asyncio` ко всем асинхронным тестам, добавьте в файл `pytest.ini` следующую конфигурацию:
+
+```ini
+[pytest]
+asyncio_mode = auto
+```
+
+Теперь вы можете писать асинхронные тесты без декоратора:
+
+```python
+async def test_async_function():
+    result = await some_async_function()
+    assert result == expected_result
+```
+
+## Запуск и покрытие тестов
+
+Используйте `uv` и `pytest-cov`:
+
+```bash
+uv add --dev pytest pytest-cov pytest-asyncio
+
+# Запуск всех тестов
+uv run pytest
+
+# Запуск с покрытием
+uv run pytest --cov=my_project --cov-report=term-missing
+```
+
+## Настройка запуска тестов в VSCode
+
+Конфигурация запуска тестов из VSCode:
+
+```json
+{
+    "python.testing.pytestEnabled": true,
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestArgs": ["tests"]
+}
+```
+
+## Рабочий процесс TDD
+
+1. **Написание теста**
+   - Определение требуемого поведения
+   - Написание теста, который проверяет это поведение
+   - Проверка, что тест не проходит (Red)
+
+2. **Реализация функциональности**
+   - Написание минимального кода для прохождения теста
+   - Запуск теста и проверка, что он проходит (Green)
+
+3. **Рефакторинг**
+   - Улучшение кода с сохранением его функциональности
+   - Проверка, что все тесты по-прежнему проходят
+
+4. **Повторение**
+   - Повторение цикла для каждой новой функциональности
+
+## Технические рекомендации
+
+1. **Запуск тестов после каждого изменения**
+   - Необходимо запускать тесты после каждого изменения в кодовой базе
+   - Задачу следует принимать только при успешном прохождении всех тестов
+
+2. **Поддержание высокого покрытия кода**
+   - Следует стремиться к покрытию не менее 80%
+   - Для анализа покрытия необходимо использовать `pytest-cov`
+
+3. **Ограниченное использование моков**
+   - Моки следует использовать только для внешних зависимостей
+   - Чрезмерное использование моков делает тесты хрупкими
+
+4. **Регулярный рефакторинг тестов**
+   - Тесты также требуют поддержки и рефакторинга
+   - Следует устранять дублирование в тестах с помощью фикстур
+
+## Примеры взаимодействия с агентом ЛЛМ
+
+### Пример 1: Начало разработки новой функциональности
+
+**Пользователь**: Мне нужно добавить функцию для фильтрации списка товаров по категории.
+
+**Агент**:
+1. Сначала я напишу тест для этой функциональности:
+   ```python
+   # tests/services/test_products.py
+   import pytest
+   from my_project.services.products import filter_products_by_category
+   
+   def test_filter_products_by_category():
+       # Arrange
+       products = [
+           {"id": 1, "name": "Apple", "category": "Fruit"},
+           {"id": 2, "name": "Carrot", "category": "Vegetable"},
+           {"id": 3, "name": "Banana", "category": "Fruit"}
+       ]
+       
+       # Act
+       filtered = filter_products_by_category(products, "Fruit")
+       
+       # Assert
+       assert len(filtered) == 2
+       assert all(p["category"] == "Fruit" for p in filtered)
+   ```
+   
+2. Теперь реализую минимальную функциональность для прохождения теста:
+   ```python
+   # src/my_project/services/products.py
+   def filter_products_by_category(products: list[dict], category: str) -> list[dict]:
+       return [p for p in products if p["category"] == category]
+   ```
+   
+3. Запущу тесты, чтобы убедиться, что они проходят:
+   ```bash
+   uv run pytest tests/services/test_products.py -v
+   ```
+
+### Пример 2: Рефакторинг существующего кода
+
+**Пользователь**: Нужно улучшить функцию обработки данных, она работает медленно.
+
+**Агент**:
+1. Сначала убедимся, что у нас есть тесты для этой функции:
+   ```python
+   # tests/services/test_data_processor.py
+   import pytest
+   from my_project.services.data_processor import process_data
+   
+   def test_process_data_returns_correct_result():
+       # Arrange
+       input_data = [1, 2, 3, 4, 5]
+       expected = {"sum": 15, "avg": 3.0}
+       
+       # Act
+       result = process_data(input_data)
+       
+       # Assert
+       assert result == expected
+   ```
+   
+2. Теперь могу безопасно рефакторить функцию:
+   ```python
+   # До рефакторинга
+   def process_data(data: list[int]) -> dict:
+       result = {}
+       total = 0
+       for item in data:
+           total += item
+       result["sum"] = total
+       result["avg"] = total / len(data) if data else 0
+       return result
+   
+   # После рефакторинга
+   def process_data(data: list[int]) -> dict:
+       if not data:
+           return {"sum": 0, "avg": 0}
+       total = sum(data)
+       return {
+           "sum": total,
+           "avg": total / len(data)
+       }
+   ```
+   
+3. Запущу тесты, чтобы убедиться, что функциональность сохранена:
+   ```bash
+   uv run pytest tests/services/test_data_processor.py -v
+   ```
+
+## Интеграция с другими компонентами
+
+- **Структура проекта**: Тесты должны интегрироваться со структурой проекта, описанной в правиле @python-project-layout.mdc. Смотри подробнее правила структуры проекта в @python-project-layout.mdc.
+- **Управление зависимостями**: Для установки и запуска тестов следует использовать `uv`, как описано в правиле @using-uv.mdc. Смотри подробнее правила управления зависимостями в @using-uv.mdc.
+- **Конфигурация IDE**: Тесты должны интегрироваться с настройками VSCode, описанными в правиле @vscode-python-config.mdc. Смотри подробнее правила настройки IDE в @vscode-python-config.mdc.
+- **Стиль кода**: Тесты должны следовать правилам стиля кода, описанным в правиле @python-code-style.mdc. Смотри подробнее правила стиля кода в @python-code-style.mdc.
+- **Документирование**: Тесты должны быть документированы согласно правилам в @python-documentation.mdc. Смотри подробнее правила документирования в @python-documentation.mdc.
+- **Обработка ошибок**: Тесты должны проверять корректную обработку ошибок согласно @python-error-handling.mdc. Смотри подробнее правила обработки ошибок в @python-error-handling.mdc.
+
+## Технические преимущества TDD
+
+- Раннее выявление и исправление ошибок.
+- Более качественная архитектура и дизайн кода.
+- Улучшенная поддерживаемость и масштабируемость кода.
+- Ускорение разработки в долгосрочной перспективе. 

@@ -1,0 +1,277 @@
+---
+description: Правила документирования кода в Python проектах
+globs: 
+alwaysApply: false
+---
+# Правила документирования кода в Python проектах
+
+Набор правил и рекомендаций по документированию кода в Python проектах. Качественная документация обеспечивает понимание кода, упрощает его поддержку и развитие.
+
+---
+
+## Основные принципы
+
+1. **Актуальность** - документация должна всегда соответствовать текущему коду
+2. **Полнота** - документация должна охватывать все публичные API
+3. **Ясность** - документация должна быть понятной и однозначной
+4. **Английский язык** - вся документация должна быть на английском языке
+
+## Докстринги
+
+### Общие требования
+
+- Все модули, классы, функции и методы должны иметь докстринги
+- Докстринги должны быть написаны на английском языке
+- Докстринги должны быть актуализированы при любых изменениях в коде
+- Формат докстрингов должен соответствовать [PEP 257](mdc:https:/www.python.org/dev/peps/pep-0257)
+
+### Формат докстрингов
+
+Для докстрингов необходимо использовать формат Google:
+
+```python
+def calculate_total(items: list[float], tax_rate: float) -> float:
+    """
+    Calculate total price including tax.
+    
+    Args:
+        items: List of item prices
+        tax_rate: Tax rate as a decimal (e.g., 0.1 for 10%)
+        
+    Returns:
+        Total price including tax
+        
+    Raises:
+        ValueError: If tax_rate is negative
+    """
+    if tax_rate < 0:
+        raise ValueError("Tax rate cannot be negative")
+    subtotal = sum(items)
+    return subtotal * (1 + tax_rate)
+```
+
+### Докстринги модулей
+
+Докстринги модулей должны содержать:
+
+- Краткое описание назначения модуля
+- Список основных классов и функций (опционально)
+- Примеры использования (опционально)
+
+```python
+"""
+Utility functions for data processing.
+
+This module provides functions for loading, transforming, and saving data
+in various formats.
+
+Examples:
+    >>> from myproject.utils import data_utils
+    >>> data = data_utils.load_csv("data.csv")
+    >>> processed_data = data_utils.transform(data)
+    >>> data_utils.save_json(processed_data, "output.json")
+"""
+```
+
+### Докстринги классов
+
+Докстринги классов должны содержать:
+
+- Описание назначения класса
+- Описание основных атрибутов
+- Примеры использования (опционально)
+
+```python
+class DataProcessor:
+    """
+    Process and transform data from various sources.
+    
+    This class provides methods to load, transform, and save data
+    in different formats.
+    
+    Attributes:
+        input_format: Format of the input data
+        output_format: Format of the output data
+        
+    Examples:
+        >>> processor = DataProcessor("csv", "json")
+        >>> processor.load("data.csv")
+        >>> processor.transform()
+        >>> processor.save("output.json")
+    """
+```
+
+### Докстринги функций и методов
+
+Докстринги функций и методов должны содержать:
+
+- Краткое описание назначения
+- Описание параметров (Args)
+- Описание возвращаемого значения (Returns)
+- Описание исключений (Raises), если функция может их вызывать
+- Примеры использования (Examples), если это не очевидно
+
+## Комментарии в коде
+
+### Когда использовать комментарии
+
+Комментарии следует использовать только в следующих случаях:
+
+- Когда поведение кода неочевидно
+- Для объяснения сложных алгоритмов
+- Для временной маркировки кода (TODO, FIXME)
+- Для объяснения причин принятия определенных решений
+
+### Формат комментариев
+
+- Комментарии должны быть написаны на английском языке
+- Комментарии должны быть краткими и информативными
+- Комментарии должны объяснять "почему", а не "что" делает код
+- Комментарии должны начинаться с заглавной буквы и заканчиваться точкой
+
+```python
+# Bad: This function calculates the total
+def calculate_total(items, tax_rate):
+    ...
+
+# Good: Apply tax rate after summing items to avoid rounding errors
+def calculate_total(items, tax_rate):
+    ...
+```
+
+### Специальные комментарии
+
+Для маркировки кода, требующего внимания, необходимо использовать следующие форматы:
+
+- `TODO: Описание необходимых изменений`
+- `FIXME: Описание проблемы, требующей исправления`
+- `NOTE: Важная информация о коде`
+
+```python
+# TODO: Implement caching to improve performance
+def expensive_calculation(data):
+    ...
+
+# FIXME: This function fails with large inputs
+def process_data(data):
+    ...
+```
+
+## Документация проекта
+
+### README.md
+
+Каждый проект должен иметь файл README.md в корне репозитория, содержащий:
+
+- Название и краткое описание проекта
+- Инструкции по установке и настройке
+- Базовые примеры использования
+- Ссылки на подробную документацию
+- Информацию о лицензии
+
+### Структура документации
+
+Подробная документация должна располагаться в директории `/docs` в корне проекта:
+
+```plaintext
+my_project/
+├── docs/
+│   ├── api/              # Документация API
+│   ├── guides/           # Руководства пользователя
+│   ├── development/      # Руководства для разработчиков
+│   └── index.md          # Главная страница документации
+├── README.md             # Общее описание проекта
+└── ...
+```
+
+### Актуализация документации
+
+Документация должна обновляться при любых значимых изменениях в коде:
+
+- При добавлении новых функций или классов
+- При изменении существующего API
+- При исправлении ошибок, влияющих на поведение
+- При изменении процесса установки или настройки
+
+## Примеры документирования
+
+### Пример документирования модуля
+
+```python
+"""
+Database connection and ORM models.
+
+This module provides database connection utilities and ORM models
+for interacting with the application database.
+
+Classes:
+    User: Model representing a user in the system
+    Post: Model representing a post created by a user
+    
+Functions:
+    get_connection: Get a database connection
+    close_connection: Close a database connection
+"""
+
+import sqlite3
+from typing import Optional
+
+def get_connection(db_path: str) -> sqlite3.Connection:
+    """
+    Get a connection to the SQLite database.
+    
+    Args:
+        db_path: Path to the SQLite database file
+        
+    Returns:
+        SQLite connection object
+        
+    Raises:
+        sqlite3.Error: If connection cannot be established
+    """
+    return sqlite3.connect(db_path)
+```
+
+### Пример документирования класса
+
+```python
+class User:
+    """
+    User model representing a system user.
+    
+    This class provides methods for user authentication, profile management,
+    and permission checking.
+    
+    Attributes:
+        username: Unique username for the user
+        email: Email address of the user
+        is_active: Whether the user account is active
+        
+    Examples:
+        >>> user = User("john_doe", "john@example.com")
+        >>> user.set_password("secure_password")
+        >>> user.is_active = True
+        >>> user.save()
+    """
+    
+    def __init__(self, username: str, email: str) -> None:
+        """
+        Initialize a new User instance.
+        
+        Args:
+            username: Unique username for the user
+            email: Email address of the user
+        """
+        self.username = username
+        self.email = email
+        self.is_active = False
+```
+
+## Интеграция с другими компонентами
+
+- **Стиль кода**: Документация должна соответствовать правилам стиля, описанным в @python-code-style.mdc. Смотри подробнее правила стиля кода в @python-code-style.mdc.
+- **Структура проекта**: Документация должна соответствовать структуре проекта, описанной в @python-project-layout.mdc. Смотри подробнее правила структуры проекта в @python-project-layout.mdc.
+- **Тестирование**: Примеры в документации должны быть протестированы, как описано в @python-testing.mdc. Смотри подробнее правила тестирования в @python-testing.mdc.
+- **Логирование**: Настройка логирования должна быть документирована согласно @python-logging.mdc. Смотри подробнее правила логирования в @python-logging.mdc.
+- **Обработка ошибок**: Все возможные исключения должны быть документированы согласно @python-error-handling.mdc. Смотри подробнее правила обработки ошибок в @python-error-handling.mdc.
+- **Архитектура**: Архитектурные решения должны быть документированы согласно @python-architecture.mdc. Смотри подробнее правила архитектуры в @python-architecture.mdc. 

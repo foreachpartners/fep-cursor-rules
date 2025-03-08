@@ -1,0 +1,381 @@
+---
+description: Правила архитектуры и организации кода в Python проектах
+globs: 
+alwaysApply: false
+related: ["python-code-style.mdc", "python-documentation.mdc", "python-project-layout.mdc", "python-error-handling.mdc", "python-logging.mdc", "python-testing.mdc"]
+---
+# Правила архитектуры и организации кода в Python проектах
+
+Набор правил и рекомендаций по архитектуре и организации кода в Python проектах. Правильная архитектура обеспечивает модульность, повторное использование кода и упрощает поддержку проекта.
+
+> **Примечание**: Данные правила фокусируются на базовых принципах организации кода, а не на высокоуровневых архитектурных паттернах (MVC, MVVM, Clean Architecture и т.д.).
+
+---
+
+## Основные принципы
+
+1. **Модульность** - код должен быть разделен на логические модули с четкими границами
+2. **Повторное использование** - компоненты должны быть спроектированы для повторного использования
+3. **Разделение ответственности** - каждый компонент должен иметь единственную ответственность
+4. **Абстракция** - детали реализации должны быть скрыты за абстракциями
+
+## Организация кода
+
+### Модульная структура
+
+Код должен быть организован в модули с четкими границами и минимальными зависимостями:
+
+```plaintext
+my_project/
+├── src/
+│   └── my_project/
+│       ├── core/           # Базовые компоненты и утилиты
+│       │   ├── __init__.py
+│       │   ├── config.py   # Конфигурация приложения
+│       │   └── utils.py    # Общие утилиты
+│       ├── domain/         # Бизнес-логика и модели
+│       │   ├── __init__.py
+│       │   ├── models.py   # Модели данных
+│       │   └── services.py # Бизнес-логика
+│       ├── adapters/       # Адаптеры для внешних систем
+│       │   ├── __init__.py
+│       │   ├── database.py # Работа с базой данных
+│       │   └── api.py      # Внешние API
+│       ├── interfaces/     # Интерфейсы пользователя
+│       │   ├── __init__.py
+│       │   ├── cli.py      # Интерфейс командной строки
+│       │   └── web.py      # Веб-интерфейс
+│       └── __init__.py
+└── ...
+```
+
+### Зависимости между модулями
+
+Зависимости между модулями должны быть направлены от внешних слоев к внутренним:
+
+- `interfaces` → `domain` → `core`
+- `adapters` → `domain` → `core`
+
+Внутренние слои не должны зависеть от внешних:
+
+```python
+# Правильно: core не зависит от domain
+# core/utils.py
+def format_date(date):
+    """Format date to ISO format."""
+    return date.isoformat()
+
+# domain/models.py
+from my_project.core.utils import format_date
+
+class User:
+    def __init__(self, name, created_at):
+        self.name = name
+        self.created_at = created_at
+    
+    def to_dict(self):
+        return {
+            "name": self.name,
+            "created_at": format_date(self.created_at)
+        }
+
+# Неправильно: core зависит от domain
+# core/utils.py
+from my_project.domain.models import User  # Неправильная зависимость!
+
+def get_user_name(user):
+    return user.name
+```
+
+## Принципы проектирования
+
+### Принцип единственной ответственности (SRP)
+
+Каждый класс или модуль должен иметь только одну причину для изменения:
+
+```python
+# Плохо: класс с несколькими ответственностями
+class User:
+    def __init__(self, name, email):
+        self.name = name
+        self.email = email
+    
+    def save_to_database(self):
+        # Сохранение пользователя в базу данных
+        pass
+    
+    def send_welcome_email(self):
+        # Отправка приветственного письма
+        pass
+
+# Хорошо: разделение ответственностей
+class User:
+    def __init__(self, name, email):
+        self.name = name
+        self.email = email
+
+class UserRepository:
+    def save(self, user):
+        # Сохранение пользователя в базу данных
+        pass
+
+class EmailService:
+    def send_welcome_email(self, user):
+        # Отправка приветственного письма
+        pass
+```
+
+### Принцип открытости/закрытости (OCP)
+
+Классы должны быть открыты для расширения, но закрыты для модификации:
+
+```python
+# Плохо: нарушение OCP
+class ReportGenerator:
+    def generate(self, data, format):
+        if format == "pdf":
+            # Генерация PDF
+            pass
+        elif format == "csv":
+            # Генерация CSV
+            pass
+        # При добавлении нового формата придется изменять этот класс
+
+# Хорошо: соблюдение OCP
+class ReportGenerator:
+    def __init__(self, formatter):
+        self.formatter = formatter
+    
+    def generate(self, data):
+        return self.formatter.format(data)
+
+class PdfFormatter:
+    def format(self, data):
+        # Генерация PDF
+        pass
+
+class CsvFormatter:
+    def format(self, data):
+        # Генерация CSV
+        pass
+
+# Добавление нового формата без изменения существующего кода
+class JsonFormatter:
+    def format(self, data):
+        # Генерация JSON
+        pass
+```
+
+### Принцип инверсии зависимостей (DIP)
+
+Высокоуровневые модули не должны зависеть от низкоуровневых модулей. Оба должны зависеть от абстракций:
+
+```python
+# Плохо: прямая зависимость от конкретной реализации
+class UserService:
+    def __init__(self):
+        self.repository = PostgreSQLUserRepository()  # Жесткая зависимость
+    
+    def get_user(self, user_id):
+        return self.repository.get(user_id)
+
+# Хорошо: зависимость от абстракции
+class UserService:
+    def __init__(self, repository):  # Инъекция зависимости
+        self.repository = repository
+    
+    def get_user(self, user_id):
+        return self.repository.get(user_id)
+
+# Использование
+service = UserService(PostgreSQLUserRepository())
+# или
+service = UserService(MongoDBUserRepository())
+```
+
+## Работа с базами данных
+
+### ORM и модели
+
+Для работы с базами данных необходимо использовать ORM (Object-Relational Mapping):
+
+```python
+# Пример с SQLAlchemy
+from sqlalchemy import Column, Integer, String, create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+
+Base = declarative_base()
+
+class User(Base):
+    __tablename__ = "users"
+    
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+    email = Column(String, unique=True)
+    
+    def __repr__(self):
+        return f"<User(name='{self.name}', email='{self.email}')>"
+
+# Настройка подключения
+engine = create_engine("postgresql://user:password@localhost/dbname")
+Session = sessionmaker(bind=engine)
+
+# Использование
+session = Session()
+user = session.query(User).filter_by(name="John").first()
+```
+
+### Репозитории
+
+Для абстрагирования доступа к данным необходимо использовать паттерн "Репозиторий":
+
+```python
+class UserRepository:
+    def get(self, user_id):
+        """Get user by ID."""
+        pass
+    
+    def save(self, user):
+        """Save user to database."""
+        pass
+    
+    def delete(self, user_id):
+        """Delete user by ID."""
+        pass
+
+class SQLAlchemyUserRepository(UserRepository):
+    def __init__(self, session):
+        self.session = session
+    
+    def get(self, user_id):
+        return self.session.query(User).get(user_id)
+    
+    def save(self, user):
+        self.session.add(user)
+        self.session.commit()
+        return user
+    
+    def delete(self, user_id):
+        user = self.get(user_id)
+        if user:
+            self.session.delete(user)
+            self.session.commit()
+        return user
+```
+
+### Миграции
+
+Для управления схемой базы данных необходимо использовать миграции:
+
+```python
+# Пример с Alembic
+# alembic/versions/1234567890_create_users_table.py
+from alembic import op
+import sqlalchemy as sa
+
+def upgrade():
+    op.create_table(
+        "users",
+        sa.Column("id", sa.Integer, primary_key=True),
+        sa.Column("name", sa.String, nullable=False),
+        sa.Column("email", sa.String, nullable=False, unique=True),
+    )
+
+def downgrade():
+    op.drop_table("users")
+```
+
+## Асинхронное программирование
+
+### Асинхронные функции
+
+Для операций ввода-вывода необходимо использовать асинхронное программирование:
+
+```python
+import asyncio
+import aiohttp
+
+async def fetch_data(url):
+    """Fetch data from URL asynchronously."""
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url) as response:
+            return await response.json()
+
+async def fetch_all(urls):
+    """Fetch data from multiple URLs in parallel."""
+    tasks = [fetch_data(url) for url in urls]
+    return await asyncio.gather(*tasks)
+
+# Использование
+urls = ["https://api.example.com/data/1", "https://api.example.com/data/2"]
+results = asyncio.run(fetch_all(urls))
+```
+
+## Тестируемость
+
+### Инъекция зависимостей
+
+Для улучшения тестируемости необходимо использовать инъекцию зависимостей:
+
+```python
+# Сложно тестировать
+class UserService:
+    def __init__(self):
+        self.repository = PostgreSQLUserRepository()  # Жесткая зависимость
+        self.email_service = SmtpEmailService()  # Жесткая зависимость
+    
+    def register_user(self, name, email):
+        user = User(name=name, email=email)
+        self.repository.save(user)
+        self.email_service.send_welcome_email(user)
+        return user
+
+# Легко тестировать
+class UserService:
+    def __init__(self, repository, email_service):  # Инъекция зависимостей
+        self.repository = repository
+        self.email_service = email_service
+    
+    def register_user(self, name, email):
+        user = User(name=name, email=email)
+        self.repository.save(user)
+        self.email_service.send_welcome_email(user)
+        return user
+
+# Тестирование с моками
+def test_register_user():
+    repository_mock = Mock()
+    email_service_mock = Mock()
+    service = UserService(repository_mock, email_service_mock)
+    
+    user = service.register_user("John", "john@example.com")
+    
+    repository_mock.save.assert_called_once()
+    email_service_mock.send_welcome_email.assert_called_once_with(user)
+```
+
+### Фабрики
+
+Для создания сложных объектов необходимо использовать фабрики:
+
+```python
+class UserServiceFactory:
+    @staticmethod
+    def create():
+        repository = SQLAlchemyUserRepository(Session())
+        email_service = SmtpEmailService(config.SMTP_SERVER)
+        return UserService(repository, email_service)
+
+# Использование
+service = UserServiceFactory.create()
+```
+
+## Интеграция с другими компонентами
+
+- **Стиль кода**: Архитектура должна соответствовать правилам стиля, описанным в @python-code-style.mdc. Смотри подробнее правила стиля кода в @python-code-style.mdc.
+- **Документирование**: Архитектурные решения должны быть документированы согласно @python-documentation.mdc. Смотри подробнее правила документирования в @python-documentation.mdc.
+- **Структура проекта**: Архитектура должна соответствовать структуре проекта, описанной в @python-project-layout.mdc. Смотри подробнее правила структуры проекта в @python-project-layout.mdc.
+- **Обработка ошибок**: Архитектура должна учитывать правила обработки ошибок, описанные в @python-error-handling.mdc. Смотри подробнее правила обработки ошибок в @python-error-handling.mdc.
+- **Логирование**: Архитектура должна интегрироваться с логированием, как описано в @python-logging.mdc. Смотри подробнее правила логирования в @python-logging.mdc.
+- **Тестирование**: Архитектурные компоненты должны быть тестируемыми согласно @python-testing.mdc. Смотри подробнее правила тестирования в @python-testing.mdc. 

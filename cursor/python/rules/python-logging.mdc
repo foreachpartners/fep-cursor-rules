@@ -1,0 +1,311 @@
+---
+description: Правила логирования в Python проектах
+globs: 
+alwaysApply: false
+related: ["python-code-style.mdc", "python-documentation.mdc", "python-error-handling.mdc", "python-architecture.mdc", "python-project-layout.mdc", "python-testing.mdc"]
+---
+# Правила логирования в Python проектах
+
+Набор правил и рекомендаций по организации логирования в Python проектах. Правильно настроенное логирование обеспечивает возможность отслеживания работы приложения и упрощает отладку.
+
+---
+
+## Основные принципы
+
+1. **Консистентность** - логирование должно быть единообразным во всем проекте
+2. **Информативность** - логи должны содержать достаточно информации для понимания контекста
+3. **Уровни логирования** - использование соответствующих уровней для разных типов сообщений
+4. **Структурированность** - логи должны иметь единый формат для упрощения анализа
+
+## Настройка логирования
+
+### Базовая настройка
+
+Для настройки логирования необходимо использовать стандартный модуль `logging`:
+
+```python
+import logging
+
+# Базовая настройка логирования
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
+
+# Получение логгера для модуля
+logger = logging.getLogger(__name__)
+```
+
+### Конфигурация для проекта
+
+Для проектов необходимо использовать файл конфигурации логирования:
+
+```python
+# my_project/logging_config.py
+import logging.config
+import os
+
+def setup_logging(
+    default_level=logging.INFO,
+    logs_dir="logs",
+    config_file="logging_config.json"
+):
+    """
+    Setup logging configuration.
+    
+    Args:
+        default_level: Default logging level
+        logs_dir: Directory to store log files
+        config_file: Path to logging configuration file
+    """
+    # Создание директории для логов, если она не существует
+    if not os.path.exists(logs_dir):
+        os.makedirs(logs_dir)
+    
+    # Загрузка конфигурации из файла, если он существует
+    if os.path.exists(config_file):
+        import json
+        with open(config_file, "r") as f:
+            config = json.load(f)
+        logging.config.dictConfig(config)
+    else:
+        # Базовая конфигурация
+        logging.basicConfig(
+            level=default_level,
+            format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S",
+            handlers=[
+                logging.FileHandler(os.path.join(logs_dir, "app.log")),
+                logging.StreamHandler()
+            ]
+        )
+```
+
+## Уровни логирования
+
+Необходимо использовать соответствующие уровни логирования:
+
+- **DEBUG** - детальная информация для отладки
+- **INFO** - подтверждение нормальной работы
+- **WARNING** - индикация потенциальных проблем
+- **ERROR** - ошибки, которые не препятствуют работе приложения
+- **CRITICAL** - критические ошибки, приводящие к остановке приложения
+
+```python
+# Примеры использования разных уровней логирования
+logger.debug("Detailed information for debugging")
+logger.info("Confirmation that things are working as expected")
+logger.warning("Indication that something unexpected happened")
+logger.error("Error occurred, but application can continue")
+logger.critical("Critical error, application cannot continue")
+```
+
+## Форматы сообщений
+
+### Структура сообщений
+
+Сообщения логов должны быть структурированы и содержать:
+
+- Временную метку
+- Имя логгера (обычно `__name__`)
+- Уровень логирования
+- Сообщение
+- Дополнительный контекст (при необходимости)
+
+### Форматирование сообщений
+
+Сообщения должны быть информативными и содержать необходимый контекст:
+
+```python
+# Плохо: недостаточно информации
+logger.info("User logged in")
+
+# Хорошо: содержит необходимый контекст
+logger.info("User logged in: user_id=%s, ip=%s", user_id, ip_address)
+```
+
+### Структурированное логирование
+
+Для сложных приложений необходимо использовать структурированное логирование:
+
+```python
+# Использование extra для добавления контекста
+logger.info(
+    "Processing order",
+    extra={
+        "order_id": order.id,
+        "customer_id": order.customer_id,
+        "amount": order.amount
+    }
+)
+```
+
+## Логирование в разных компонентах
+
+### Логирование в модулях
+
+Каждый модуль должен иметь свой логгер:
+
+```python
+# my_project/module.py
+import logging
+
+# Получение логгера для модуля
+logger = logging.getLogger(__name__)
+
+def process_data(data):
+    logger.debug("Processing data: %s", data)
+    # Обработка данных
+    result = data.upper()
+    logger.info("Data processed successfully")
+    return result
+```
+
+### Логирование в классах
+
+Классы могут использовать логгер модуля или иметь свой собственный:
+
+```python
+# my_project/services.py
+import logging
+
+logger = logging.getLogger(__name__)
+
+class DataService:
+    def __init__(self, source):
+        self.source = source
+        self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
+        self.logger.info("DataService initialized with source: %s", source)
+    
+    def fetch_data(self):
+        self.logger.debug("Fetching data from %s", self.source)
+        # Получение данных
+        data = f"Data from {self.source}"
+        self.logger.info("Data fetched successfully")
+        return data
+```
+
+## Контекстная информация
+
+### Использование контекстных менеджеров
+
+Для добавления временного контекста необходимо использовать контекстные менеджеры:
+
+```python
+import logging
+from contextlib import contextmanager
+
+@contextmanager
+def log_context(**kwargs):
+    """
+    Context manager to add temporary context to logs.
+    
+    Args:
+        **kwargs: Context variables to add to logs
+    """
+    old_factory = logging.getLogRecordFactory()
+    
+    def record_factory(*args, **record_kwargs):
+        record = old_factory(*args, **record_kwargs)
+        for key, value in kwargs.items():
+            setattr(record, key, value)
+        return record
+    
+    logging.setLogRecordFactory(record_factory)
+    try:
+        yield
+    finally:
+        logging.setLogRecordFactory(old_factory)
+
+# Использование
+with log_context(request_id="123", user_id="456"):
+    logger.info("Processing request")
+```
+
+## Обработка ошибок и исключений
+
+### Логирование исключений
+
+При обработке исключений необходимо логировать полную информацию об ошибке:
+
+```python
+try:
+    result = process_data(data)
+except Exception as e:
+    logger.exception("Error processing data: %s", data)
+    # или
+    logger.error("Error processing data: %s", data, exc_info=True)
+```
+
+### Уровни логирования для ошибок
+
+Необходимо использовать соответствующие уровни логирования:
+
+- `ERROR` - для ошибок, которые не препятствуют работе приложения
+- `CRITICAL` - для критических ошибок, приводящих к остановке приложения
+
+```python
+try:
+    config = load_config(config_path)
+except FileNotFoundError:
+    logger.error("Config file not found: %s", config_path)
+    config = default_config
+except json.JSONDecodeError as e:
+    logger.critical("Invalid config file: %s", e)
+    raise SystemExit("Cannot start application with invalid configuration")
+```
+
+## Конфигурация для продакшн
+
+### Ротация логов
+
+Для продакшн-окружения необходимо настроить ротацию логов:
+
+```python
+import logging
+from logging.handlers import RotatingFileHandler
+
+handler = RotatingFileHandler(
+    "app.log",
+    maxBytes=10*1024*1024,  # 10 MB
+    backupCount=5
+)
+handler.setFormatter(logging.Formatter(
+    "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+))
+logger.addHandler(handler)
+```
+
+### Фильтрация чувствительной информации
+
+Необходимо фильтровать чувствительную информацию в логах:
+
+```python
+class SensitiveDataFilter(logging.Filter):
+    def __init__(self, patterns=None):
+        super().__init__()
+        self.patterns = patterns or [
+            (r"password=\S+", "password=*****"),
+            (r"token=\S+", "token=*****"),
+        ]
+    
+    def filter(self, record):
+        if isinstance(record.msg, str):
+            msg = record.msg
+            for pattern, replacement in self.patterns:
+                msg = re.sub(pattern, replacement, msg)
+            record.msg = msg
+        return True
+
+# Добавление фильтра к логгеру
+logger.addFilter(SensitiveDataFilter())
+```
+
+## Интеграция с другими компонентами
+
+- **Стиль кода**: Логирование должно соответствовать правилам стиля, описанным в @python-code-style.mdc. Смотри подробнее правила стиля кода в @python-code-style.mdc.
+- **Документирование**: Настройка логирования должна быть документирована согласно @python-documentation.mdc. Смотри подробнее правила документирования в @python-documentation.mdc.
+- **Обработка ошибок**: Логирование должно быть интегрировано с обработкой ошибок, как описано в @python-error-handling.mdc. Смотри подробнее правила обработки ошибок в @python-error-handling.mdc.
+- **Архитектура**: Логирование должно быть интегрировано в архитектуру приложения согласно @python-architecture.mdc. Смотри подробнее правила архитектуры в @python-architecture.mdc.
+- **Тестирование**: Логирование должно быть протестировано согласно @python-testing.mdc. Смотри подробнее правила тестирования в @python-testing.mdc. 

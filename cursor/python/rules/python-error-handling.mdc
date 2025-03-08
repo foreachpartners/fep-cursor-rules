@@ -1,0 +1,370 @@
+---
+description: Правила обработки ошибок и исключений в Python проектах
+globs: 
+alwaysApply: false
+related: ["python-code-style.mdc", "python-documentation.mdc", "python-logging.mdc", "python-architecture.mdc", "python-project-layout.mdc", "python-testing.mdc"]
+---
+# Правила обработки ошибок и исключений в Python проектах
+
+Набор правил и рекомендаций по обработке ошибок и исключений в Python проектах. Правильная обработка ошибок обеспечивает надежность и устойчивость приложения.
+
+---
+
+## Основные принципы
+
+1. **Предсказуемость** - обработка ошибок должна быть предсказуемой и последовательной
+2. **Информативность** - сообщения об ошибках должны быть понятными и содержать необходимую информацию
+3. **Локализация** - ошибки должны обрабатываться на соответствующем уровне абстракции
+4. **Минимализм** - не следует создавать избыточное количество типов исключений
+
+## Типы исключений
+
+### Стандартные исключения
+
+Необходимо использовать стандартные исключения Python, когда это возможно:
+
+- `ValueError` - для ошибок, связанных с неправильными значениями
+- `TypeError` - для ошибок, связанных с неправильными типами
+- `KeyError` - для ошибок, связанных с отсутствующими ключами
+- `IndexError` - для ошибок, связанных с индексами вне диапазона
+- `FileNotFoundError` - для ошибок, связанных с отсутствующими файлами
+- `PermissionError` - для ошибок, связанных с отсутствием прав доступа
+- `TimeoutError` - для ошибок, связанных с истечением времени ожидания
+
+```python
+def divide(a: float, b: float) -> float:
+    """
+    Divide a by b.
+    
+    Args:
+        a: Numerator
+        b: Denominator
+        
+    Returns:
+        Result of division
+        
+    Raises:
+        ValueError: If b is zero
+    """
+    if b == 0:
+        raise ValueError("Division by zero is not allowed")
+    return a / b
+```
+
+### Пользовательские исключения
+
+Пользовательские исключения необходимо создавать только для специфических ошибок бизнес-логики:
+
+```python
+class InsufficientFundsError(Exception):
+    """Raised when an account has insufficient funds for a transaction."""
+    
+    def __init__(self, account_id: str, requested: float, available: float):
+        self.account_id = account_id
+        self.requested = requested
+        self.available = available
+        message = (
+            f"Account {account_id} has insufficient funds: "
+            f"requested {requested}, available {available}"
+        )
+        super().__init__(message)
+```
+
+### Иерархия исключений
+
+Для сложных приложений необходимо создавать иерархию исключений:
+
+```python
+class AppError(Exception):
+    """Base exception for all application errors."""
+    pass
+
+class DatabaseError(AppError):
+    """Base exception for database-related errors."""
+    pass
+
+class NetworkError(AppError):
+    """Base exception for network-related errors."""
+    pass
+
+class ValidationError(AppError):
+    """Base exception for validation errors."""
+    pass
+```
+
+## Генерация исключений
+
+### Когда генерировать исключения
+
+Исключения необходимо генерировать в следующих случаях:
+
+- Когда функция не может выполнить свою задачу из-за неправильных входных данных
+- Когда происходит ошибка, которую вызывающий код должен обработать
+- Когда обнаружено нарушение инвариантов или предусловий
+
+### Информативные сообщения
+
+Сообщения об ошибках должны быть информативными и содержать:
+
+- Описание проблемы
+- Значения, вызвавшие ошибку
+- Возможные способы решения (если применимо)
+
+```python
+# Плохо: неинформативное сообщение
+raise ValueError("Invalid input")
+
+# Хорошо: информативное сообщение
+raise ValueError(f"Age must be between 0 and 120, got {age}")
+```
+
+## Обработка исключений
+
+### Где обрабатывать исключения
+
+Исключения необходимо обрабатывать на том уровне, где:
+
+- Есть достаточно информации для принятия решения
+- Можно предпринять соответствующие действия
+- Можно предоставить пользователю понятное сообщение об ошибке
+
+### Блоки try-except
+
+Блоки `try-except` должны охватывать минимально необходимый код:
+
+```python
+# Плохо: слишком широкий блок try
+try:
+    data = load_data(file_path)
+    processed_data = process_data(data)
+    save_results(processed_data, output_path)
+except Exception as e:
+    logger.error("Error occurred: %s", e)
+
+# Хорошо: отдельные блоки try для разных операций
+try:
+    data = load_data(file_path)
+except FileNotFoundError:
+    logger.error("File not found: %s", file_path)
+    return
+
+try:
+    processed_data = process_data(data)
+except ValueError as e:
+    logger.error("Error processing data: %s", e)
+    return
+
+try:
+    save_results(processed_data, output_path)
+except PermissionError:
+    logger.error("Permission denied when saving to: %s", output_path)
+```
+
+### Перехват конкретных исключений
+
+Необходимо перехватывать конкретные типы исключений, а не общий `Exception`:
+
+```python
+# Плохо: перехват всех исключений
+try:
+    result = process_data(data)
+except Exception as e:
+    logger.error("Error: %s", e)
+
+# Хорошо: перехват конкретных исключений
+try:
+    result = process_data(data)
+except ValueError as e:
+    logger.error("Invalid data: %s", e)
+except KeyError as e:
+    logger.error("Missing key: %s", e)
+```
+
+### Повторная генерация исключений
+
+Для сохранения контекста ошибки необходимо использовать повторную генерацию исключений:
+
+```python
+try:
+    result = api_client.fetch_data()
+except RequestError as e:
+    logger.error("API request failed: %s", e)
+    raise DataFetchError(f"Failed to fetch data: {e}") from e
+```
+
+## Обработка ошибок в разных контекстах
+
+### Библиотеки и фреймворки
+
+В библиотеках необходимо:
+
+- Генерировать специфические исключения
+- Документировать все возможные исключения
+- Не перехватывать исключения, если их должен обрабатывать вызывающий код
+
+```python
+def calculate_statistics(data: list[float]) -> dict[str, float]:
+    """
+    Calculate statistics for the given data.
+    
+    Args:
+        data: List of numeric values
+        
+    Returns:
+        Dictionary with statistics (mean, median, etc.)
+        
+    Raises:
+        ValueError: If data is empty
+        TypeError: If data contains non-numeric values
+    """
+    if not data:
+        raise ValueError("Data cannot be empty")
+    
+    if not all(isinstance(x, (int, float)) for x in data):
+        raise TypeError("All values must be numeric")
+    
+    # Calculate statistics
+    return {
+        "mean": sum(data) / len(data),
+        "median": sorted(data)[len(data) // 2],
+        "min": min(data),
+        "max": max(data)
+    }
+```
+
+### Веб-приложения
+
+В веб-приложениях необходимо:
+
+- Перехватывать исключения на уровне обработчиков запросов
+- Возвращать соответствующие HTTP-коды ошибок
+- Предоставлять понятные сообщения об ошибках для пользователей
+
+```python
+# Пример для Flask
+@app.route("/api/users/<user_id>")
+def get_user(user_id):
+    try:
+        user = user_service.get_user(user_id)
+        return jsonify(user.to_dict())
+    except UserNotFoundError:
+        return jsonify({"error": "User not found"}), 404
+    except DatabaseError as e:
+        logger.error("Database error: %s", e)
+        return jsonify({"error": "Internal server error"}), 500
+```
+
+## Логирование ошибок
+
+### Интеграция с логированием
+
+Обработка ошибок должна быть интегрирована с логированием:
+
+```python
+try:
+    result = process_data(data)
+except ValueError as e:
+    logger.exception("Error processing data")
+    # или
+    logger.error("Error processing data: %s", e, exc_info=True)
+    # Дальнейшая обработка ошибки
+```
+
+### Уровни логирования для ошибок
+
+Необходимо использовать соответствующие уровни логирования:
+
+- `ERROR` - для ошибок, которые не препятствуют работе приложения
+- `CRITICAL` - для критических ошибок, приводящих к остановке приложения
+
+```python
+try:
+    config = load_config(config_path)
+except FileNotFoundError:
+    logger.error("Config file not found: %s", config_path)
+    config = default_config
+except json.JSONDecodeError as e:
+    logger.critical("Invalid config file: %s", e)
+    raise SystemExit("Cannot start application with invalid configuration")
+```
+
+## Обработка ошибок в интерфейсах пользователя
+
+### Понятные сообщения
+
+Сообщения об ошибках для пользователей должны быть:
+
+- Понятными и не содержать технических деталей
+- Конструктивными и предлагать решение
+- Вежливыми и не обвиняющими пользователя
+
+```python
+# Плохо: техническое сообщение
+return "Error: DatabaseError: Connection refused"
+
+# Хорошо: понятное сообщение
+return "We're having trouble connecting to our database. Please try again later."
+```
+
+### Разделение технических и пользовательских ошибок
+
+Необходимо разделять технические детали и пользовательские сообщения:
+
+```python
+class AppError(Exception):
+    """Base exception for all application errors."""
+    
+    def __init__(self, message: str, user_message: str = None):
+        self.message = message  # Техническое сообщение для логов
+        self.user_message = user_message or "An unexpected error occurred"  # Сообщение для пользователя
+        super().__init__(message)
+```
+
+## Интеграция с другими компонентами
+
+- **Стиль кода**: Обработка ошибок должна соответствовать правилам стиля, описанным в @python-code-style.mdc. Смотри подробнее правила стиля кода в @python-code-style.mdc.
+- **Документирование**: Все возможные исключения должны быть документированы согласно @python-documentation.mdc. Смотри подробнее правила документирования в @python-documentation.mdc.
+- **Логирование**: Ошибки должны логироваться согласно правилам, описанным в @python-logging.mdc. Смотри подробнее правила логирования в @python-logging.mdc.
+- **Архитектура**: Обработка ошибок должна быть интегрирована в архитектуру приложения согласно @python-architecture.mdc. Смотри подробнее правила архитектуры в @python-architecture.mdc.
+- **Тестирование**: Обработка ошибок должна быть протестирована согласно @python-testing.mdc. Смотри подробнее правила тестирования в @python-testing.mdc.
+
+## Контекст исключений
+
+При передаче дополнительной информации в исключениях (контекст) необходимо использовать типизированные ключи вместо строковых литералов:
+
+```python
+# Неправильно: использование строковых литералов для ключей контекста
+raise ValidationError(
+    "Invalid user data",
+    context={"user_id": user_id, "field": "email", "reason": "Invalid format"}
+)
+
+# Правильно: использование перечислений для ключей контекста
+class ContextKey(str, Enum):
+    USER_ID = "user_id"
+    FIELD = "field"
+    REASON = "reason"
+
+raise ValidationError(
+    "Invalid user data",
+    context={
+        ContextKey.USER_ID: user_id,
+        ContextKey.FIELD: "email",
+        ContextKey.REASON: "Invalid format"
+    }
+)
+```
+
+### Преимущества типизированного контекста
+
+1. **Консистентность** - одинаковые ключи используются во всех местах кода
+2. **Документирование** - все возможные ключи контекста определены в одном месте
+3. **Автодополнение** - IDE подсказывает доступные ключи
+4. **Предотвращение опечаток** - опечатки в ключах обнаруживаются на этапе компиляции
+
+### Рекомендации по работе с контекстом исключений
+
+- Определять все ключи контекста в виде перечислений в модуле с исключениями
+- Группировать связанные ключи контекста в отдельные перечисления
+- Документировать значение и назначение каждого ключа контекста
+- Использовать типизированные словари (`TypedDict`) для определения структуры контекста 
