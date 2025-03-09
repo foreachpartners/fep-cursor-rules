@@ -1,0 +1,352 @@
+---
+description: Основные принципы обработки ошибок в Python приложениях
+globs: "*.py"
+alwaysApply: true
+related: ["python-architecture-principles.mdc", "python-code-style-core.mdc"]
+priority: 8
+---
+# Принципы обработки ошибок в Python
+
+Рекомендации по обработке ошибок и исключений в Python приложениях. Правильная обработка ошибок повышает надежность, безопасность и удобство сопровождения кода.
+
+---
+
+## Основные принципы обработки ошибок
+
+1. **Явное лучше, чем неявное**: Ошибки должны обрабатываться явно, а не игнорироваться.
+2. **Специфичность**: Используйте специфичные исключения вместо общих.
+3. **Информативность**: Сообщения об ошибках должны быть информативными и содержать контекст.
+4. **Уровень абстракции**: Преобразуйте низкоуровневые исключения в исключения соответствующего уровня абстракции.
+5. **Раннее обнаружение**: Проверяйте ошибки как можно раньше.
+6. **Централизованная обработка**: Обрабатывайте исключения централизованно на соответствующем уровне приложения.
+7. **Логирование**: Всегда логируйте исключения с достаточным контекстом.
+
+## Типы исключений в Python
+
+### Встроенные исключения
+
+Python предоставляет иерархию встроенных исключений:
+
+```
+BaseException
+ +-- SystemExit
+ +-- KeyboardInterrupt
+ +-- GeneratorExit
+ +-- Exception
+      +-- StopIteration
+      +-- StopAsyncIteration
+      +-- ArithmeticError
+      |    +-- FloatingPointError
+      |    +-- OverflowError
+      |    +-- ZeroDivisionError
+      +-- AssertionError
+      +-- AttributeError
+      +-- BufferError
+      +-- EOFError
+      +-- ImportError
+      |    +-- ModuleNotFoundError
+      +-- LookupError
+      |    +-- IndexError
+      |    +-- KeyError
+      +-- MemoryError
+      +-- NameError
+      |    +-- UnboundLocalError
+      +-- OSError
+      |    +-- BlockingIOError
+      |    +-- ChildProcessError
+      |    +-- ConnectionError
+      |    |    +-- BrokenPipeError
+      |    |    +-- ConnectionAbortedError
+      |    |    +-- ConnectionRefusedError
+      |    |    +-- ConnectionResetError
+      |    +-- FileExistsError
+      |    +-- FileNotFoundError
+      |    +-- InterruptedError
+      |    +-- IsADirectoryError
+      |    +-- NotADirectoryError
+      |    +-- PermissionError
+      |    +-- ProcessLookupError
+      |    +-- TimeoutError
+      +-- ReferenceError
+      +-- RuntimeError
+      |    +-- NotImplementedError
+      |    +-- RecursionError
+      +-- SyntaxError
+      |    +-- IndentationError
+      |         +-- TabError
+      +-- SystemError
+      +-- TypeError
+      +-- ValueError
+      |    +-- UnicodeError
+      |         +-- UnicodeDecodeError
+      |         +-- UnicodeEncodeError
+      |         +-- UnicodeTranslateError
+      +-- Warning
+           +-- DeprecationWarning
+           +-- PendingDeprecationWarning
+           +-- RuntimeWarning
+           +-- SyntaxWarning
+           +-- UserWarning
+           +-- FutureWarning
+           +-- ImportWarning
+           +-- UnicodeWarning
+           +-- BytesWarning
+           +-- ResourceWarning
+```
+
+### Пользовательские исключения
+
+Создавайте собственные исключения для представления ошибок предметной области:
+
+```python
+class DomainError(Exception):
+    """Базовый класс для всех исключений предметной области."""
+    pass
+
+class UserError(DomainError):
+    """Базовый класс для ошибок, связанных с пользователями."""
+    pass
+
+class UserNotFoundError(UserError):
+    """Исключение, возникающее при отсутствии пользователя."""
+    def __init__(self, user_id):
+        self.user_id = user_id
+        super().__init__(f"User with ID {user_id} not found")
+
+class InvalidUserDataError(UserError):
+    """Исключение, возникающее при недопустимых данных пользователя."""
+    def __init__(self, field, reason):
+        self.field = field
+        self.reason = reason
+        super().__init__(f"Invalid user data: {field} - {reason}")
+```
+
+## Обработка исключений
+
+### Базовая обработка исключений
+
+```python
+try:
+    # Код, который может вызвать исключение
+    result = perform_operation()
+except SomeSpecificError as e:
+    # Обработка конкретного исключения
+    handle_specific_error(e)
+except (AnotherError, YetAnotherError) as e:
+    # Обработка нескольких типов исключений
+    handle_multiple_errors(e)
+except Exception as e:
+    # Обработка всех остальных исключений
+    # Используйте с осторожностью!
+    handle_unexpected_error(e)
+else:
+    # Выполняется, если исключений не возникло
+    handle_success()
+finally:
+    # Выполняется всегда, независимо от наличия исключений
+    cleanup_resources()
+```
+
+### Повторное возбуждение исключений
+
+```python
+try:
+    # Код, который может вызвать исключение
+    result = perform_operation()
+except SomeSpecificError as e:
+    # Логирование исключения
+    logger.error(f"Operation failed: {e}")
+    # Повторное возбуждение исключения
+    raise
+except Exception as e:
+    # Преобразование исключения
+    logger.error(f"Unexpected error: {e}")
+    raise OperationError(f"Operation failed: {e}") from e
+```
+
+### Использование контекстных менеджеров
+
+```python
+# Контекстный менеджер для автоматического освобождения ресурсов
+with open("file.txt", "r") as file:
+    content = file.read()
+    # Файл будет автоматически закрыт, даже если возникнет исключение
+
+# Пользовательский контекстный менеджер
+class DatabaseConnection:
+    def __enter__(self):
+        self.conn = create_connection()
+        return self.conn
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        # Закрытие соединения даже при возникновении исключения
+        self.conn.close()
+        # Возврат False означает, что исключение будет распространяться дальше
+        return False
+
+# Использование
+with DatabaseConnection() as conn:
+    result = conn.execute("SELECT * FROM users")
+```
+
+## Лучшие практики
+
+### 1. Создавайте иерархию исключений
+
+```python
+# Хорошо: иерархия исключений
+class AppError(Exception):
+    """Базовый класс для всех исключений приложения."""
+    pass
+
+class DatabaseError(AppError):
+    """Исключения, связанные с базой данных."""
+    pass
+
+class NetworkError(AppError):
+    """Исключения, связанные с сетью."""
+    pass
+
+class ValidationError(AppError):
+    """Исключения, связанные с валидацией данных."""
+    def __init__(self, errors):
+        self.errors = errors
+        message = "; ".join(f"{field}: {error}" for field, error in errors.items())
+        super().__init__(f"Validation failed: {message}")
+```
+
+### 2. Используйте специфичные исключения
+
+```python
+# Плохо: использование общего исключения
+def get_user(user_id):
+    user = database.find_user(user_id)
+    if not user:
+        raise Exception("User not found")  # Слишком общее
+    return user
+
+# Хорошо: использование специфичного исключения
+def get_user(user_id):
+    user = database.find_user(user_id)
+    if not user:
+        raise UserNotFoundError(user_id)  # Специфичное исключение
+    return user
+```
+
+### 3. Предоставляйте контекст в сообщениях об ошибках
+
+```python
+# Плохо: недостаточно информации
+def process_file(filename):
+    try:
+        with open(filename, "r") as file:
+            return file.read()
+    except FileNotFoundError:
+        raise FileNotFoundError("File not found")  # Недостаточно информации
+
+# Хорошо: информативное сообщение с контекстом
+def process_file(filename):
+    try:
+        with open(filename, "r") as file:
+            return file.read()
+    except FileNotFoundError:
+        raise FileNotFoundError(f"File '{filename}' not found")  # Контекст
+```
+
+### 4. Преобразуйте низкоуровневые исключения
+
+```python
+# Плохо: пропускание низкоуровневых исключений
+def save_user(user):
+    try:
+        database.insert(user)
+    except Exception as e:
+        logger.error(f"Failed to save user: {e}")
+        raise  # Пропускание низкоуровневого исключения
+
+# Хорошо: преобразование в исключения соответствующего уровня
+def save_user(user):
+    try:
+        database.insert(user)
+    except database.DuplicateKeyError as e:
+        logger.error(f"User already exists: {e}")
+        raise UserAlreadyExistsError(user.id) from e
+    except database.ConnectionError as e:
+        logger.error(f"Database connection error: {e}")
+        raise DatabaseConnectionError("Failed to connect to database") from e
+    except Exception as e:
+        logger.error(f"Unexpected error while saving user: {e}")
+        raise UserSaveError(f"Failed to save user: {e}") from e
+```
+
+### 5. Используйте декораторы для обработки исключений
+
+```python
+import functools
+
+def handle_exceptions(func):
+    """Декоратор для обработки исключений."""
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except UserNotFoundError as e:
+            logger.warning(f"User not found: {e}")
+            return None
+        except DatabaseError as e:
+            logger.error(f"Database error in {func.__name__}: {e}")
+            raise ServiceUnavailableError("Service temporarily unavailable") from e
+        except Exception as e:
+            logger.exception(f"Unexpected error in {func.__name__}")
+            raise InternalError("An internal error occurred") from e
+    return wrapper
+
+# Использование декоратора
+@handle_exceptions
+def get_user_profile(user_id):
+    user = database.get_user(user_id)
+    if not user:
+        raise UserNotFoundError(user_id)
+    return user.profile
+```
+
+### 6. Избегайте пустых блоков except
+
+```python
+# Плохо: игнорирование исключений
+try:
+    process_data()
+except Exception:
+    pass  # Игнорирование всех исключений
+
+# Хорошо: явная обработка исключений
+try:
+    process_data()
+except ValueError as e:
+    logger.warning(f"Invalid data format: {e}")
+    # Обработка ошибки валидации
+except Exception as e:
+    logger.error(f"Failed to process data: {e}")
+    # Обработка других ошибок
+```
+
+### 7. Используйте assert для проверки инвариантов
+
+```python
+def calculate_average(numbers):
+    # Проверка предусловия
+    assert len(numbers) > 0, "Cannot calculate average of empty list"
+    
+    total = sum(numbers)
+    average = total / len(numbers)
+    
+    # Проверка постусловия
+    assert 0 <= average <= 100, f"Average {average} outside expected range [0, 100]"
+    
+    return average
+```
+
+## Интеграция с другими правилами
+
+- **Архитектурные принципы**: Обработка ошибок должна соответствовать архитектурным принципам, описанным в @python-architecture-principles.mdc
+- **Стиль кода**: Обработка ошибок должна соответствовать общим принципам стиля кода, описанным в @python-code-style-core.mdc 
