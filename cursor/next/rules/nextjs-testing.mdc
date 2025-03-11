@@ -1,5 +1,5 @@
 ---
-description: Стратегия тестирования Next.js приложений с использованием Jest и React Testing Library
+description: "Testing strategy for Next.js applications using Jest and React Testing Library"
 globs: 
 alwaysApply: false
 related: ["nextjs-project-structure.mdc", "nextjs-typescript.mdc", "nextjs-storybook.mdc"]

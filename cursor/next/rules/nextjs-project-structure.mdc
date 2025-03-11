@@ -1,7 +1,8 @@
 ---
-description: 
+description: "Recommended project structure and file organization for Next.js applications using the App Router"
 globs: 
 alwaysApply: false
+related: ["nextjs-api-service-layer.mdc", "nextjs-typescript.mdc", "nextjs-linting.mdc"]
 ---
 # Next.js Project Structure
 

@@ -1,7 +1,8 @@
 ---
-description: Организация сервисного слоя API в Next.js приложениях с поддержкой мок-данных и TypeScript
+description: "Organization of the API service layer in Next.js applications with support for mock data and TypeScript"
 globs: 
 alwaysApply: false
+related: ["nextjs-project-structure.mdc", "nextjs-typescript.mdc", "nextjs-testing.mdc"]
 ---
 # Next.js API Service Layer
 

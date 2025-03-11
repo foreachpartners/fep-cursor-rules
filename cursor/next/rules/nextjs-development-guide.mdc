@@ -1,7 +1,7 @@
 ---
 description: Сводное руководство по разработке Next.js приложений с лучшими практиками и рекомендациями
-globs: "**/*.{js,jsx,ts,tsx}"
-alwaysApply: true
+globs: 
+alwaysApply: false
 ---
 
 # Next.js Development Guide

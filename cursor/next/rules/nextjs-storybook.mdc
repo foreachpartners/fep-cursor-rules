@@ -1,5 +1,5 @@
 ---
-description: Настройка и использование Storybook для документирования компонентов в Next.js приложениях
+description: "Setup and usage of Storybook for documenting components in Next.js applications"
 globs: 
 alwaysApply: false
 related: ["nextjs-project-structure.mdc", "nextjs-testing.mdc", "nextjs-typescript.mdc"]
