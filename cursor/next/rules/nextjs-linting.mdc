@@ -1,7 +1,8 @@
 ---
-description: Настройка ESLint и Prettier для обеспечения качества кода в Next.js приложениях
+description: "Configuring ESLint and Prettier to ensure code quality in Next.js applications"
 globs: 
 alwaysApply: false
+related: ["nextjs-project-structure.mdc", "nextjs-typescript.mdc"]
 ---
 # Next.js Linting and Code Formatting
 

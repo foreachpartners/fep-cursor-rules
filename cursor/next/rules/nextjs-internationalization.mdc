@@ -1,7 +1,8 @@
 ---
-description: Внедрение многоязычности в Next.js приложениях с использованием библиотеки next-intl
+description: "Implementation of multilingual support in Next.js applications using the next-intl library"
 globs: 
 alwaysApply: false
+related: ["nextjs-project-structure.mdc", "nextjs-typescript.mdc"]
 ---
 # Next.js Internationalization (i18n) with next-intl
 

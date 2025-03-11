@@ -1,7 +1,8 @@
 ---
-description: Сводное руководство по разработке Next.js приложений с лучшими практиками и рекомендациями
-globs: 
-alwaysApply: false
+description: "Comprehensive guide for Next.js application development with best practices and recommendations"
+globs:
+alwaysApply: true
+related: ["nextjs-project-structure.mdc", "nextjs-api-service-layer.mdc", "nextjs-typescript.mdc", "nextjs-testing.mdc", "nextjs-storybook.mdc", "nextjs-internationalization.mdc", "nextjs-linting.mdc"]
 ---
 
 # Next.js Development Guide
