@@ -1,0 +1,73 @@
+# Next.js Development Guidelines
+
+This directory contains a comprehensive set of guidelines for developing Next.js applications with a focus on best practices, code quality, and maintainability.
+
+## Table of Contents
+
+1. [Project Structure](./nextjs-project-structure.mdc)
+   - Directory organization
+   - File naming conventions
+   - Component structure
+   - Module organization
+
+2. [API Service Layer](./nextjs-api-service-layer.mdc)
+   - Guidelines for structuring the API service layer
+   - Implementation of API clients with TypeScript
+   - Mock services for development
+   - Integration with TanStack Query
+
+3. [TypeScript Guidelines](./nextjs-typescript.mdc)
+   - TypeScript configuration for Next.js
+   - Type definitions and interfaces
+   - Type safety with App Router
+   - State management with TypeScript
+   - Form handling with Zod
+
+4. [Testing Strategy](./nextjs-testing.mdc)
+   - Unit testing with Jest
+   - Component testing
+   - Integration testing
+   - Test organization and best practices
+
+5. [Storybook Integration](./nextjs-storybook.mdc)
+   - Setting up Storybook with Next.js
+   - Component documentation
+   - Visual testing
+   - Storybook addons and customization
+
+6. [Internationalization](./nextjs-internationalization.mdc)
+   - Setup and configuration of next-intl
+   - Translation management
+   - Internationalized routing
+   - Date and number formatting
+   - RTL support
+
+7. [Linting and Formatting](./nextjs-linting.mdc)
+   - ESLint configuration
+   - Prettier setup
+   - VS Code integration
+   - Git hooks with Husky
+   - Custom rules and best practices
+
+## How to Use These Guidelines
+
+These guidelines are designed to be used as a reference for developers working on Next.js projects. They provide a consistent approach to common challenges and ensure that all team members follow the same best practices.
+
+Each guideline document includes:
+- Detailed setup instructions
+- Code examples
+- Best practices
+- Common pitfalls to avoid
+
+## Contributing
+
+To contribute to these guidelines, please follow these steps:
+1. Review the existing guidelines to ensure your contribution doesn't duplicate existing content
+2. Create a new file following the naming convention `nextjs-[topic].mdc`
+3. Follow the existing format and structure
+4. Include practical examples and clear explanations
+5. Submit your changes for review
+
+## License
+
+These guidelines are provided for internal use and are not licensed for public distribution without explicit permission. 

@@ -1,0 +1,774 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Next.js TypeScript Guidelines
+
+This document outlines the recommended TypeScript practices for Next.js applications, ensuring type safety, maintainability, and developer productivity.
+
+## TypeScript Configuration
+
+### Base Configuration
+
+A well-configured `tsconfig.json` is essential for a Next.js project:
+
+```json
+{
+  "compilerOptions": {
+    "target": "es5",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": ["./*"]
+    }
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": ["node_modules"]
+}
+```
+
+Key settings to understand:
+
+- `strict: true`: Enables all strict type-checking options
+- `noEmit: true`: Prevents TypeScript from emitting JavaScript files (Next.js handles this)
+- `jsx: "preserve"`: Preserves JSX for Next.js to transform
+- `paths`: Configures path aliases for easier imports
+- `incremental: true`: Speeds up compilation by reusing the previous compilation's output
+
+### Path Aliases
+
+Configure path aliases in `tsconfig.json` to avoid complex relative imports:
+
+```json
+{
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./*"],
+      "@/components/*": ["./components/*"],
+      "@/lib/*": ["./lib/*"],
+      "@/hooks/*": ["./hooks/*"],
+      "@/services/*": ["./services/*"],
+      "@/store/*": ["./store/*"],
+      "@/styles/*": ["./styles/*"]
+    }
+  }
+}
+```
+
+This allows you to use clean imports:
+
+```tsx
+// Instead of
+import { Button } from '../../../components/atoms/Button';
+
+// You can use
+import { Button } from '@/components/atoms/Button';
+```
+
+## Type Definitions
+
+### Common Type Definitions
+
+Create a central place for common types:
+
+```tsx
+// lib/types.ts
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: 'admin' | 'user';
+}
+
+export interface Pagination {
+  page: number;
+  limit: number;
+  total: number;
+}
+
+export interface ApiResponse<T> {
+  data: T;
+  success: boolean;
+  message?: string;
+}
+
+export type ApiErrorResponse = {
+  message: string;
+  errors?: Record<string, string[]>;
+  status: number;
+};
+```
+
+### Component Props
+
+Define props using TypeScript interfaces:
+
+```tsx
+// components/atoms/Button/Button.tsx
+import React from 'react';
+
+export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
+  size?: 'sm' | 'md' | 'lg';
+  loading?: boolean;
+  fullWidth?: boolean;
+}
+
+export const Button: React.FC<ButtonProps> = ({
+  children,
+  variant = 'primary',
+  size = 'md',
+  loading = false,
+  fullWidth = false,
+  className = '',
+  ...props
+}) => {
+  // Component implementation
+};
+```
+
+### Function Types
+
+Properly type functions, especially those used across the application:
+
+```tsx
+// lib/utils.ts
+export type SortDirection = 'asc' | 'desc';
+
+export interface SortConfig<T> {
+  key: keyof T;
+  direction: SortDirection;
+}
+
+export function sortItems<T>(items: T[], config: SortConfig<T>): T[] {
+  return [...items].sort((a, b) => {
+    if (a[config.key] < b[config.key]) {
+      return config.direction === 'asc' ? -1 : 1;
+    }
+    if (a[config.key] > b[config.key]) {
+      return config.direction === 'asc' ? 1 : -1;
+    }
+    return 0;
+  });
+}
+
+export type FilterFunction<T> = (item: T) => boolean;
+
+export function filterItems<T>(items: T[], filterFn: FilterFunction<T>): T[] {
+  return items.filter(filterFn);
+}
+```
+
+## Type Safety with App Router
+
+### Page Props and Params
+
+Type your page components and their parameters:
+
+```tsx
+// app/users/[id]/page.tsx
+import { userService } from '@/services';
+import UserProfile from '@/components/organisms/UserProfile';
+
+export interface UserPageProps {
+  params: {
+    id: string;
+  };
+  searchParams: {
+    tab?: string;
+  };
+}
+
+export default async function UserPage({ params, searchParams }: UserPageProps) {
+  const user = await userService.getUserById(params.id);
+  const activeTab = searchParams.tab || 'profile';
+  
+  return <UserProfile user={user} activeTab={activeTab} />;
+}
+```
+
+### Route Handlers
+
+Type your API route handlers:
+
+```tsx
+// app/api/users/route.ts
+import { NextRequest, NextResponse } from 'next/server';
+import { User } from '@/lib/types';
+
+export async function GET(request: NextRequest) {
+  const users: User[] = []; // Get from database
+  
+  return NextResponse.json({ users });
+}
+
+export async function POST(request: NextRequest) {
+  const userData: Partial<User> = await request.json();
+  
+  // Validate and save to database
+  
+  return NextResponse.json({ message: 'User created' });
+}
+```
+
+## State Management with TypeScript
+
+### Zustand Store Typing
+
+Type your Zustand stores properly:
+
+```tsx
+// store/auth-store.ts
+import { create } from 'zustand';
+import { User } from '@/lib/types';
+
+interface AuthState {
+  user: User | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  error: string | null;
+  
+  // Actions
+  setUser: (user: User | null) => void;
+  setLoading: (isLoading: boolean) => void;
+  setError: (error: string | null) => void;
+  logout: () => void;
+}
+
+export const useAuthStore = create<AuthState>((set) => ({
+  user: null,
+  isAuthenticated: false,
+  isLoading: false,
+  error: null,
+  
+  setUser: (user) => set({ 
+    user, 
+    isAuthenticated: !!user, 
+    error: null 
+  }),
+  setLoading: (isLoading) => set({ isLoading }),
+  setError: (error) => set({ error, isLoading: false }),
+  logout: () => set({ 
+    user: null, 
+    isAuthenticated: false, 
+    error: null 
+  }),
+}));
+```
+
+### React Context with TypeScript
+
+When using React Context for state management:
+
+```tsx
+// contexts/ThemeContext.tsx
+'use client';
+
+import React, { createContext, useContext, useState, ReactNode } from 'react';
+
+type Theme = 'light' | 'dark';
+
+interface ThemeContextType {
+  theme: Theme;
+  toggleTheme: () => void;
+}
+
+const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+
+interface ThemeProviderProps {
+  children: ReactNode;
+  defaultTheme?: Theme;
+}
+
+export const ThemeProvider: React.FC<ThemeProviderProps> = ({
+  children,
+  defaultTheme = 'light',
+}) => {
+  const [theme, setTheme] = useState<Theme>(defaultTheme);
+
+  const toggleTheme = () => {
+    setTheme((prevTheme) => (prevTheme === 'light' ? 'dark' : 'light'));
+  };
+
+  return (
+    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+      {children}
+    </ThemeContext.Provider>
+  );
+};
+
+export const useTheme = (): ThemeContextType => {
+  const context = useContext(ThemeContext);
+  if (context === undefined) {
+    throw new Error('useTheme must be used within a ThemeProvider');
+  }
+  return context;
+};
+```
+
+## Form Handling with TypeScript
+
+### React Hook Form + Zod
+
+Type your forms with React Hook Form and Zod:
+
+```tsx
+// components/organisms/LoginForm/LoginForm.tsx
+'use client';
+
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { Button } from '@/components/atoms/Button';
+import { Input } from '@/components/atoms/Input';
+import { useLogin } from '@/hooks/use-auth';
+
+// Form schema using Zod
+const loginSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+});
+
+// Infer the type from the schema
+type LoginFormInputs = z.infer<typeof loginSchema>;
+
+export const LoginForm = () => {
+  const [serverError, setServerError] = useState<string | null>(null);
+  const { mutate: login, isPending } = useLogin();
+  
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormInputs>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  });
+  
+  const onSubmit = (data: LoginFormInputs) => {
+    setServerError(null);
+    
+    login(data, {
+      onError: (error) => {
+        setServerError(error.message || 'Failed to login');
+      },
+    });
+  };
+  
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      {serverError && <div className="text-red-500">{serverError}</div>}
+      
+      <div className="mb-4">
+        <Input
+          label="Email"
+          {...register('email')}
+          error={errors.email?.message}
+        />
+      </div>
+      
+      <div className="mb-6">
+        <Input
+          label="Password"
+          type="password"
+          {...register('password')}
+          error={errors.password?.message}
+        />
+      </div>
+      
+      <Button type="submit" loading={isPending} fullWidth>
+        Login
+      </Button>
+    </form>
+  );
+};
+```
+
+## API Integration with TypeScript
+
+### TanStack Query with TypeScript
+
+Type your queries and mutations:
+
+```tsx
+// hooks/use-products.ts
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { productService } from '@/services';
+import type { Product, Pagination } from '@/lib/types';
+
+interface ProductListParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  category?: string;
+}
+
+interface ProductListResponse {
+  products: Product[];
+  pagination: Pagination;
+}
+
+export const useProducts = (params: ProductListParams = {}) => {
+  return useQuery<ProductListResponse, Error>({
+    queryKey: ['products', params],
+    queryFn: () => productService.getProducts(params),
+  });
+};
+
+export const useProduct = (id: string) => {
+  return useQuery<Product, Error>({
+    queryKey: ['products', id],
+    queryFn: () => productService.getProductById(id),
+    enabled: !!id,
+  });
+};
+
+interface CreateProductData {
+  name: string;
+  description: string;
+  price: number;
+  category: string;
+  images: string[];
+}
+
+export const useCreateProduct = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation<Product, Error, CreateProductData>({
+    mutationFn: (data) => productService.createProduct(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['products'],
+      });
+    },
+  });
+};
+```
+
+## Type-Safe Server Actions
+
+When using Server Actions in Next.js App Router:
+
+```tsx
+// actions/user-actions.ts
+'use server';
+
+import { z } from 'zod';
+import { userService } from '@/services';
+import { revalidatePath } from 'next/cache';
+
+const UserProfileSchema = z.object({
+  name: z.string().min(2, 'Name must be at least 2 characters'),
+  email: z.string().email('Invalid email address'),
+  bio: z.string().optional(),
+});
+
+export type ProfileFormData = z.infer<typeof UserProfileSchema>;
+
+export type ActionResponse<T> = {
+  data?: T;
+  error?: string;
+};
+
+export async function updateUserProfile(
+  userId: string,
+  formData: ProfileFormData
+): Promise<ActionResponse<{ success: boolean }>> {
+  // Validate input
+  const result = UserProfileSchema.safeParse(formData);
+  
+  if (!result.success) {
+    return {
+      error: 'Invalid form data: ' + result.error.errors[0].message,
+    };
+  }
+  
+  try {
+    await userService.updateUser(userId, result.data);
+    
+    // Revalidate the user profile path
+    revalidatePath(`/users/${userId}`);
+    
+    return { data: { success: true } };
+  } catch (error) {
+    return {
+      error: error instanceof Error ? error.message : 'Failed to update profile',
+    };
+  }
+}
+```
+
+## Utility Types
+
+Create and use utility types for common patterns:
+
+```tsx
+// lib/types.ts
+
+// Make all properties in T optional
+export type Partial<T> = {
+  [P in keyof T]?: T[P];
+};
+
+// Make all properties in T required
+export type Required<T> = {
+  [P in keyof T]-?: T[P];
+};
+
+// Make all properties in T readonly
+export type Readonly<T> = {
+  readonly [P in keyof T]: T[P];
+};
+
+// Create a type with only the properties in K
+export type Pick<T, K extends keyof T> = {
+  [P in K]: T[P];
+};
+
+// Create a type without the properties in K
+export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
+
+// Make all properties nullable
+export type Nullable<T> = {
+  [P in keyof T]: T[P] | null;
+};
+
+// Create a type with required and optional properties
+export type WithRequired<T, K extends keyof T> = Required<Pick<T, K>> & Partial<Omit<T, K>>;
+
+// Record type for objects with keys of type K and values of type T
+export type Record<K extends keyof any, T> = {
+  [P in K]: T;
+};
+```
+
+## Enhanced Type Safety with Utility Functions
+
+Create utility functions with proper typing:
+
+```tsx
+// lib/utils.ts
+
+// Type-safe approach to accessing deeply nested properties
+export function getNestedValue<T, K extends keyof T>(
+  obj: T,
+  key: K
+): T[K];
+export function getNestedValue<T, K extends keyof T, L extends keyof T[K]>(
+  obj: T,
+  key: K,
+  key2: L
+): T[K][L];
+export function getNestedValue<
+  T,
+  K extends keyof T,
+  L extends keyof T[K],
+  M extends keyof T[K][L]
+>(obj: T, key: K, key2: L, key3: M): T[K][L][M];
+
+export function getNestedValue(obj: any, ...keys: string[]): any {
+  return keys.reduce(
+    (acc, key) => (acc && acc[key] !== undefined ? acc[key] : undefined),
+    obj
+  );
+}
+
+// Type-safe local storage
+export function getLocalStorageItem<T>(key: string): T | null {
+  if (typeof window === 'undefined') return null;
+  
+  const item = localStorage.getItem(key);
+  if (!item) return null;
+  
+  try {
+    return JSON.parse(item) as T;
+  } catch {
+    return null;
+  }
+}
+
+export function setLocalStorageItem<T>(key: string, value: T): void {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(key, JSON.stringify(value));
+}
+```
+
+## TypeScript with External Libraries
+
+### Declaration Merging for Next.js Types
+
+Extend Next.js types when needed:
+
+```tsx
+// types/next.d.ts
+import { NextPage } from 'next';
+import { AppProps } from 'next/app';
+import { ReactElement, ReactNode } from 'react';
+
+declare module 'next' {
+  export type NextPageWithLayout<P = {}> = NextPage<P> & {
+    getLayout?: (page: ReactElement) => ReactNode;
+  };
+}
+
+declare module 'next/app' {
+  export type AppPropsWithLayout = AppProps & {
+    Component: NextPageWithLayout;
+  };
+}
+```
+
+### Type Definitions for Custom Libraries
+
+Create type definitions for libraries that don't have them:
+
+```tsx
+// types/custom-library.d.ts
+declare module 'custom-library' {
+  export interface CustomLibraryOptions {
+    apiKey: string;
+    endpoint?: string;
+  }
+  
+  export function initialize(options: CustomLibraryOptions): void;
+  export function makeRequest<T>(path: string): Promise<T>;
+  
+  export default {
+    initialize,
+    makeRequest,
+  };
+}
+```
+
+## Type Checking Best Practices
+
+1. **Avoid `any`**: Use `unknown` instead when the type is uncertain, and then narrow it down.
+
+2. **Use Type Assertions Sparingly**: Only use type assertions (`as`) when you're certain about the type.
+
+3. **Understand `!` Operator**: The non-null assertion operator (`!`) should be used carefully.
+
+4. **Enable Strict Mode**: Always use `strict: true` in your TypeScript configuration.
+
+5. **Use Discriminated Unions**: For complex types that can take different forms.
+
+    ```tsx
+    type LoadingState = { status: 'loading' };
+    type SuccessState<T> = { status: 'success'; data: T };
+    type ErrorState = { status: 'error'; error: string };
+    
+    type RequestState<T> = LoadingState | SuccessState<T> | ErrorState;
+    
+    function handleState<T>(state: RequestState<T>): ReactNode {
+      switch (state.status) {
+        case 'loading':
+          return <Spinner />;
+        case 'success':
+          return <DataDisplay data={state.data} />;
+        case 'error':
+          return <ErrorMessage message={state.error} />;
+      }
+    }
+    ```
+
+6. **Create Type Guards**: Use functions to check and narrow types.
+
+    ```tsx
+    function isUser(obj: unknown): obj is User {
+      return (
+        typeof obj === 'object' &&
+        obj !== null &&
+        'id' in obj &&
+        'name' in obj &&
+        'email' in obj
+      );
+    }
+    
+    function processData(data: unknown) {
+      if (isUser(data)) {
+        // TypeScript knows data is a User here
+        console.log(data.name);
+      }
+    }
+    ```
+
+7. **Use Generic Constraints**: Limit what types can be used with generics.
+
+    ```tsx
+    interface HasId {
+      id: string;
+    }
+    
+    function findById<T extends HasId>(items: T[], id: string): T | undefined {
+      return items.find(item => item.id === id);
+    }
+    ```
+
+## Linting TypeScript
+
+Use ESLint with TypeScript-specific rules:
+
+```json
+// .eslintrc.json
+{
+  "extends": [
+    "next/core-web-vitals",
+    "plugin:@typescript-eslint/recommended"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["@typescript-eslint"],
+  "rules": {
+    "@typescript-eslint/no-explicit-any": "warn",
+    "@typescript-eslint/explicit-function-return-type": "off",
+    "@typescript-eslint/explicit-module-boundary-types": "off",
+    "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
+    "@typescript-eslint/ban-ts-comment": "warn"
+  }
+}
+```
+
+## VS Code Configuration
+
+Optimize VS Code for TypeScript development:
+
+```json
+// .vscode/settings.json
+{
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  },
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
+}
+```
+
+By following these TypeScript guidelines, you'll create a type-safe Next.js application that provides excellent developer experience and helps prevent runtime errors. 

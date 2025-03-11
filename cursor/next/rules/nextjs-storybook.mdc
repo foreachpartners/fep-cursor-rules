@@ -1,0 +1,650 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Next.js Storybook Guidelines
+
+This document outlines the recommended approach to using Storybook with Next.js applications, including setup, best practices, and component documentation.
+
+## Setting Up Storybook
+
+### Installation
+
+```bash
+npx storybook@latest init
+```
+
+This will install the necessary dependencies and create the basic Storybook configuration.
+
+### Configuration
+
+The Storybook initialization will create a `.storybook` directory with the following files:
+
+- `main.js`: Main configuration
+- `preview.js`: Global decorators and parameters
+
+#### Tailwind CSS Integration
+
+Update `.storybook/preview.js` to include your Tailwind styles:
+
+```javascript
+import '../app/globals.css'; // Import your global CSS that includes Tailwind
+
+export const parameters = {
+  actions: { argTypesRegex: '^on[A-Z].*' },
+  controls: {
+    matchers: {
+      color: /(background|color)$/i,
+      date: /Date$/,
+    },
+  },
+};
+```
+
+#### Adding TypeScript Support
+
+Update `.storybook/main.js` to support TypeScript:
+
+```javascript
+const config = {
+  stories: ['../components/**/*.stories.@(js|jsx|ts|tsx)'],
+  addons: [
+    '@storybook/addon-links',
+    '@storybook/addon-essentials',
+    '@storybook/addon-interactions',
+    '@storybook/addon-a11y',
+  ],
+  framework: {
+    name: '@storybook/nextjs',
+    options: {},
+  },
+  docs: {
+    autodocs: 'tag',
+  },
+  staticDirs: ['../public'],
+};
+
+export default config;
+```
+
+### Adding Scripts to package.json
+
+```json
+{
+  "scripts": {
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
+  }
+}
+```
+
+## Story Organization
+
+### File Structure
+
+Each component should have its own story file:
+
+```
+components/
+├── atoms/
+│   ├── Button/
+│   │   ├── Button.tsx          # Component implementation
+│   │   ├── Button.stories.tsx  # Storybook stories
+│   │   └── index.ts            # Export file
+```
+
+### Story File Format
+
+Use Component Story Format (CSF) to write your stories:
+
+```tsx
+// Button.stories.tsx
+import type { Meta, StoryObj } from '@storybook/react';
+import { Button } from './Button';
+
+const meta: Meta<typeof Button> = {
+  title: 'Atoms/Button',
+  component: Button,
+  parameters: {
+    layout: 'centered',
+  },
+  tags: ['autodocs'],
+  argTypes: {
+    variant: {
+      control: 'select',
+      options: ['primary', 'secondary', 'outline', 'ghost'],
+    },
+    size: {
+      control: 'select',
+      options: ['sm', 'md', 'lg'],
+    },
+    onClick: { action: 'clicked' },
+  },
+};
+
+export default meta;
+type Story = StoryObj<typeof Button>;
+
+// Define your stories
+export const Primary: Story = {
+  args: {
+    variant: 'primary',
+    children: 'Primary Button',
+  },
+};
+
+export const Secondary: Story = {
+  args: {
+    variant: 'secondary',
+    children: 'Secondary Button',
+  },
+};
+
+export const Outline: Story = {
+  args: {
+    variant: 'outline',
+    children: 'Outline Button',
+  },
+};
+
+export const Small: Story = {
+  args: {
+    size: 'sm',
+    children: 'Small Button',
+  },
+};
+
+export const Medium: Story = {
+  args: {
+    size: 'md',
+    children: 'Medium Button',
+  },
+};
+
+export const Large: Story = {
+  args: {
+    size: 'lg',
+    children: 'Large Button',
+  },
+};
+
+export const Loading: Story = {
+  args: {
+    loading: true,
+    children: 'Loading',
+  },
+};
+
+export const Disabled: Story = {
+  args: {
+    disabled: true,
+    children: 'Disabled Button',
+  },
+};
+```
+
+## Component States to Document
+
+For each component, ensure you document the following states (where applicable):
+
+### Basic UI Components
+
+1. **Default**: The standard appearance
+2. **Variants**: Different visual styles (primary, secondary, etc.)
+3. **Sizes**: Different size options (small, medium, large)
+4. **States**: Different interactive states (hover, focus, disabled, loading)
+5. **Error/Success**: Validation states
+6. **Responsiveness**: How it behaves at different screen sizes
+
+### Form Components
+
+1. **Default**: Empty state
+2. **Filled**: With value
+3. **Focus**: When focused
+4. **Error**: With validation error
+5. **Disabled**: When disabled
+6. **Read-only**: When read-only
+7. **With Placeholder**: Showing placeholder text
+8. **With Helper Text**: With additional guidance
+9. **With Label**: Full form field appearance
+
+### Data Display Components
+
+1. **Default**: With typical data
+2. **Empty**: When no data is available
+3. **Loading**: While data is being fetched
+4. **Error**: When data loading fails
+5. **Overflow**: With content that exceeds the container
+6. **With Different Data Types**: Text, numbers, dates, etc.
+
+### Navigation Components
+
+1. **Default**: Basic state
+2. **Active**: When the item is active/selected
+3. **Hover**: When hovered over
+4. **With/Without Icons**: Different content options
+5. **Collapsed/Expanded**: For expandable navigation components
+6. **Mobile/Desktop**: Different viewport representations
+
+## Using Addons
+
+### Accessibility (a11y)
+
+Install the accessibility addon:
+
+```bash
+npm install --save-dev @storybook/addon-a11y
+```
+
+Add it to `.storybook/main.js`:
+
+```javascript
+module.exports = {
+  addons: [
+    // other addons...
+    '@storybook/addon-a11y',
+  ],
+};
+```
+
+### Viewport
+
+Use the viewport addon to test responsive behavior:
+
+```tsx
+// ResponsiveComponent.stories.tsx
+import type { Meta, StoryObj } from '@storybook/react';
+import { ResponsiveComponent } from './ResponsiveComponent';
+
+const meta: Meta<typeof ResponsiveComponent> = {
+  title: 'Components/ResponsiveComponent',
+  component: ResponsiveComponent,
+  parameters: {
+    viewport: {
+      viewports: {
+        mobile: {
+          name: 'Mobile',
+          styles: {
+            width: '375px',
+            height: '667px',
+          },
+        },
+        tablet: {
+          name: 'Tablet',
+          styles: {
+            width: '768px',
+            height: '1024px',
+          },
+        },
+        desktop: {
+          name: 'Desktop',
+          styles: {
+            width: '1440px',
+            height: '900px',
+          },
+        },
+      },
+      defaultViewport: 'desktop',
+    },
+  },
+};
+
+export default meta;
+type Story = StoryObj<typeof ResponsiveComponent>;
+
+export const Default: Story = {
+  args: {
+    children: 'This component adapts to screen size',
+  },
+};
+```
+
+### Controls
+
+Utilize controls to make your stories interactive:
+
+```tsx
+// Input.stories.tsx
+import type { Meta, StoryObj } from '@storybook/react';
+import { Input } from './Input';
+
+const meta: Meta<typeof Input> = {
+  title: 'Atoms/Input',
+  component: Input,
+  argTypes: {
+    placeholder: { control: 'text' },
+    type: { 
+      control: 'select', 
+      options: ['text', 'email', 'password', 'number'] 
+    },
+    disabled: { control: 'boolean' },
+    error: { control: 'text' },
+    onChange: { action: 'changed' },
+  },
+};
+
+export default meta;
+type Story = StoryObj<typeof Input>;
+
+export const Default: Story = {
+  args: {
+    placeholder: 'Enter text here',
+  },
+};
+
+export const WithError: Story = {
+  args: {
+    placeholder: 'Email',
+    type: 'email',
+    error: 'Please enter a valid email address',
+  },
+};
+```
+
+## Documenting Components
+
+### Add Component Documentation
+
+Use JSDoc comments in your component file:
+
+```tsx
+// Button.tsx
+
+/**
+ * Primary UI component for user interaction
+ *
+ * @component
+ * @example
+ * ```tsx
+ * <Button variant="primary" size="md" onClick={() => alert('Clicked!')}>
+ *   Click Me
+ * </Button>
+ * ```
+ */
+export const Button = ({
+  children,
+  variant = 'primary',
+  size = 'md',
+  disabled = false,
+  loading = false,
+  onClick,
+  ...props
+}: ButtonProps) => {
+  // Component implementation
+};
+```
+
+### Auto-generate Documentation
+
+Use the `autodocs` tag in your stories:
+
+```tsx
+const meta: Meta<typeof Button> = {
+  title: 'Atoms/Button',
+  component: Button,
+  tags: ['autodocs'], // This generates automatic documentation
+  // ...
+};
+```
+
+### Add Component Description
+
+Include a component description in your story file:
+
+```tsx
+const meta: Meta<typeof Button> = {
+  title: 'Atoms/Button',
+  component: Button,
+  parameters: {
+    docs: {
+      description: {
+        component: 'A versatile button component that supports multiple variants, sizes, and states.',
+      },
+    },
+  },
+  // ...
+};
+```
+
+## Handling Server Components
+
+Next.js App Router introduces Server Components, which don't work directly in Storybook. To handle this:
+
+1. Create client-side wrapper components for your server components
+2. Use the `"use client"` directive in your story files
+3. Mock server-side data
+
+Example:
+
+```tsx
+// UserCard.stories.tsx
+"use client";
+
+import type { Meta, StoryObj } from '@storybook/react';
+import { UserCard } from './UserCard';
+
+const meta: Meta<typeof UserCard> = {
+  title: 'Components/UserCard',
+  component: UserCard,
+  parameters: {
+    // Mock the fetch response
+    msw: {
+      handlers: [
+        rest.get('/api/user/:id', (req, res, ctx) => {
+          return res(
+            ctx.json({
+              id: req.params.id,
+              name: 'John Doe',
+              email: 'john@example.com',
+            })
+          );
+        }),
+      ],
+    },
+  },
+};
+
+export default meta;
+type Story = StoryObj<typeof UserCard>;
+
+export const Default: Story = {
+  args: {
+    userId: '123',
+  },
+};
+```
+
+## Decorators for Context Providers
+
+Use decorators to wrap your components with necessary context providers:
+
+```tsx
+// .storybook/preview.js
+import { ThemeProvider } from '../components/providers/ThemeProvider';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: false,
+    },
+  },
+});
+
+export const decorators = [
+  (Story) => (
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <Story />
+      </ThemeProvider>
+    </QueryClientProvider>
+  ),
+];
+```
+
+## Internationalization (i18n) in Storybook
+
+To support multiple languages in your stories:
+
+```tsx
+// .storybook/preview.js
+import { NextIntlClientProvider } from 'next-intl';
+import enMessages from '../messages/en.json';
+import esMessages from '../messages/es.json';
+
+const locales = ['en', 'es'];
+const messages = {
+  en: enMessages,
+  es: esMessages,
+};
+
+export const globalTypes = {
+  locale: {
+    name: 'Locale',
+    description: 'Internationalization locale',
+    defaultValue: 'en',
+    toolbar: {
+      icon: 'globe',
+      items: [
+        { value: 'en', title: 'English' },
+        { value: 'es', title: 'Español' },
+      ],
+    },
+  },
+};
+
+export const decorators = [
+  (Story, context) => {
+    const locale = context.globals.locale;
+    return (
+      <NextIntlClientProvider locale={locale} messages={messages[locale]}>
+        <Story />
+      </NextIntlClientProvider>
+    );
+  },
+];
+```
+
+## Testing in Storybook
+
+Use Storybook's testing capabilities:
+
+```tsx
+// Button.stories.tsx
+import type { Meta, StoryObj } from '@storybook/react';
+import { expect } from '@storybook/jest';
+import { within, userEvent } from '@storybook/testing-library';
+import { Button } from './Button';
+
+const meta: Meta<typeof Button> = {
+  title: 'Atoms/Button',
+  component: Button,
+};
+
+export default meta;
+type Story = StoryObj<typeof Button>;
+
+export const ClickTest: Story = {
+  args: {
+    children: 'Click Me',
+    onClick: () => console.log('clicked'),
+  },
+  play: async ({ canvasElement, args }) => {
+    const canvas = within(canvasElement);
+    
+    // Find the button
+    const button = canvas.getByRole('button', { name: /click me/i });
+    
+    // Simulate a click
+    await userEvent.click(button);
+    
+    // Assert that the onClick was called
+    await expect(args.onClick).toHaveBeenCalled();
+  },
+};
+```
+
+## Deployment
+
+### Deploy to Vercel
+
+1. Build your Storybook:
+
+```bash
+npm run build-storybook
+```
+
+2. Create a `vercel.json` file:
+
+```json
+{
+  "routes": [
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/index.html" }
+  ]
+}
+```
+
+3. Deploy the `storybook-static` directory to Vercel.
+
+### Deploy to GitHub Pages
+
+Add a GitHub workflow file `.github/workflows/storybook.yml`:
+
+```yaml
+name: Deploy Storybook
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Build Storybook
+        run: npm run build-storybook
+      
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@4.1.4
+        with:
+          branch: gh-pages
+          folder: storybook-static
+```
+
+## Best Practices
+
+1. **One Story Per State**: Create separate stories for each component state.
+
+2. **Document Props**: Clearly document all component props using prop tables.
+
+3. **Use Args**: Use args to manage component props and make stories more maintainable.
+
+4. **Create Component Templates**: Use templates to create variations of a component.
+
+5. **Keep Stories Simple**: Each story should demonstrate one specific use case.
+
+6. **Test Edge Cases**: Create stories for edge cases and error states.
+
+7. **Include Accessibility Information**: Document accessibility features and include a11y tests.
+
+8. **Use Composition**: Compose complex components from simpler ones in stories.
+
+9. **Keep Stories Close to Components**: Put stories in the same directory as their components.
+
+10. **Maintain a Component Library**: Use Storybook as a living component library for your team.
+
+By following these guidelines, you'll create a robust Storybook setup that serves as both documentation and a development environment for your Next.js components. 

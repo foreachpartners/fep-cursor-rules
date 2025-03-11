@@ -1,0 +1,769 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Next.js API Service Layer
+
+This document outlines the recommended approach to organizing your API service layer in Next.js applications, with a focus on clean separation of concerns and using mock data during development.
+
+## Service Layer Structure
+
+### Directory Structure
+
+```
+services/
+├── api-client.ts          # Base API client setup
+├── endpoints.ts           # API endpoints constants
+├── types.ts               # Shared API types
+├── auth-service.ts        # Auth service
+├── user-service.ts        # User service
+├── product-service.ts     # Product service
+└── mock/                  # Mock data for development
+    ├── auth.json          # Auth mock responses
+    ├── users.json         # User mock data
+    ├── products.json      # Product mock data
+    └── handlers.ts        # Mock service implementations
+```
+
+## Creating the API Client
+
+The API client is responsible for making HTTP requests to your backend. Here's an example using native fetch with TypeScript:
+
+```tsx
+// services/api-client.ts
+import { API_BASE_URL } from '@/lib/constants';
+
+// HTTP methods we support
+export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+
+// API client configuration
+export interface ApiClientConfig {
+  baseUrl: string;
+  defaultHeaders?: Record<string, string>;
+}
+
+// Request configuration
+export interface RequestConfig {
+  method?: HttpMethod;
+  headers?: Record<string, string>;
+  body?: any;
+  params?: Record<string, string | number | boolean | undefined>;
+  cache?: RequestCache;
+  next?: NextFetchRequestConfig;
+}
+
+// Error response from API
+export interface ApiErrorResponse {
+  status: number;
+  message: string;
+  errors?: Record<string, string[]>;
+}
+
+class ApiClient {
+  private baseUrl: string;
+  private defaultHeaders: Record<string, string>;
+
+  constructor(config: ApiClientConfig) {
+    this.baseUrl = config.baseUrl;
+    this.defaultHeaders = {
+      'Content-Type': 'application/json',
+      ...config.defaultHeaders,
+    };
+  }
+
+  // Get the auth token for authenticated requests
+  private async getAuthToken(): Promise<string | null> {
+    // In a real implementation, you would get this from your auth storage
+    // This could be a cookie, localStorage, or a state management solution
+    return null;
+  }
+
+  // Build the full URL with query parameters
+  private buildUrl(endpoint: string, params?: Record<string, string | number | boolean | undefined>): string {
+    const url = new URL(`${this.baseUrl}${endpoint}`);
+    
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          url.searchParams.append(key, String(value));
+        }
+      });
+    }
+    
+    return url.toString();
+  }
+
+  // Make an API request
+  public async request<T>(endpoint: string, config: RequestConfig = {}): Promise<T> {
+    const { 
+      method = 'GET', 
+      headers = {}, 
+      body, 
+      params,
+      cache,
+      next 
+    } = config;
+
+    // Get the auth token
+    const token = await this.getAuthToken();
+    
+    // Build the request headers
+    const requestHeaders: HeadersInit = {
+      ...this.defaultHeaders,
+      ...headers,
+    };
+    
+    // Add the auth token if available
+    if (token) {
+      requestHeaders['Authorization'] = `Bearer ${token}`;
+    }
+    
+    // Build the request configuration
+    const requestConfig: RequestInit = {
+      method,
+      headers: requestHeaders,
+      cache,
+      next,
+    };
+    
+    // Add the request body for non-GET requests
+    if (body && method !== 'GET') {
+      requestConfig.body = JSON.stringify(body);
+    }
+    
+    // Build the full URL
+    const url = this.buildUrl(endpoint, params);
+    
+    // Make the request
+    const response = await fetch(url, requestConfig);
+    
+    // Check if the response is ok
+    if (!response.ok) {
+      let errorData: ApiErrorResponse;
+      
+      try {
+        errorData = await response.json() as ApiErrorResponse;
+      } catch (error) {
+        // If the response is not JSON
+        errorData = {
+          status: response.status,
+          message: response.statusText,
+        };
+      }
+      
+      throw errorData;
+    }
+    
+    // Return the response data
+    if (response.headers.get('Content-Type')?.includes('application/json')) {
+      return response.json();
+    }
+    
+    return response.text() as unknown as T;
+  }
+  
+  // Convenience methods for common HTTP methods
+  public async get<T>(endpoint: string, config: Omit<RequestConfig, 'method' | 'body'> = {}): Promise<T> {
+    return this.request<T>(endpoint, { ...config, method: 'GET' });
+  }
+  
+  public async post<T>(endpoint: string, body: any, config: Omit<RequestConfig, 'method'> = {}): Promise<T> {
+    return this.request<T>(endpoint, { ...config, method: 'POST', body });
+  }
+  
+  public async put<T>(endpoint: string, body: any, config: Omit<RequestConfig, 'method'> = {}): Promise<T> {
+    return this.request<T>(endpoint, { ...config, method: 'PUT', body });
+  }
+  
+  public async patch<T>(endpoint: string, body: any, config: Omit<RequestConfig, 'method'> = {}): Promise<T> {
+    return this.request<T>(endpoint, { ...config, method: 'PATCH', body });
+  }
+  
+  public async delete<T>(endpoint: string, config: Omit<RequestConfig, 'method'> = {}): Promise<T> {
+    return this.request<T>(endpoint, { ...config, method: 'DELETE' });
+  }
+}
+
+// Create and export a single instance of the API client
+export const apiClient = new ApiClient({
+  baseUrl: API_BASE_URL,
+});
+
+export default apiClient;
+```
+
+## API Endpoints Constants
+
+Store all API endpoints in a single file:
+
+```tsx
+// services/endpoints.ts
+export const AUTH_ENDPOINTS = {
+  LOGIN: '/auth/login',
+  REGISTER: '/auth/register',
+  LOGOUT: '/auth/logout',
+  REFRESH_TOKEN: '/auth/refresh',
+  ME: '/auth/me',
+};
+
+export const USER_ENDPOINTS = {
+  LIST: '/users',
+  DETAILS: (id: string) => `/users/${id}`,
+  CREATE: '/users',
+  UPDATE: (id: string) => `/users/${id}`,
+  DELETE: (id: string) => `/users/${id}`,
+};
+
+export const PRODUCT_ENDPOINTS = {
+  LIST: '/products',
+  DETAILS: (id: string) => `/products/${id}`,
+  CREATE: '/products',
+  UPDATE: (id: string) => `/products/${id}`,
+  DELETE: (id: string) => `/products/${id}`,
+};
+```
+
+## Service Implementation
+
+Create service files for each domain entity:
+
+```tsx
+// services/auth-service.ts
+import apiClient from './api-client';
+import { AUTH_ENDPOINTS } from './endpoints';
+
+export interface LoginCredentials {
+  email: string;
+  password: string;
+}
+
+export interface RegisterData {
+  email: string;
+  password: string;
+  name: string;
+}
+
+export interface AuthResponse {
+  user: {
+    id: string;
+    email: string;
+    name: string;
+  };
+  token: string;
+}
+
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+}
+
+const login = async (credentials: LoginCredentials): Promise<AuthResponse> => {
+  return apiClient.post<AuthResponse>(AUTH_ENDPOINTS.LOGIN, credentials);
+};
+
+const register = async (data: RegisterData): Promise<AuthResponse> => {
+  return apiClient.post<AuthResponse>(AUTH_ENDPOINTS.REGISTER, data);
+};
+
+const logout = async (): Promise<void> => {
+  return apiClient.post<void>(AUTH_ENDPOINTS.LOGOUT, {});
+};
+
+const getCurrentUser = async (): Promise<User> => {
+  return apiClient.get<User>(AUTH_ENDPOINTS.ME);
+};
+
+export const authService = {
+  login,
+  register,
+  logout,
+  getCurrentUser,
+};
+
+export default authService;
+```
+
+```tsx
+// services/user-service.ts
+import apiClient from './api-client';
+import { USER_ENDPOINTS } from './endpoints';
+import type { User } from './auth-service';
+
+export interface UserListParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+}
+
+export interface UserListResponse {
+  users: User[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface CreateUserData {
+  email: string;
+  name: string;
+  password: string;
+  role?: string;
+}
+
+export interface UpdateUserData {
+  name?: string;
+  email?: string;
+}
+
+const getUsers = async (params: UserListParams = {}): Promise<UserListResponse> => {
+  return apiClient.get<UserListResponse>(USER_ENDPOINTS.LIST, { params });
+};
+
+const getUserById = async (id: string): Promise<User> => {
+  return apiClient.get<User>(USER_ENDPOINTS.DETAILS(id));
+};
+
+const createUser = async (data: CreateUserData): Promise<User> => {
+  return apiClient.post<User>(USER_ENDPOINTS.CREATE, data);
+};
+
+const updateUser = async (id: string, data: UpdateUserData): Promise<User> => {
+  return apiClient.patch<User>(USER_ENDPOINTS.UPDATE(id), data);
+};
+
+const deleteUser = async (id: string): Promise<void> => {
+  return apiClient.delete<void>(USER_ENDPOINTS.DELETE(id));
+};
+
+export const userService = {
+  getUsers,
+  getUserById,
+  createUser,
+  updateUser,
+  deleteUser,
+};
+
+export default userService;
+```
+
+## Mock Data and Mock Service Implementation
+
+### Mock Data Files
+
+Create JSON files for mock data:
+
+```json
+// services/mock/users.json
+[
+  {
+    "id": "1",
+    "name": "John Doe",
+    "email": "john@example.com",
+    "role": "admin"
+  },
+  {
+    "id": "2",
+    "name": "Jane Smith",
+    "email": "jane@example.com",
+    "role": "user"
+  },
+  {
+    "id": "3",
+    "name": "Bob Johnson",
+    "email": "bob@example.com",
+    "role": "user"
+  }
+]
+```
+
+```json
+// services/mock/auth.json
+{
+  "user": {
+    "id": "1",
+    "name": "John Doe",
+    "email": "john@example.com",
+    "role": "admin"
+  },
+  "token": "mock-jwt-token"
+}
+```
+
+### Mock Service Implementations
+
+Create mock versions of your services:
+
+```tsx
+// services/mock/handlers.ts
+import { LoginCredentials, RegisterData, AuthResponse, User } from '../auth-service';
+import { UserListParams, UserListResponse, CreateUserData, UpdateUserData } from '../user-service';
+import mockUsers from './users.json';
+import mockAuth from './auth.json';
+
+// Mock Auth Service
+export const mockAuthService = {
+  login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    // Check credentials
+    if (credentials.email === 'john@example.com' && credentials.password === 'password') {
+      return mockAuth as AuthResponse;
+    }
+    
+    throw {
+      status: 401,
+      message: 'Invalid credentials',
+    };
+  },
+  
+  register: async (data: RegisterData): Promise<AuthResponse> => {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    // Check if email is already used
+    if (mockUsers.some(user => user.email === data.email)) {
+      throw {
+        status: 409,
+        message: 'Email already exists',
+      };
+    }
+    
+    return {
+      user: {
+        id: '4',
+        name: data.name,
+        email: data.email,
+      },
+      token: 'mock-jwt-token',
+    };
+  },
+  
+  logout: async (): Promise<void> => {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 300));
+    return;
+  },
+  
+  getCurrentUser: async (): Promise<User> => {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 300));
+    return mockAuth.user as User;
+  },
+};
+
+// Mock User Service
+export const mockUserService = {
+  getUsers: async (params: UserListParams = {}): Promise<UserListResponse> => {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    let filteredUsers = [...mockUsers];
+    
+    // Apply search filter
+    if (params.search) {
+      const searchLower = params.search.toLowerCase();
+      filteredUsers = filteredUsers.filter(user => 
+        user.name.toLowerCase().includes(searchLower) || 
+        user.email.toLowerCase().includes(searchLower)
+      );
+    }
+    
+    // Pagination
+    const page = params.page || 1;
+    const limit = params.limit || 10;
+    const startIndex = (page - 1) * limit;
+    const endIndex = page * limit;
+    const paginatedUsers = filteredUsers.slice(startIndex, endIndex);
+    
+    return {
+      users: paginatedUsers,
+      total: filteredUsers.length,
+      page,
+      limit,
+    };
+  },
+  
+  getUserById: async (id: string): Promise<User> => {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 300));
+    
+    const user = mockUsers.find(user => user.id === id);
+    
+    if (!user) {
+      throw {
+        status: 404,
+        message: 'User not found',
+      };
+    }
+    
+    return user as User;
+  },
+  
+  createUser: async (data: CreateUserData): Promise<User> => {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    // Check if email is already used
+    if (mockUsers.some(user => user.email === data.email)) {
+      throw {
+        status: 409,
+        message: 'Email already exists',
+      };
+    }
+    
+    const newUser = {
+      id: String(mockUsers.length + 1),
+      name: data.name,
+      email: data.email,
+      role: data.role || 'user',
+    };
+    
+    return newUser as User;
+  },
+  
+  updateUser: async (id: string, data: UpdateUserData): Promise<User> => {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    const userIndex = mockUsers.findIndex(user => user.id === id);
+    
+    if (userIndex === -1) {
+      throw {
+        status: 404,
+        message: 'User not found',
+      };
+    }
+    
+    // Check if email is already used by another user
+    if (data.email && mockUsers.some(user => user.email === data.email && user.id !== id)) {
+      throw {
+        status: 409,
+        message: 'Email already exists',
+      };
+    }
+    
+    const updatedUser = {
+      ...mockUsers[userIndex],
+      ...data,
+    };
+    
+    return updatedUser as User;
+  },
+  
+  deleteUser: async (id: string): Promise<void> => {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    const userIndex = mockUsers.findIndex(user => user.id === id);
+    
+    if (userIndex === -1) {
+      throw {
+        status: 404,
+        message: 'User not found',
+      };
+    }
+    
+    return;
+  },
+};
+```
+
+## Service Factory
+
+Create a service factory to toggle between real and mock services:
+
+```tsx
+// services/index.ts
+import { authService as realAuthService } from './auth-service';
+import { userService as realUserService } from './user-service';
+import { mockAuthService, mockUserService } from './mock/handlers';
+
+// If true, use mock services instead of real API calls
+const USE_MOCK_SERVICES = process.env.NEXT_PUBLIC_USE_MOCK_API === 'true';
+
+// Export the appropriate services based on the environment
+export const authService = USE_MOCK_SERVICES ? mockAuthService : realAuthService;
+export const userService = USE_MOCK_SERVICES ? mockUserService : realUserService;
+
+// Also export types
+export * from './auth-service';
+export * from './user-service';
+```
+
+## Using with TanStack Query
+
+Integrate your services with TanStack Query:
+
+```tsx
+// hooks/use-auth.ts
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { authService, LoginCredentials, AuthResponse, User } from '@/services';
+
+export const useLogin = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: (credentials: LoginCredentials) => authService.login(credentials),
+    onSuccess: (data: AuthResponse) => {
+      // Cache the user data
+      queryClient.setQueryData(['user'], data.user);
+      // Store the token (in a real app, you'd use a secure storage method)
+      // For example, with a cookie or in memory store
+    },
+  });
+};
+
+export const useCurrentUser = () => {
+  return useQuery({
+    queryKey: ['user'],
+    queryFn: () => authService.getCurrentUser(),
+    retry: false,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+};
+
+export const useLogout = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: () => authService.logout(),
+    onSuccess: () => {
+      // Clear the user data from cache
+      queryClient.removeQueries({ queryKey: ['user'] });
+      // Remove the token
+    },
+  });
+};
+```
+
+```tsx
+// hooks/use-users.ts
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { userService, UserListParams, CreateUserData, UpdateUserData } from '@/services';
+
+export const useUsers = (params: UserListParams = {}) => {
+  return useQuery({
+    queryKey: ['users', params],
+    queryFn: () => userService.getUsers(params),
+    keepPreviousData: true,
+  });
+};
+
+export const useUser = (id: string) => {
+  return useQuery({
+    queryKey: ['users', id],
+    queryFn: () => userService.getUserById(id),
+    enabled: !!id,
+  });
+};
+
+export const useCreateUser = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: (data: CreateUserData) => userService.createUser(data),
+    onSuccess: () => {
+      // Invalidate users list query
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+    },
+  });
+};
+
+export const useUpdateUser = (id: string) => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: (data: UpdateUserData) => userService.updateUser(id, data),
+    onSuccess: (updatedUser) => {
+      // Update user in cache
+      queryClient.setQueryData(['users', id], updatedUser);
+      // Invalidate users list query
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+    },
+  });
+};
+
+export const useDeleteUser = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: (id: string) => userService.deleteUser(id),
+    onSuccess: (_, id) => {
+      // Remove user from cache
+      queryClient.removeQueries({ queryKey: ['users', id] });
+      // Invalidate users list query
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+    },
+  });
+};
+```
+
+## Using with Server Components
+
+For Server Components in Next.js App Router, you can use the services directly:
+
+```tsx
+// app/users/page.tsx
+import { userService } from '@/services';
+import UserList from '@/components/organisms/UserList';
+
+export default async function UsersPage() {
+  // Call the service directly in a Server Component
+  const data = await userService.getUsers();
+  
+  return (
+    <div>
+      <h1>Users</h1>
+      <UserList initialData={data} />
+    </div>
+  );
+}
+```
+
+## Environment Configuration
+
+Add environment variables to control API behavior:
+
+```
+# .env.development
+NEXT_PUBLIC_API_URL=http://localhost:3001/api
+NEXT_PUBLIC_USE_MOCK_API=true
+
+# .env.production
+NEXT_PUBLIC_API_URL=https://api.yourdomain.com
+NEXT_PUBLIC_USE_MOCK_API=false
+```
+
+Update your constants:
+
+```tsx
+// lib/constants.ts
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
+export const USE_MOCK_API = process.env.NEXT_PUBLIC_USE_MOCK_API === 'true';
+```
+
+## Best Practices
+
+1. **Separation of Concerns**: Keep your API logic separate from your components.
+
+2. **Type Everything**: Use TypeScript interfaces for all API requests and responses.
+
+3. **Consistent Error Handling**: Handle API errors consistently across your application.
+
+4. **Mock Services**: Create mock implementations for all services to enable development without a backend.
+
+5. **Environment Variables**: Use environment variables to toggle between real and mock services.
+
+6. **Caching**: Use TanStack Query to cache API responses and avoid unnecessary requests.
+
+7. **Server Components**: Use services directly in Server Components without TanStack Query.
+
+8. **Realistic Mock Data**: Make your mock data as realistic as possible to catch edge cases.
+
+9. **Delay Simulation**: Add artificial delays to mock services to simulate real-world latency.
+
+10. **Error Scenarios**: Include error scenarios in your mock services to test error handling.
+
+By following these guidelines, you'll create a robust and flexible API service layer that works well for both development and production, and integrates seamlessly with Next.js and TanStack Query. 

@@ -1,0 +1,708 @@
+# Next.js Internationalization (i18n) with next-intl
+
+This document outlines the recommended approach to implementing internationalization in Next.js applications using the next-intl library.
+
+## Setup and Configuration
+
+### Installation
+
+```bash
+npm install next-intl
+```
+
+### Creating Translation Files
+
+Create a directory for your translation messages:
+
+```
+messages/
+├── en.json
+├── ru.json
+└── es.json
+```
+
+Example translation file (`en.json`):
+
+```json
+{
+  "Index": {
+    "title": "Welcome to Our App",
+    "description": "A Next.js application with internationalization support"
+  },
+  "Auth": {
+    "login": "Login",
+    "register": "Register",
+    "email": "Email",
+    "password": "Password",
+    "forgotPassword": "Forgot password?",
+    "rememberMe": "Remember me",
+    "errors": {
+      "invalidCredentials": "Invalid email or password",
+      "requiredField": "This field is required"
+    }
+  },
+  "Navigation": {
+    "home": "Home",
+    "about": "About",
+    "products": "Products",
+    "profile": "Profile",
+    "settings": "Settings",
+    "logout": "Logout"
+  },
+  "Common": {
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "success": "Success!",
+    "noResults": "No results found",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous"
+  },
+  "Errors": {
+    "notFound": "Page not found",
+    "serverError": "Server error",
+    "unauthorized": "Unauthorized",
+    "forbidden": "Forbidden",
+    "networkError": "Network error",
+    "unknownError": "Unknown error"
+  }
+}
+```
+
+### Configuring the Middleware
+
+Create or update your `middleware.ts` file in the root of your project:
+
+```typescript
+// middleware.ts
+import createMiddleware from 'next-intl/middleware';
+ 
+export default createMiddleware({
+  // A list of all locales that are supported
+  locales: ['en', 'ru', 'es'],
+ 
+  // The default locale to use when visiting a non-localized route
+  defaultLocale: 'en',
+
+  // Paths that should not be internationalized
+  localePrefix: 'as-needed',
+  localeDetection: true
+});
+ 
+export const config = {
+  // Match all paths that should be internationalized
+  // Exclude paths like /api, /images, etc.
+  matcher: ['/((?!api|_next|_vercel|.*\\..*).*)']
+};
+```
+
+### Setting Up App Router
+
+#### 1. Create a config file for next-intl
+
+```typescript
+// app/i18n.ts
+import {getRequestConfig} from 'next-intl/server';
+ 
+export default getRequestConfig(async ({locale}) => {
+  return {
+    messages: (await import(`../messages/${locale}.json`)).default
+  };
+});
+```
+
+#### 2. Create the root layout with Internationalization
+
+```typescript
+// app/[locale]/layout.tsx
+import {NextIntlClientProvider} from 'next-intl';
+import {notFound} from 'next/navigation';
+import {ReactNode} from 'react';
+
+interface RootLayoutProps {
+  children: ReactNode;
+  params: {
+    locale: string;
+  };
+}
+ 
+export default async function RootLayout({
+  children,
+  params: {locale}
+}: RootLayoutProps) {
+  let messages;
+  try {
+    messages = (await import(`../../messages/${locale}.json`)).default;
+  } catch (error) {
+    notFound();
+  }
+ 
+  return (
+    <html lang={locale}>
+      <body>
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          {children}
+        </NextIntlClientProvider>
+      </body>
+    </html>
+  );
+}
+```
+
+#### 3. Configure locale information
+
+```typescript
+// app/[locale]/page.tsx
+import {useTranslations} from 'next-intl';
+ 
+export default function IndexPage() {
+  const t = useTranslations('Index');
+ 
+  return (
+    <div>
+      <h1>{t('title')}</h1>
+      <p>{t('description')}</p>
+    </div>
+  );
+}
+```
+
+## Using Translations
+
+### In Server Components
+
+```tsx
+// app/[locale]/about/page.tsx
+import {useTranslations} from 'next-intl';
+
+export default function AboutPage() {
+  const t = useTranslations('About');
+  
+  return (
+    <div>
+      <h1>{t('title')}</h1>
+      <p>{t('description')}</p>
+    </div>
+  );
+}
+```
+
+### In Client Components
+
+```tsx
+// components/LoginForm.tsx
+'use client';
+
+import {useTranslations} from 'next-intl';
+import {useState} from 'react';
+import {Button} from './atoms/Button';
+import {Input} from './atoms/Input';
+
+export function LoginForm() {
+  const t = useTranslations('Auth');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  
+  return (
+    <form>
+      <div>
+        <label>{t('email')}</label>
+        <Input 
+          value={email} 
+          onChange={(e) => setEmail(e.target.value)} 
+        />
+      </div>
+      <div>
+        <label>{t('password')}</label>
+        <Input 
+          type="password" 
+          value={password} 
+          onChange={(e) => setPassword(e.target.value)} 
+        />
+      </div>
+      <Button type="submit">{t('login')}</Button>
+    </form>
+  );
+}
+```
+
+### Parameterized Translations
+
+```json
+// messages/en.json
+{
+  "User": {
+    "welcome": "Welcome, {name}!",
+    "itemCount": "You have {count, plural, =0 {no items} one {# item} other {# items}}."
+  }
+}
+```
+
+```tsx
+// components/Welcome.tsx
+'use client';
+
+import {useTranslations} from 'next-intl';
+
+export function Welcome({name, itemCount}: {name: string; itemCount: number}) {
+  const t = useTranslations('User');
+  
+  return (
+    <div>
+      <h1>{t('welcome', {name})}</h1>
+      <p>{t('itemCount', {count: itemCount})}</p>
+    </div>
+  );
+}
+```
+
+## Navigation with Internationalization
+
+### Creating Links
+
+```tsx
+// components/LocalizedLink.tsx
+'use client';
+
+import {useLocale, useTranslations} from 'next-intl';
+import {Link} from 'next-intl';
+
+export function Navigation() {
+  const t = useTranslations('Navigation');
+  const locale = useLocale();
+  
+  return (
+    <nav>
+      <Link href="/">{t('home')}</Link>
+      <Link href="/about">{t('about')}</Link>
+      <Link href="/products">{t('products')}</Link>
+    </nav>
+  );
+}
+```
+
+### Programmatic Navigation
+
+```tsx
+// components/LanguageSwitcher.tsx
+'use client';
+
+import {useLocale} from 'next-intl';
+import {useRouter, usePathname} from 'next-intl/client';
+
+export function LanguageSwitcher() {
+  const locale = useLocale();
+  const router = useRouter();
+  const pathname = usePathname();
+  
+  const handleLocaleChange = (newLocale: string) => {
+    router.replace(pathname, {locale: newLocale});
+  };
+  
+  return (
+    <div>
+      <button onClick={() => handleLocaleChange('en')} disabled={locale === 'en'}>
+        English
+      </button>
+      <button onClick={() => handleLocaleChange('ru')} disabled={locale === 'ru'}>
+        Русский
+      </button>
+      <button onClick={() => handleLocaleChange('es')} disabled={locale === 'es'}>
+        Español
+      </button>
+    </div>
+  );
+}
+```
+
+## Date and Number Formatting
+
+### Date Formatting
+
+```tsx
+// components/DateDisplay.tsx
+'use client';
+
+import {useFormatter, useNow, useTimeZone} from 'next-intl';
+
+export function DateDisplay({date}: {date: Date}) {
+  const format = useFormatter();
+  const now = useNow();
+  const timeZone = useTimeZone();
+  
+  return (
+    <div>
+      <p>
+        {format.dateTime(date, {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          timeZone
+        })}
+      </p>
+      <p>
+        {format.relativeTime(date, now)}
+      </p>
+    </div>
+  );
+}
+```
+
+### Number Formatting
+
+```tsx
+// components/PriceDisplay.tsx
+'use client';
+
+import {useFormatter} from 'next-intl';
+
+export function PriceDisplay({amount, currency = 'USD'}: {amount: number; currency?: string}) {
+  const format = useFormatter();
+  
+  return (
+    <span>
+      {format.number(amount, {
+        style: 'currency',
+        currency
+      })}
+    </span>
+  );
+}
+```
+
+## Internationalized Routes
+
+### Creating Dynamic Routes
+
+```tsx
+// app/[locale]/products/[slug]/page.tsx
+import {useTranslations} from 'next-intl';
+import {notFound} from 'next/navigation';
+
+interface ProductPageProps {
+  params: {
+    locale: string;
+    slug: string;
+  };
+}
+
+export default function ProductPage({params}: ProductPageProps) {
+  const {slug} = params;
+  const t = useTranslations('Products');
+  
+  // Fetch product based on slug
+  const product = fetchProductBySlug(slug);
+  
+  if (!product) {
+    notFound();
+  }
+  
+  return (
+    <div>
+      <h1>{product.name}</h1>
+      <p>{product.description}</p>
+      <p>{t('price')}: {product.price}</p>
+    </div>
+  );
+}
+```
+
+## SEO and Metadata
+
+### Adding Internationalized Metadata
+
+```tsx
+// app/[locale]/layout.tsx
+import {Metadata} from 'next';
+import {getTranslations} from 'next-intl/server';
+
+export async function generateMetadata({
+  params: {locale}
+}: {
+  params: {locale: string};
+}): Promise<Metadata> {
+  const t = await getTranslations({locale, namespace: 'Metadata'});
+  
+  return {
+    title: t('title'),
+    description: t('description'),
+    openGraph: {
+      title: t('ogTitle'),
+      description: t('ogDescription'),
+    },
+  };
+}
+```
+
+## Managing Translations
+
+### Best Practices for Translation Keys
+
+1. **Use Namespaces**: Group translations by feature or page
+2. **Nest Related Keys**: Organize hierarchically
+3. **Use Consistent Naming**: Follow a convention for key names
+4. **Add Context for Translators**: Include comments when necessary
+
+### Translation Process
+
+1. **Extract Keys**: Use tools like `i18next-parser` to extract new keys
+2. **Send to Translators**: Share JSON files or use a translation platform
+3. **Import Translations**: Add the translated JSON files to your project
+4. **Verify**: Check for missing translations or issues
+
+## Testing Internationalized Applications
+
+### Unit Testing Components
+
+```tsx
+// components/__tests__/LoginForm.test.tsx
+import {render, screen} from '@testing-library/react';
+import {NextIntlClientProvider} from 'next-intl';
+import {LoginForm} from '../LoginForm';
+
+// Mock translation messages
+const messages = {
+  Auth: {
+    login: 'Login',
+    email: 'Email',
+    password: 'Password'
+  }
+};
+
+describe('LoginForm', () => {
+  it('renders correctly with translations', () => {
+    render(
+      <NextIntlClientProvider locale="en" messages={messages}>
+        <LoginForm />
+      </NextIntlClientProvider>
+    );
+    
+    expect(screen.getByLabelText('Email')).toBeInTheDocument();
+    expect(screen.getByLabelText('Password')).toBeInTheDocument();
+    expect(screen.getByRole('button', {name: 'Login'})).toBeInTheDocument();
+  });
+});
+```
+
+### Testing with Multiple Locales
+
+```tsx
+// components/__tests__/Welcome.test.tsx
+import {render, screen} from '@testing-library/react';
+import {NextIntlClientProvider} from 'next-intl';
+import {Welcome} from '../Welcome';
+
+const messages = {
+  en: {
+    User: {
+      welcome: 'Welcome, {name}!',
+      itemCount: 'You have {count, plural, =0 {no items} one {# item} other {# items}}.'
+    }
+  },
+  es: {
+    User: {
+      welcome: '¡Bienvenido, {name}!',
+      itemCount: 'Tienes {count, plural, =0 {ningún elemento} one {# elemento} other {# elementos}}.'
+    }
+  }
+};
+
+describe('Welcome', () => {
+  it('renders correctly in English', () => {
+    render(
+      <NextIntlClientProvider locale="en" messages={messages.en}>
+        <Welcome name="John" itemCount={1} />
+      </NextIntlClientProvider>
+    );
+    
+    expect(screen.getByText('Welcome, John!')).toBeInTheDocument();
+    expect(screen.getByText('You have 1 item.')).toBeInTheDocument();
+  });
+  
+  it('renders correctly in Spanish', () => {
+    render(
+      <NextIntlClientProvider locale="es" messages={messages.es}>
+        <Welcome name="John" itemCount={1} />
+      </NextIntlClientProvider>
+    );
+    
+    expect(screen.getByText('¡Bienvenido, John!')).toBeInTheDocument();
+    expect(screen.getByText('Tienes 1 elemento.')).toBeInTheDocument();
+  });
+});
+```
+
+## Performance Considerations
+
+### Code Splitting
+
+Split translations by page or feature to reduce bundle size:
+
+```typescript
+// app/[locale]/feature/page.tsx
+import {useTranslations} from 'next-intl';
+
+export default function FeaturePage() {
+  // Only load translations for this feature
+  const t = useTranslations('Feature');
+  
+  return (
+    <div>
+      <h1>{t('title')}</h1>
+    </div>
+  );
+}
+```
+
+### Caching Strategies
+
+Use Next.js caching to improve performance:
+
+```typescript
+// app/[locale]/products/page.tsx
+export const revalidate = 3600; // Revalidate every hour
+
+export default function ProductsPage() {
+  // Component implementation
+}
+```
+
+## RTL Support
+
+### Configure RTL Support
+
+```tsx
+// app/[locale]/layout.tsx
+import {NextIntlClientProvider} from 'next-intl';
+import {dir} from 'next-intl/server';
+
+export function generateStaticParams() {
+  return [{locale: 'en'}, {locale: 'ar'}, {locale: 'he'}];
+}
+
+export default async function RootLayout({
+  children,
+  params: {locale}
+}) {
+  const messages = (await import(`../../messages/${locale}.json`)).default;
+  
+  return (
+    <html lang={locale} dir={dir(locale)}>
+      <body>
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          {children}
+        </NextIntlClientProvider>
+      </body>
+    </html>
+  );
+}
+```
+
+### Tailwind RTL Support
+
+Configure Tailwind CSS for RTL support:
+
+```js
+// tailwind.config.js
+module.exports = {
+  theme: {
+    extend: {},
+  },
+  plugins: [
+    require('tailwindcss-rtl'),
+  ],
+}
+```
+
+Use RTL-aware classes in your components:
+
+```tsx
+// components/Card.tsx
+export function Card({children}) {
+  return (
+    <div className="pl-4 rtl:pr-4 rtl:pl-0">
+      {children}
+    </div>
+  );
+}
+```
+
+## Integrating with next-intl and Zustand
+
+Combine internationalization with global state management:
+
+```tsx
+// store/language-store.ts
+import {create} from 'zustand';
+
+interface LanguageState {
+  locale: string;
+  setLocale: (locale: string) => void;
+}
+
+export const useLanguageStore = create<LanguageState>((set) => ({
+  locale: 'en',
+  setLocale: (locale) => set({ locale }),
+}));
+```
+
+Use the store in your components:
+
+```tsx
+// components/LocaleSwitcher.tsx
+'use client';
+
+import {useRouter, usePathname} from 'next-intl/client';
+import {useLanguageStore} from '@/store/language-store';
+
+export function LocaleSwitcher() {
+  const {locale, setLocale} = useLanguageStore();
+  const router = useRouter();
+  const pathname = usePathname();
+  
+  const handleLocaleChange = (newLocale: string) => {
+    setLocale(newLocale);
+    router.replace(pathname, {locale: newLocale});
+  };
+  
+  return (
+    <div>
+      <button onClick={() => handleLocaleChange('en')} disabled={locale === 'en'}>
+        English
+      </button>
+      <button onClick={() => handleLocaleChange('ru')} disabled={locale === 'ru'}>
+        Русский
+      </button>
+    </div>
+  );
+}
+```
+
+## Best Practices
+
+1. **Use Translation Keys (not literal strings)**: Always use keys rather than hard-coded strings, even if you start with just one language.
+
+2. **Maintain a Structure**: Organize translations hierarchically to make them easy to manage.
+
+3. **Use Plural and Formatting Support**: Leverage the full capabilities of the library for plurals, dates, and numbers.
+
+4. **Add Context for Translators**: Include comments or descriptions for complex or ambiguous strings.
+
+5. **Test with Different Languages**: Test your UI with languages that might cause layout issues (very long words, RTL layouts).
+
+6. **Lazy-load Translations**: Only load the translations that are needed for the current page.
+
+7. **Set up a Translation Workflow**: Establish a clear process for adding, updating, and reviewing translations.
+
+8. **Consider Context**: Remember that some words or phrases have different translations depending on context.
+
+9. **Avoid String Concatenation**: Don't build strings by concatenating translated parts; use parameterized translations instead.
+
+10. **Keep Default Messages**: Maintain a complete set of default messages (usually in English) as a fallback.
+
+By following these guidelines, you'll create a well-structured internationalization system for your Next.js application that is both maintainable and scalable. 

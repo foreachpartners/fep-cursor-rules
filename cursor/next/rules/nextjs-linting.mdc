@@ -1,0 +1,414 @@
+# Next.js Linting and Code Formatting
+
+This document outlines the recommended configuration for ESLint and Prettier in Next.js applications, ensuring code quality, consistency, and best practices.
+
+## ESLint Setup
+
+Next.js comes with ESLint configured out of the box. You can customize it further to match your team's coding standards.
+
+### Basic Setup
+
+If you're starting a new Next.js project, ESLint is usually already installed. You can run the following command to check for linting issues:
+
+```bash
+npm run lint
+```
+
+If you need to set up ESLint manually, run:
+
+```bash
+npx eslint --init
+```
+
+### ESLint Configuration
+
+Create or update the `.eslintrc.json` file at the root of your project:
+
+```json
+{
+  "extends": [
+    "next/core-web-vitals",
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:react-hooks/recommended",
+    "plugin:prettier/recommended"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["@typescript-eslint", "import"],
+  "rules": {
+    // React Rules
+    "react/prop-types": "off",
+    "react/react-in-jsx-scope": "off",
+    "react/display-name": "off",
+    "react/jsx-curly-brace-presence": ["error", { "props": "never", "children": "never" }],
+    
+    // Next.js Rules
+    "@next/next/no-img-element": "error",
+    "@next/next/no-html-link-for-pages": "error",
+    
+    // TypeScript Rules
+    "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }],
+    "@typescript-eslint/explicit-module-boundary-types": "off",
+    "@typescript-eslint/no-explicit-any": "warn",
+    "@typescript-eslint/no-empty-interface": "warn",
+    "@typescript-eslint/ban-ts-comment": ["warn", { "ts-ignore": "allow-with-description" }],
+    
+    // Import Rules
+    "import/order": [
+      "error",
+      {
+        "groups": ["builtin", "external", "internal", "parent", "sibling", "index", "object", "type"],
+        "pathGroups": [
+          {
+            "pattern": "react",
+            "group": "builtin",
+            "position": "before"
+          },
+          {
+            "pattern": "next/**",
+            "group": "builtin",
+            "position": "before"
+          },
+          {
+            "pattern": "@/**",
+            "group": "internal",
+            "position": "after"
+          }
+        ],
+        "pathGroupsExcludedImportTypes": ["react", "next"],
+        "newlines-between": "always",
+        "alphabetize": {
+          "order": "asc",
+          "caseInsensitive": true
+        }
+      }
+    ],
+    
+    // General Rules
+    "no-console": ["warn", { "allow": ["warn", "error"] }],
+    "no-debugger": "warn",
+    "prefer-const": "error",
+    "eqeqeq": ["error", "always", { "null": "ignore" }],
+    "no-undef": "off" // TypeScript handles this
+  },
+  "settings": {
+    "react": {
+      "version": "detect"
+    },
+    "import/resolver": {
+      "typescript": {
+        "alwaysTryTypes": true
+      }
+    }
+  },
+  "ignorePatterns": [
+    "node_modules/",
+    ".next/",
+    "out/",
+    "public/",
+    "*.config.js",
+    "*.config.ts"
+  ]
+}
+```
+
+### Installing Additional ESLint Plugins
+
+```bash
+npm install --save-dev eslint-plugin-import @typescript-eslint/eslint-plugin eslint-import-resolver-typescript
+```
+
+## Prettier Setup
+
+Prettier is a code formatter that ensures consistent code style across your project.
+
+### Installation
+
+```bash
+npm install --save-dev prettier eslint-config-prettier eslint-plugin-prettier
+```
+
+### Prettier Configuration
+
+Create a `.prettierrc.json` file at the root of your project:
+
+```json
+{
+  "singleQuote": true,
+  "jsxSingleQuote": false,
+  "semi": true,
+  "tabWidth": 2,
+  "trailingComma": "es5",
+  "printWidth": 100,
+  "bracketSpacing": true,
+  "arrowParens": "always",
+  "endOfLine": "lf",
+  "bracketSameLine": false,
+  "overrides": [
+    {
+      "files": "*.{json,md,yml,yaml}",
+      "options": {
+        "tabWidth": 2
+      }
+    }
+  ]
+}
+```
+
+### Prettier Ignore File
+
+Create a `.prettierignore` file to specify files that should not be formatted:
+
+```
+.next/
+out/
+node_modules/
+public/
+*.lock
+*.log
+```
+
+## VS Code Integration
+
+To ensure that ESLint and Prettier work well in VS Code, add the following to your `.vscode/settings.json` file:
+
+```json
+{
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  },
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ]
+}
+```
+
+Make sure to install the following VS Code extensions:
+- ESLint by Microsoft
+- Prettier - Code formatter by Prettier
+
+## Git Integration
+
+### Husky and lint-staged
+
+Set up pre-commit hooks to run ESLint and Prettier on staged files before committing:
+
+```bash
+npm install --save-dev husky lint-staged
+npx husky install
+npx husky add .husky/pre-commit "npx lint-staged"
+```
+
+Create a `lint-staged.config.js` file:
+
+```javascript
+module.exports = {
+  "*.{js,jsx,ts,tsx}": [
+    "eslint --fix",
+    "prettier --write"
+  ],
+  "*.{json,md,yml,yaml,css,scss}": [
+    "prettier --write"
+  ]
+};
+```
+
+Update your `package.json` to include the following:
+
+```json
+{
+  "scripts": {
+    "prepare": "husky install",
+    "lint": "next lint",
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md,css,scss}\""
+  }
+}
+```
+
+## Custom ESLint Rules
+
+### Creating a Custom ESLint Plugin
+
+For complex projects, you might want to create custom ESLint rules. Here's a basic example:
+
+```javascript
+// eslint-plugin-custom/index.js
+module.exports = {
+  rules: {
+    'no-custom-imports': {
+      meta: {
+        type: 'suggestion',
+        docs: {
+          description: 'Disallow importing from specific paths',
+          category: 'Best Practices',
+          recommended: true,
+        },
+        fixable: null,
+        schema: [
+          {
+            type: 'array',
+            items: {
+              type: 'string',
+            },
+          },
+        ],
+      },
+      create(context) {
+        return {
+          ImportDeclaration(node) {
+            const importPath = node.source.value;
+            const disallowedPaths = context.options[0] || [];
+            
+            if (disallowedPaths.some(path => importPath.startsWith(path))) {
+              context.report({
+                node,
+                message: `Importing from "${importPath}" is not allowed.`,
+              });
+            }
+          },
+        };
+      },
+    },
+  },
+};
+```
+
+### Using Custom Rules
+
+Update your `.eslintrc.json` to include your custom plugin:
+
+```json
+{
+  "plugins": [
+    "@typescript-eslint",
+    "import",
+    "custom"
+  ],
+  "rules": {
+    "custom/no-custom-imports": ["error", ["../legacy", "../deprecated"]]
+  }
+}
+```
+
+## Tailwind CSS Integration
+
+If you're using Tailwind CSS with Prettier, you might want to install the Tailwind CSS plugin for Prettier:
+
+```bash
+npm install --save-dev prettier-plugin-tailwindcss
+```
+
+This plugin automatically sorts your Tailwind CSS classes according to the recommended class order.
+
+## ESLint for Next.js App Router
+
+Next.js App Router introduces some specific linting needs:
+
+```json
+{
+  "rules": {
+    // Rules for Server Components
+    "react-hooks/rules-of-hooks": ["error", { "allowInServerComponents": true }],
+    
+    // Prevent usage of useState or useEffect in Server Components
+    "react-server-components/no-client-hooks": "error",
+    
+    // Enforce proper use of "use client" directive
+    "@next/next/no-server-import-in-client": "error",
+    "@next/next/no-client-import-in-server": "error"
+  }
+}
+```
+
+You'll need to install a custom plugin for React Server Components:
+
+```bash
+npm install --save-dev eslint-plugin-react-server-components
+```
+
+## Best Practices
+
+1. **Run ESLint as Part of CI/CD**: Include ESLint checks in your continuous integration pipeline.
+
+```yaml
+# .github/workflows/lint.yml
+name: Lint
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Use Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18.x'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Lint
+      run: npm run lint
+```
+
+2. **Document ESLint Rules**: Comment on custom ESLint rules to explain why they exist.
+
+3. **Separate Formatting from Linting**: Let Prettier handle formatting and ESLint handle code quality.
+
+4. **Use TypeScript for Better Linting**: TypeScript provides additional static analysis that complements ESLint.
+
+5. **Gradually Adopt Stricter Rules**: Start with a more relaxed configuration and gradually increase strictness.
+
+6. **Create a Shared Configuration**: For teams working on multiple projects, create a shared ESLint configuration.
+
+```javascript
+// @your-org/eslint-config/index.js
+module.exports = {
+  extends: [
+    "next/core-web-vitals",
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:react-hooks/recommended",
+    "plugin:prettier/recommended"
+  ],
+  // Additional rules...
+};
+```
+
+7. **Run Lint Fix Before Committing**: Always run `npm run lint -- --fix` before committing to fix automatic issues.
+
+8. **Update ESLint Regularly**: Keep your ESLint and plugin versions up-to-date to benefit from new rules and improvements.
+
+9. **Use Comments for Exceptional Cases**: Use ESLint disable comments judiciously for exceptional cases where a rule doesn't apply.
+
+```javascript
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const data: any = await fetchData();
+```
+
+10. **Monitor Rule Effectiveness**: Periodically review which rules are triggering the most warnings and adjust as needed.
+
+By following these guidelines, you'll ensure consistent code quality and formatting across your Next.js projects, making your codebase more maintainable and reducing the cognitive load on developers. 

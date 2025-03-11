@@ -1,0 +1,458 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Next.js Testing Guidelines
+
+This document outlines the recommended approach to testing Next.js applications using Jest and React Testing Library.
+
+## Testing Setup
+
+### Installing Dependencies
+
+```bash
+npm install --save-dev jest @testing-library/react @testing-library/jest-dom @testing-library/user-event jest-environment-jsdom
+```
+
+### Configuration
+
+Create a `jest.config.js` file in the root of your project:
+
+```javascript
+const nextJest = require('next/jest');
+
+const createJestConfig = nextJest({
+  // Provide the path to your Next.js app to load next.config.js and .env files
+  dir: './',
+});
+
+// Add any custom config to be passed to Jest
+const customJestConfig = {
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+  testEnvironment: 'jest-environment-jsdom',
+  moduleNameMapper: {
+    // Handle module aliases (if you use them in your project)
+    '^@/components/(.*)$': '<rootDir>/components/$1',
+    '^@/lib/(.*)$': '<rootDir>/lib/$1',
+    '^@/hooks/(.*)$': '<rootDir>/hooks/$1',
+    '^@/services/(.*)$': '<rootDir>/services/$1',
+    '^@/store/(.*)$': '<rootDir>/store/$1',
+  },
+  collectCoverageFrom: [
+    '**/*.{js,jsx,ts,tsx}',
+    '!**/*.d.ts',
+    '!**/node_modules/**',
+    '!<rootDir>/.next/**',
+    '!<rootDir>/*.config.js',
+    '!<rootDir>/coverage/**',
+  ],
+  coverageThreshold: {
+    global: {
+      branches: 80,
+      functions: 80,
+      lines: 80,
+      statements: 80,
+    },
+  },
+};
+
+// createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async
+module.exports = createJestConfig(customJestConfig);
+```
+
+Create a `jest.setup.js` file in the root of your project:
+
+```javascript
+// Learn more: https://github.com/testing-library/jest-dom
+import '@testing-library/jest-dom';
+```
+
+Update your `package.json` with the following scripts:
+
+```json
+{
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
+  }
+}
+```
+
+## Test File Organization
+
+Structure your test files using one of the following approaches:
+
+### Co-located Tests
+
+```
+components/
+├── atoms/
+│   ├── Button/
+│   │   ├── Button.tsx
+│   │   ├── Button.test.tsx  // Co-located with the component
+│   │   └── index.ts
+```
+
+### Dedicated Test Directory
+
+```
+components/
+├── atoms/
+│   ├── Button/
+│   │   ├── Button.tsx
+│   │   └── index.ts
+tests/
+├── components/
+│   ├── atoms/
+│   │   ├── Button.test.tsx  // Mirrors the structure of the components directory
+```
+
+We recommend the co-located approach for most components, and the dedicated test directory for complex test scenarios that might involve multiple components or integration tests.
+
+## Testing Categories
+
+### 1. Unit Tests
+
+Test individual components or functions in isolation.
+
+#### Component Unit Test Example
+
+```tsx
+// Button.test.tsx
+import { render, screen, fireEvent } from '@testing-library/react';
+import { Button } from './Button';
+
+describe('Button', () => {
+  it('renders correctly', () => {
+    render(<Button>Click me</Button>);
+    expect(screen.getByRole('button')).toHaveTextContent('Click me');
+  });
+
+  it('calls onClick when clicked', () => {
+    const handleClick = jest.fn();
+    render(<Button onClick={handleClick}>Click me</Button>);
+    fireEvent.click(screen.getByRole('button'));
+    expect(handleClick).toHaveBeenCalledTimes(1);
+  });
+
+  it('is disabled when disabled prop is true', () => {
+    render(<Button disabled>Click me</Button>);
+    expect(screen.getByRole('button')).toBeDisabled();
+  });
+});
+```
+
+#### Utility Function Test Example
+
+```tsx
+// utils.test.ts
+import { formatCurrency } from './utils';
+
+describe('formatCurrency', () => {
+  it('formats currency correctly', () => {
+    expect(formatCurrency(1000)).toBe('$1,000.00');
+    expect(formatCurrency(1000.5)).toBe('$1,000.50');
+    expect(formatCurrency(0)).toBe('$0.00');
+  });
+});
+```
+
+### 2. Integration Tests
+
+Test the interaction between multiple components or parts of the application.
+
+```tsx
+// LoginForm.test.tsx
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { LoginForm } from './LoginForm';
+import { AuthProvider } from '@/context/AuthContext';
+
+// Mock the auth service
+jest.mock('@/services/auth-service', () => ({
+  login: jest.fn().mockResolvedValue({ user: { id: '1', name: 'John' } }),
+}));
+
+describe('LoginForm', () => {
+  it('submits form with user credentials', async () => {
+    render(
+      <AuthProvider>
+        <LoginForm onSuccess={jest.fn()} />
+      </AuthProvider>
+    );
+
+    // Fill out the form
+    await userEvent.type(screen.getByLabelText(/email/i), 'test@example.com');
+    await userEvent.type(screen.getByLabelText(/password/i), 'password123');
+    
+    // Submit the form
+    fireEvent.click(screen.getByRole('button', { name: /login/i }));
+    
+    // Wait for the form submission to complete
+    await waitFor(() => {
+      expect(require('@/services/auth-service').login).toHaveBeenCalledWith({
+        email: 'test@example.com',
+        password: 'password123',
+      });
+    });
+  });
+});
+```
+
+### 3. Page Tests
+
+Test the rendering and functionality of Next.js pages.
+
+```tsx
+// HomePage.test.tsx
+import { render, screen } from '@testing-library/react';
+import Home from '@/app/page';
+
+// Mock components that might make external calls
+jest.mock('@/components/organisms/FeatureList', () => ({
+  FeatureList: () => <div data-testid="feature-list">Feature List</div>,
+}));
+
+describe('Home Page', () => {
+  it('renders homepage correctly', () => {
+    render(<Home />);
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Welcome to Our App');
+    expect(screen.getByTestId('feature-list')).toBeInTheDocument();
+  });
+});
+```
+
+### 4. API Route Tests
+
+Test Next.js API routes.
+
+```tsx
+// userApi.test.ts
+import { createRequest, createResponse } from 'node-mocks-http';
+import userHandler from '@/app/api/users/route';
+
+describe('User API', () => {
+  it('returns users when GET is called', async () => {
+    const req = createRequest({
+      method: 'GET',
+    });
+    const res = createResponse();
+
+    await userHandler(req, res);
+
+    expect(res._getStatusCode()).toBe(200);
+    expect(JSON.parse(res._getData())).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: expect.any(String),
+          name: expect.any(String),
+        }),
+      ])
+    );
+  });
+});
+```
+
+### 5. Hook Tests
+
+Test custom React hooks.
+
+```tsx
+// useCounter.test.ts
+import { renderHook, act } from '@testing-library/react';
+import { useCounter } from './useCounter';
+
+describe('useCounter', () => {
+  it('increments counter', () => {
+    const { result } = renderHook(() => useCounter());
+
+    act(() => {
+      result.current.increment();
+    });
+
+    expect(result.current.count).toBe(1);
+  });
+
+  it('decrements counter', () => {
+    const { result } = renderHook(() => useCounter(10));
+
+    act(() => {
+      result.current.decrement();
+    });
+
+    expect(result.current.count).toBe(9);
+  });
+});
+```
+
+## Mocking
+
+### Mocking API Calls
+
+Use Jest's mocking capabilities to mock API calls:
+
+```tsx
+// Example of mocking fetch
+global.fetch = jest.fn(() =>
+  Promise.resolve({
+    json: () => Promise.resolve({ data: 'mocked data' }),
+    ok: true,
+  })
+) as jest.Mock;
+
+// Example of mocking Axios
+jest.mock('axios', () => ({
+  get: jest.fn(() => Promise.resolve({ data: 'mocked data' })),
+  post: jest.fn(() => Promise.resolve({ data: 'mocked data' })),
+}));
+
+// Example of mocking TanStack Query
+jest.mock('@tanstack/react-query', () => ({
+  ...jest.requireActual('@tanstack/react-query'),
+  useQuery: jest.fn().mockReturnValue({
+    data: 'mocked data',
+    isLoading: false,
+    error: null,
+  }),
+}));
+```
+
+### Mocking Next.js Components and Functions
+
+```tsx
+// Mocking next/navigation
+jest.mock('next/navigation', () => ({
+  useRouter: jest.fn(() => ({
+    push: jest.fn(),
+    replace: jest.fn(),
+    prefetch: jest.fn(),
+  })),
+  useParams: jest.fn(() => ({
+    id: '123',
+  })),
+  useSearchParams: jest.fn(() => ({
+    get: jest.fn((param) => param === 'query' ? 'search' : ''),
+  })),
+}));
+
+// Mocking next/image
+jest.mock('next/image', () => ({
+  __esModule: true,
+  default: (props) => {
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img {...props} alt={props.alt} />;
+  },
+}));
+```
+
+## Testing with Zustand
+
+To test components that use Zustand stores:
+
+```tsx
+// userStore.test.ts
+import { renderHook, act } from '@testing-library/react';
+import { useUserStore } from './userStore';
+
+describe('useUserStore', () => {
+  beforeEach(() => {
+    // Clear the store before each test
+    act(() => {
+      useUserStore.getState().reset();
+    });
+  });
+
+  it('should update user', () => {
+    const { result } = renderHook(() => useUserStore());
+    
+    const user = { id: '1', name: 'John Doe' };
+    
+    act(() => {
+      result.current.setUser(user);
+    });
+    
+    expect(result.current.user).toEqual(user);
+  });
+});
+```
+
+## Test Coverage
+
+Run tests with coverage:
+
+```bash
+npm run test:coverage
+```
+
+This will generate a coverage report in the `coverage` directory. You can view it by opening `coverage/lcov-report/index.html` in your browser.
+
+Aim for at least 80% coverage for critical parts of your application, such as:
+
+- Components that handle user input
+- Forms and validation logic
+- Business logic utilities
+- API integration points
+
+## Continuous Integration
+
+### GitHub Actions Example
+
+Create a `.github/workflows/test.yml` file:
+
+```yaml
+name: Run Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Use Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18.x'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Run tests
+      run: npm test -- --coverage
+    
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+```
+
+## Best Practices
+
+1. **Test Behavior, Not Implementation**: Focus on what the component does, not how it's implemented.
+
+2. **Use Data-test Attributes Sparingly**: Prefer testing using user-facing attributes (like text content, ARIA roles) instead of adding test-specific attributes.
+
+3. **Test Edge Cases**: Don't just test the happy path. Test error states, empty states, and boundary conditions.
+
+4. **Keep Tests Simple**: Each test should verify one specific behavior.
+
+5. **Use Setup and Teardown**: Use `beforeEach` and `afterEach` to set up and clean up common test state.
+
+6. **Avoid Test Interdependence**: Tests should not depend on the state of other tests.
+
+7. **Mock External Dependencies**: Mock API calls, browser APIs, and third-party libraries.
+
+8. **Write Readable Tests**: Use descriptive test names and follow the Arrange-Act-Assert pattern.
+
+9. **Snapshot Testing with Care**: Use snapshot testing sparingly, and review snapshot changes carefully.
+
+10. **Test Accessibility**: Include tests for accessibility concerns using `jest-axe`.
+
+By following these guidelines, you'll create a robust test suite that helps ensure the quality of your Next.js application. 
