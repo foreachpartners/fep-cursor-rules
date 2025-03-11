@@ -1,5 +1,5 @@
 ---
-description: 
+description: Организация сервисного слоя API в Next.js приложениях с поддержкой мок-данных и TypeScript
 globs: 
 alwaysApply: false
 ---

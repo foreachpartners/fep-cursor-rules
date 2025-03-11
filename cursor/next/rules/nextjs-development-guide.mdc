@@ -1,0 +1,143 @@
+---
+description: Сводное руководство по разработке Next.js приложений с лучшими практиками и рекомендациями
+globs: "**/*.{js,jsx,ts,tsx}"
+alwaysApply: true
+---
+
+# Next.js Development Guide
+
+This guide serves as a central reference for all Next.js development practices and standards. It provides an overview of the more detailed guidelines available in specific areas.
+
+## Core Guidelines
+
+Next.js is a React framework that enables server-side rendering, static site generation, and other performance optimizations. Our development approach follows these core principles:
+
+1. **Modern JavaScript and TypeScript**: Use TypeScript for type safety
+2. **App Router Architecture**: Prefer App Router over Pages Router for new projects
+3. **Component-Based Design**: Follow atomic design principles
+4. **API Layer Separation**: Maintain clean separation between UI and data layers
+5. **Performance First**: Optimize for Core Web Vitals and user experience
+6. **Testing Driven Development**: Write tests for critical functionality
+7. **Consistent Code Style**: Follow established linting and formatting rules
+
+## Technology Stack
+
+Our Next.js applications are built with the following technology stack:
+
+- **Next.js 14+**: Utilizing the App Router architecture
+- **TypeScript**: For type safety and better developer experience
+- **Tailwind CSS**: For styling and responsive design
+- **Zustand**: For state management
+- **TanStack Query**: For data fetching and caching
+- **next-intl**: For internationalization
+- **Jest and React Testing Library**: For testing
+- **ESLint and Prettier**: For code quality and formatting
+
+## Key Guidelines
+
+For detailed information, refer to the following specific guidelines:
+
+### 1. Project Structure and Organization
+
+See [Project Structure Guidelines](mdc:nextjs-project-structure.mdc) for detailed information on:
+- Directory organization
+- File naming conventions
+- Component structure
+- Module organization
+
+### 2. API and Data Management
+
+See [API Service Layer Guidelines](mdc:nextjs-api-service-layer.mdc) for detailed information on:
+- API client implementation
+- Service layer architecture
+- Mock data for development
+- Integration with TanStack Query
+
+### 3. TypeScript Usage
+
+See [TypeScript Guidelines](mdc:nextjs-typescript.mdc) for detailed information on:
+- TypeScript configuration
+- Type definitions and interfaces
+- Type safety with App Router
+- State management with TypeScript
+
+### 4. Testing Strategy
+
+See [Testing Guidelines](mdc:nextjs-testing.mdc) for detailed information on:
+- Unit testing with Jest
+- Component testing
+- Integration testing
+- Test organization and best practices
+
+### 5. Component Documentation
+
+See [Storybook Guidelines](mdc:nextjs-storybook.mdc) for detailed information on:
+- Setting up Storybook
+- Component documentation
+- Visual testing
+- Storybook addons and customization
+
+### 6. Internationalization
+
+See [Internationalization Guidelines](mdc:nextjs-internationalization.mdc) for detailed information on:
+- Setup and configuration of next-intl
+- Translation management
+- Internationalized routing
+- Date and number formatting
+
+### 7. Code Quality
+
+See [Linting and Formatting Guidelines](mdc:nextjs-linting.mdc) for detailed information on:
+- ESLint configuration
+- Prettier setup
+- VS Code integration
+- Git hooks with Husky
+
+## Development Workflow
+
+Our development workflow follows these steps:
+
+1. **Planning**: Define requirements and create user stories
+2. **Design**: Create UI/UX designs and component hierarchy
+3. **Implementation**: Develop the application following these guidelines
+4. **Testing**: Write and run tests for all critical functionality
+5. **Code Review**: Ensure code meets standards and best practices
+6. **Deployment**: Deploy to staging and then production
+7. **Monitoring**: Monitor performance and user feedback
+
+## Performance Optimization
+
+Next.js applications should be optimized for performance:
+
+- Use appropriate data fetching strategies (SSR, SSG, ISR)
+- Implement code splitting and lazy loading
+- Optimize images with next/image
+- Minimize client-side JavaScript
+- Implement proper caching strategies
+- Monitor and improve Core Web Vitals
+
+## Deployment
+
+Our Next.js applications are deployed using:
+
+- PM2 for process management
+- Nginx as a reverse proxy
+- Server-side rendering for optimal performance
+- Environment-specific configuration
+
+## Additional Resources
+
+- [Next.js Documentation](mdc:https:/nextjs.org/docs)
+- [React Documentation](mdc:https:/react.dev)
+- [TypeScript Documentation](mdc:https:/www.typescriptlang.org/docs)
+- [Tailwind CSS Documentation](mdc:https:/tailwindcss.com/docs)
+- [TanStack Query Documentation](mdc:https:/tanstack.com/query/latest)
+
+## Contributing to These Guidelines
+
+To contribute to these guidelines:
+1. Review the existing guidelines
+2. Create a new file following the naming convention `nextjs-[topic].mdc` if needed
+3. Follow the existing format and structure
+4. Include practical examples and clear explanations
+5. Submit your changes for review 

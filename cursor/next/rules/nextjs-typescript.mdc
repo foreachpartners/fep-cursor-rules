@@ -1,7 +1,8 @@
 ---
-description: 
+description: Рекомендации по использованию TypeScript в Next.js приложениях для обеспечения типобезопасности
 globs: 
 alwaysApply: false
+related: ["nextjs-project-structure.mdc", "nextjs-api-service-layer.mdc", "nextjs-linting.mdc"]
 ---
 # Next.js TypeScript Guidelines
 

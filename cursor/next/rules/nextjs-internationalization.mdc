@@ -1,3 +1,8 @@
+---
+description: Внедрение многоязычности в Next.js приложениях с использованием библиотеки next-intl
+globs: 
+alwaysApply: false
+---
 # Next.js Internationalization (i18n) with next-intl
 
 This document outlines the recommended approach to implementing internationalization in Next.js applications using the next-intl library.

@@ -1,3 +1,8 @@
+---
+description: Настройка ESLint и Prettier для обеспечения качества кода в Next.js приложениях
+globs: 
+alwaysApply: false
+---
 # Next.js Linting and Code Formatting
 
 This document outlines the recommended configuration for ESLint and Prettier in Next.js applications, ensuring code quality, consistency, and best practices.
