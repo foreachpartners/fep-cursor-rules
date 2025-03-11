@@ -6,7 +6,7 @@ related: ["nextjs-api-service-layer.mdc", "nextjs-typescript.mdc", "nextjs-linti
 ---
 # Next.js Project Structure
 
-This document outlines the recommended project structure for Next.js applications using the App Router, following industry best practices and the atomic design methodology.
+This document outlines the recommended project structure and file organization for Next.js applications using the App Router. For API service layer organization, see @nextjs-api-service-layer.mdc. For TypeScript configuration, refer to @nextjs-typescript.mdc. For linting and formatting guidelines, see @nextjs-linting.mdc.
 
 ## Directory Structure
 

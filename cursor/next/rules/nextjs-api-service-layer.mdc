@@ -6,7 +6,7 @@ related: ["nextjs-project-structure.mdc", "nextjs-typescript.mdc", "nextjs-testi
 ---
 # Next.js API Service Layer
 
-This document outlines the recommended approach to organizing your API service layer in Next.js applications, with a focus on clean separation of concerns and using mock data during development.
+This document outlines the recommended approach to organizing the API service layer in Next.js applications, with a focus on clean separation of concerns and the use of mock data during development. For project structure guidelines, see @nextjs-project-structure.mdc. For TypeScript integration, refer to @nextjs-typescript.mdc. For testing strategies, see @nextjs-testing.mdc.
 
 ## Service Layer Structure
 

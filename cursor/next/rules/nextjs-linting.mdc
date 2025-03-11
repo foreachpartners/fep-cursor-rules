@@ -6,7 +6,7 @@ related: ["nextjs-project-structure.mdc", "nextjs-typescript.mdc"]
 ---
 # Next.js Linting and Code Formatting
 
-This document outlines the recommended configuration for ESLint and Prettier in Next.js applications, ensuring code quality, consistency, and best practices.
+This document outlines the recommended configuration for ESLint and Prettier in Next.js applications, ensuring code quality, consistency, and best practices. For project structure guidelines, see @nextjs-project-structure.mdc. For TypeScript configuration, refer to @nextjs-typescript.mdc.
 
 ## ESLint Setup
 

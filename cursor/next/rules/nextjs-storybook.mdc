@@ -6,7 +6,7 @@ related: ["nextjs-project-structure.mdc", "nextjs-testing.mdc", "nextjs-typescri
 ---
 # Next.js Storybook Guidelines
 
-This document outlines the recommended approach to using Storybook with Next.js applications, including setup, best practices, and component documentation.
+This document outlines the recommended approach to setting up and using Storybook for documenting components in Next.js applications. For project structure guidelines, see @nextjs-project-structure.mdc. For testing strategies, refer to @nextjs-testing.mdc. For TypeScript integration, see @nextjs-typescript.mdc.
 
 ## Setting Up Storybook
 

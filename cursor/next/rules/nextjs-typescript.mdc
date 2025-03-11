@@ -1,12 +1,12 @@
 ---
 description: "Guidelines for using TypeScript in Next.js applications to ensure type safety"
-globs:
+globs: 
 alwaysApply: false
 related: ["nextjs-project-structure.mdc", "nextjs-api-service-layer.mdc", "nextjs-linting.mdc"]
 ---
 # Next.js TypeScript Guidelines
 
-This document outlines the recommended TypeScript practices for Next.js applications, ensuring type safety, maintainability, and developer productivity.
+This document provides guidelines for using TypeScript in Next.js applications to ensure type safety, maintainability, and developer productivity. For project structure recommendations, see @nextjs-project-structure.mdc. For API service layer implementation, refer to @nextjs-api-service-layer.mdc. For linting configuration, see @nextjs-linting.mdc.
 
 ## TypeScript Configuration
 

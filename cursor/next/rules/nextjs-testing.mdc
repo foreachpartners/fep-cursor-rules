@@ -6,7 +6,7 @@ related: ["nextjs-project-structure.mdc", "nextjs-typescript.mdc", "nextjs-story
 ---
 # Next.js Testing Guidelines
 
-This document outlines the recommended approach to testing Next.js applications using Jest and React Testing Library.
+This document outlines the recommended testing strategy for Next.js applications, including unit testing, component testing, and integration testing. For project structure guidelines, see @nextjs-project-structure.mdc. For TypeScript integration, refer to @nextjs-typescript.mdc. For component documentation with Storybook, see @nextjs-storybook.mdc.
 
 ## Testing Setup
 
