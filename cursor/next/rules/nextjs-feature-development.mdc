@@ -207,8 +207,8 @@ export const userServiceMock = {
 
 ```bash
 # Example linting commands
-npm run lint
-npm run format
+pnpm lint
+pnpm format
 ```
 
 #### 3.6. Run All Tests
@@ -220,9 +220,9 @@ npm run format
 
 ```bash
 # Example test commands
-npm run test
-npm run test:coverage
-npm run test:e2e
+pnpm test
+pnpm test:coverage
+pnpm test:e2e
 ```
 
 #### 3.7. Analyze Results and Fix Issues

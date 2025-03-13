@@ -17,13 +17,13 @@ Next.js comes with ESLint configured out of the box. You can customize it furthe
 If you're starting a new Next.js project, ESLint is usually already installed. You can run the following command to check for linting issues:
 
 ```bash
-npm run lint
+pnpm lint
 ```
 
 If you need to set up ESLint manually, run:
 
 ```bash
-npx eslint --init
+pnpm dlx eslint --init
 ```
 
 ### ESLint Configuration
@@ -121,7 +121,7 @@ Create or update the `.eslintrc.json` file at the root of your project:
 ### Installing Additional ESLint Plugins
 
 ```bash
-npm install --save-dev eslint-plugin-import @typescript-eslint/eslint-plugin eslint-import-resolver-typescript
+pnpm add -D eslint-plugin-import @typescript-eslint/eslint-plugin eslint-import-resolver-typescript
 ```
 
 ## Prettier Setup
@@ -131,7 +131,7 @@ Prettier is a code formatter that ensures consistent code style across your proj
 ### Installation
 
 ```bash
-npm install --save-dev prettier eslint-config-prettier eslint-plugin-prettier
+pnpm add -D prettier eslint-config-prettier eslint-plugin-prettier
 ```
 
 ### Prettier Configuration
@@ -214,9 +214,9 @@ Make sure to install the following VS Code extensions:
 Set up pre-commit hooks to run ESLint and Prettier on staged files before committing:
 
 ```bash
-npm install --save-dev husky lint-staged
-npx husky install
-npx husky add .husky/pre-commit "npx lint-staged"
+pnpm add -D husky lint-staged
+pnpm dlx husky install
+pnpm dlx husky add .husky/pre-commit "pnpm lint-staged"
 ```
 
 Create a `lint-staged.config.js` file:
@@ -315,7 +315,7 @@ Update your `.eslintrc.json` to include your custom plugin:
 If you're using Tailwind CSS with Prettier, you might want to install the Tailwind CSS plugin for Prettier:
 
 ```bash
-npm install --save-dev prettier-plugin-tailwindcss
+pnpm add -D prettier-plugin-tailwindcss
 ```
 
 This plugin automatically sorts your Tailwind CSS classes according to the recommended class order.
@@ -343,7 +343,7 @@ Next.js App Router introduces some specific linting needs:
 You'll need to install a custom plugin for React Server Components:
 
 ```bash
-npm install --save-dev eslint-plugin-react-server-components
+pnpm add -D eslint-plugin-react-server-components
 ```
 
 ## Best Practices
@@ -371,13 +371,18 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: '18.x'
-        cache: 'npm'
+        cache: 'pnpm'
+    
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v2
+      with:
+        version: 8.x
     
     - name: Install dependencies
-      run: npm ci
+      run: pnpm install --frozen-lockfile
     
     - name: Lint
-      run: npm run lint
+      run: pnpm lint
 ```
 
 2. **Document ESLint Rules**: Comment on custom ESLint rules to explain why they exist.
@@ -404,7 +409,7 @@ module.exports = {
 };
 ```
 
-7. **Run Lint Fix Before Committing**: Always run `npm run lint -- --fix` before committing to fix automatic issues.
+7. **Run Lint Fix Before Committing**: Always run `pnpm run lint -- --fix` before committing to fix automatic issues.
 
 8. **Update ESLint Regularly**: Keep your ESLint and plugin versions up-to-date to benefit from new rules and improvements.
 

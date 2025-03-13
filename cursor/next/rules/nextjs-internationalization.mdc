@@ -13,7 +13,7 @@ This document outlines the recommended approach to implementing internationaliza
 ### Installation
 
 ```bash
-npm install next-intl
+pnpm add next-intl
 ```
 
 ### Creating Translation Files

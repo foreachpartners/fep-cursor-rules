@@ -1,0 +1,353 @@
+---
+description: "Guidelines for using pnpm as the exclusive package manager for Next.js applications"
+globs: 
+alwaysApply: false
+related: ["nextjs-project-structure.mdc", "nextjs-linting.mdc", "nextjs-feature-development.mdc"]
+---
+# Next.js Package Management with pnpm
+
+This document outlines the guidelines for using pnpm as the exclusive package manager for Next.js applications. For project structure guidelines, see @nextjs-project-structure.mdc. For linting configuration, refer to @nextjs-linting.mdc.
+
+## Project Setup
+
+### Verifying pnpm Availability
+
+Before starting, verify that pnpm is available in your system:
+
+```bash
+pnpm --version
+```
+
+If not available, install it according to your operating system requirements.
+
+### Creating a New Next.js Project
+
+Create a new Next.js project using pnpm:
+
+```bash
+pnpm create next-app my-next-app
+```
+
+When prompted, select your preferred options:
+
+- TypeScript: Yes
+- ESLint: Yes
+- Tailwind CSS: Yes
+- `src/` directory: Yes
+- App Router: Yes
+- Import alias: Yes (default: `@/*`)
+
+### Project Configuration
+
+After creating the project, add a `.npmrc` file in the project root to enforce using pnpm:
+
+```
+# .npmrc
+engine-strict=true
+```
+
+Update the `package.json` to specify pnpm as the required package manager:
+
+```json
+{
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "packageManager": "pnpm@8.x"
+}
+```
+
+## Day-to-Day Usage
+
+### Installing Dependencies
+
+To install dependencies:
+
+```bash
+# Install all dependencies
+pnpm install
+
+# Install a production dependency
+pnpm add package-name
+
+# Install a development dependency
+pnpm add -D package-name
+
+# Install a specific version
+pnpm add package-name@version
+```
+
+### Updating Dependencies
+
+To update dependencies:
+
+```bash
+# Check for outdated packages
+pnpm outdated
+
+# Update all dependencies according to package.json
+pnpm update
+
+# Update a specific package
+pnpm update package-name
+
+# Update to latest versions (including breaking changes)
+pnpm update --latest
+```
+
+### Running Scripts
+
+Run scripts defined in `package.json`:
+
+```bash
+# Start development server
+pnpm dev
+
+# Build for production
+pnpm build
+
+# Start production server
+pnpm start
+
+# Run linting
+pnpm lint
+
+# Run tests
+pnpm test
+```
+
+### Managing Workspaces (Monorepos)
+
+For monorepo setups, create a `pnpm-workspace.yaml` file in the project root:
+
+```yaml
+# pnpm-workspace.yaml
+packages:
+  - 'apps/*'
+  - 'packages/*'
+```
+
+Run commands in specific workspaces:
+
+```bash
+# Install dependencies in all workspaces
+pnpm install
+
+# Run a command in a specific workspace
+pnpm --filter app-name dev
+
+# Add a workspace package as a dependency to another
+pnpm --filter app-name add @internal/ui-library
+```
+
+## CI/CD Configuration
+
+### GitHub Actions
+
+Example GitHub Actions workflow for a Next.js project using pnpm:
+
+```yaml
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          run_install: false
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Test
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build
+```
+
+### Docker Configuration
+
+Example `Dockerfile` for a Next.js project using pnpm:
+
+```dockerfile
+FROM node:18-alpine AS base
+
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@8.x --activate
+
+# Set working directory
+WORKDIR /app
+
+# Install dependencies only when needed
+FROM base AS deps
+COPY package.json pnpm-lock.yaml* ./
+RUN pnpm install --frozen-lockfile
+
+# Rebuild the source code only when needed
+FROM base AS builder
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+# Next.js collects completely anonymous telemetry data about general usage.
+# Learn more here: https://nextjs.org/telemetry
+# Uncomment the following line in case you want to disable telemetry during the build.
+# ENV NEXT_TELEMETRY_DISABLED 1
+
+RUN pnpm build
+
+# Production image, copy all the files and run next
+FROM base AS runner
+WORKDIR /app
+
+ENV NODE_ENV production
+# Uncomment the following line in case you want to disable telemetry during runtime.
+# ENV NEXT_TELEMETRY_DISABLED 1
+
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+COPY --from=builder /app/public ./public
+
+# Automatically leverage output traces to reduce image size
+# https://nextjs.org/docs/advanced-features/output-file-tracing
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+USER nextjs
+
+EXPOSE 3000
+
+ENV PORT 3000
+
+CMD ["node", "server.js"]
+```
+
+## Best Practices
+
+### Lock File Management
+
+- **Always commit** the `pnpm-lock.yaml` file to version control
+- **Never** manually edit the lock file
+- **Regenerate** the lock file if there are conflicts: `pnpm install --force`
+
+### Dependency Management
+
+- Use exact versions for critical dependencies: `"react": "18.2.0"` instead of `"react": "^18.2.0"`
+- Regularly audit dependencies: `pnpm audit`
+- Keep dependencies updated: schedule regular updates and review changes
+- Use `pnpm why package-name` to understand why a package is installed
+
+### Performance Optimization
+
+- Use `pnpm install --frozen-lockfile` in CI environments to ensure deterministic builds
+- Enable pnpm's store compression to reduce disk usage: `pnpm config set compression-level 9`
+- Use `pnpm prune` to remove extraneous packages
+
+### Troubleshooting
+
+Common issues and solutions:
+
+1. **Phantom dependencies**:
+   - Error: `Cannot find module 'package-name'`
+   - Solution: Add the package to your dependencies
+
+2. **Incompatible peer dependencies**:
+   - Warning: `Peer dependencies that should be installed`
+   - Solution: Review warnings and install necessary peer dependencies
+
+3. **Lock file conflicts**:
+   - Error: `Lockfile is not up to date with package.json`
+   - Solution: Run `pnpm install --force` to regenerate the lock file
+
+4. **Cache issues**:
+   - Solution: Clear the store with `pnpm store prune`
+
+## Migration from npm or yarn
+
+If you're migrating an existing project from npm or yarn to pnpm:
+
+1. Remove existing lock files:
+   ```bash
+   rm package-lock.json yarn.lock node_modules
+   ```
+
+2. Install pnpm globally:
+   ```bash
+   corepack enable
+   corepack prepare pnpm@8.x --activate
+   ```
+
+3. Install dependencies with pnpm:
+   ```bash
+   pnpm install
+   ```
+
+4. Update CI/CD configurations to use pnpm
+5. Add the `.npmrc` and update `package.json` as described in the Project Configuration section
+
+## Enforcing pnpm Usage
+
+To prevent team members from accidentally using npm or yarn:
+
+1. Add a preinstall script to `package.json`:
+   ```json
+   {
+     "scripts": {
+       "preinstall": "npx only-allow pnpm"
+     }
+   }
+   ```
+
+   Alternatively, you can use the `packageManager` field in `package.json` which is supported by newer versions of npm and yarn:
+   ```json
+   {
+     "packageManager": "pnpm@8.x"
+   }
+   ```
+
+2. Use Git hooks to prevent committing npm or yarn lock files:
+   ```bash
+   # .husky/pre-commit
+   if git diff --cached --name-only | grep -E 'package-lock.json|yarn.lock'; then
+     echo "Error: Detected npm or yarn lock files. Please use pnpm."
+     exit 1
+   fi
+   ```
+
+By following these guidelines, you'll ensure consistent package management across all Next.js projects and development environments. 

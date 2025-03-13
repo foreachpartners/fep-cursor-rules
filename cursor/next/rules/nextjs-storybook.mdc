@@ -13,7 +13,7 @@ This document outlines the recommended approach to setting up and using Storyboo
 ### Installation
 
 ```bash
-npx storybook@latest init
+pnpm dlx storybook@latest init
 ```
 
 This will install the necessary dependencies and create the basic Storybook configuration.
@@ -235,7 +235,7 @@ For each component, ensure you document the following states (where applicable):
 Install the accessibility addon:
 
 ```bash
-npm install --save-dev @storybook/addon-a11y
+pnpm add -D @storybook/addon-a11y
 ```
 
 Add it to `.storybook/main.js`:
@@ -573,7 +573,7 @@ export const ClickTest: Story = {
 1. Build your Storybook:
 
 ```bash
-npm run build-storybook
+pnpm build-storybook
 ```
 
 2. Create a `vercel.json` file:
@@ -611,19 +611,23 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '18'
-          cache: 'npm'
+          cache: 'pnpm'
+      
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8.x
       
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
       
       - name: Build Storybook
-        run: npm run build-storybook
+        run: pnpm build-storybook
       
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@4.1.4
         with:
           branch: gh-pages
-          folder: storybook-static
 ```
 
 ## Best Practices

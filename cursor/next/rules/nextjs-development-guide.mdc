@@ -2,7 +2,7 @@
 description: "Comprehensive guide for Next.js application development with best practices and recommendations"
 globs: 
 alwaysApply: true
-related: ["nextjs-project-structure.mdc", "nextjs-api-service-layer.mdc", "nextjs-typescript.mdc", "nextjs-testing.mdc", "nextjs-storybook.mdc", "nextjs-internationalization.mdc", "nextjs-linting.mdc", "nextjs-feature-development.mdc"]
+related: ["nextjs-project-structure.mdc", "nextjs-api-service-layer.mdc", "nextjs-typescript.mdc", "nextjs-testing.mdc", "nextjs-storybook.mdc", "nextjs-internationalization.mdc", "nextjs-linting.mdc", "nextjs-feature-development.mdc", "nextjs-package-management.mdc"]
 ---
 
 # Next.js Development Guide
@@ -22,6 +22,7 @@ Next.js is a React framework that enables server-side rendering, static site gen
 7. **Consistent Code Style**: Follow established linting and formatting rules
 8. **Type-Safe Constants and Enums**: Avoid string literals in favor of constants, enums, and other type-safe mechanisms
 9. **Clean Folder Structure**: Use descriptive folder names without special characters (no parentheses in folder names)
+10. **Package Management**: Use pnpm exclusively as the package manager for all projects
 
 ## Technology Stack
 
@@ -106,3 +107,13 @@ See [Feature Development Guidelines](@nextjs-feature-development.mdc) for detail
 - Verification of compliance with development guidelines
 - Feature review process
 - Continuous improvement
+
+### 9. Package Management (@nextjs-package-management.mdc)
+
+See [Package Management Guidelines](@nextjs-package-management.mdc) for detailed information on:
+- Using pnpm as the exclusive package manager
+- Project setup and configuration
+- Day-to-day usage and best practices
+- CI/CD configuration
+- Migration from npm or yarn
+- Enforcing pnpm usage across the team
