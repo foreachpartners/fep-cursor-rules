@@ -28,15 +28,27 @@ shadcn/ui is not a traditional component library but rather a collection of reus
 Use the `canary` version of the CLI to initialize a new project:
 
 ```bash
-# First, create a new Next.js project
-pnpm create next-app@canary --tailwind --eslint --typescript --app --no-src-dir my-app
+# First, create a new Next.js project with our recommended structure
+pnpm create next-app@canary my-app --tailwind --eslint --typescript --app --src-dir --import-alias="@/*"
+
 cd my-app
 
 # Initialize shadcn/ui
 pnpm dlx shadcn@canary init
 ```
 
-During initialization, you'll be asked to configure your preferences:
+During initialization, you'll be asked to configure your preferences. To avoid additional questions, you can use the `-d` flag for defaults:
+
+```bash
+pnpm dlx shadcn@canary init -d
+```
+
+This will use the default settings:
+- Style: New York
+- Color: Zinc
+- CSS variables for colors: Yes
+
+If you need to customize these settings, omit the `-d` flag and answer the prompts:
 
 ```
 Which style would you like to use? › New York
@@ -70,19 +82,43 @@ export default function Home() {
 
 ### For Projects Already Using Tailwind CSS v4
 
-If your project is already using Tailwind CSS v4, you can add shadcn/ui directly:
+If your project is already using Tailwind CSS v4, you can add shadcn/ui as follows:
 
 ```bash
-pnpm dlx shadcn@canary init
+# In the project root directory
+pnpm dlx shadcn@canary init -d
 ```
+
+This will initialize shadcn/ui with default settings. If you want to customize the settings, omit the `-d` flag.
 
 ### For Projects Using Tailwind CSS v3
 
-If your project is using Tailwind CSS v3, you should first migrate to v4 following the guidelines in @nextjs-tailwind-v4-migration.mdc, then add shadcn/ui.
+If your project is using Tailwind CSS v3, first migrate to v4 following the instructions in @nextjs-tailwind-v4-migration.mdc, then add shadcn/ui.
+
+### Integration into Existing Project Structure
+
+After initializing shadcn/ui, ensure that the components are integrated into your existing project structure:
+
+1. **Check component location**: By default, shadcn/ui adds components to `src/components/ui/`. Make sure this aligns with your project structure.
+
+2. **Configure import paths**: Ensure your `tsconfig.json` has the correct import paths configured:
+
+```json
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  }
+}
+```
+
+3. **Update CSS**: Ensure your global CSS file (typically `src/app/globals.css`) imports Tailwind CSS and contains the necessary CSS variables for shadcn/ui.
 
 ## Project Structure with shadcn/ui
 
-When using shadcn/ui, components are typically organized as follows:
+When using shadcn/ui, components should be organized according to our recommended project structure:
 
 ```
 src/
@@ -91,11 +127,24 @@ src/
 │   │   ├── button.tsx
 │   │   ├── dialog.tsx
 │   │   └── ...
-│   ├── custom/       # Your custom components built with shadcn/ui
+│   ├── atoms/        # Custom atomic components
+│   │   ├── logo.tsx
+│   │   ├── icon-button.tsx  # Extended from ui/button
+│   │   └── ...
+│   ├── molecules/    # Composite components
+│   │   ├── search-bar.tsx
 │   │   ├── user-card.tsx
 │   │   └── ...
-│   └── ...
+│   ├── organisms/    # Complex UI sections
+│   │   ├── header.tsx
+│   │   ├── sidebar.tsx
+│   │   └── ...
+│   └── templates/    # Page layouts
+│       ├── dashboard-layout.tsx
+│       └── ...
 ```
+
+This structure aligns with the Atomic Design methodology and our recommendations for Next.js project organization. For more detailed information about project structure, see @nextjs-project-structure.mdc.
 
 ## Integration with Atomic Design
 
@@ -361,10 +410,10 @@ export function CustomButton() {
 
 ### 2. Consistent Theming
 
-Use CSS variables for consistent theming across your application:
+Use CSS variables for consistent theming across your application. In Tailwind CSS v4, this is done as follows:
 
 ```css
-/* globals.css */
+/* src/app/globals.css */
 @import "tailwindcss";
 
 @layer base {
@@ -414,6 +463,10 @@ Use CSS variables for consistent theming across your application:
   }
 }
 ```
+
+Note that in Tailwind CSS v4, we use `@import "tailwindcss"` instead of the `@tailwind` directives that were used in v3.
+
+These CSS variables are used by shadcn/ui components for consistent styling. You can customize them to match your design system.
 
 ### 3. Component Composition
 
