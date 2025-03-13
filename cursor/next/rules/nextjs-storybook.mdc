@@ -16,7 +16,7 @@ This document outlines the recommended approach to setting up and using Storyboo
 pnpm dlx storybook@latest init
 ```
 
-This will install the necessary dependencies and create the basic Storybook configuration with pnpm в качестве пакетного менеджера.
+This will install the necessary dependencies and create the basic Storybook configuration with pnpm as the package manager.
 
 > **Note**: Make sure you have configured pnpm as the default package manager in your project by adding `package-manager=pnpm` to your `.npmrc` file as described in @nextjs-package-management.mdc.
 
@@ -111,6 +111,33 @@ export const Primary = {
   }
 }
 ```
+
+## Storybook Development Workflow
+
+### Continuous Development Mode
+
+Storybook should be kept running in development mode while working on components. This allows you to see changes in real-time without the need to restart.
+
+```bash
+# Start Storybook in development mode
+pnpm storybook
+```
+
+After starting, Storybook will be available at `http://localhost:6006`. It automatically tracks changes in component files and their stories, updating the interface without the need for manual restart.
+
+### Benefits of Continuous Development Mode:
+
+1. **Instant Feedback**: Changes in components and their stories are displayed immediately after saving files
+2. **Accelerated Development**: No need to switch between editor and terminal to restart Storybook
+3. **Isolated Environment**: You can develop and test components independently of the main application
+4. **Demonstration Convenience**: Easy to show the current state of components to other team members or stakeholders
+
+### Usage Recommendations:
+
+- Launch Storybook in a separate terminal at the beginning of your workday
+- Keep the browser tab with Storybook open during component development
+- Use the Controls addon for interactive modification of component props
+- Check components in different states and screen sizes
 
 ## Story Organization
 

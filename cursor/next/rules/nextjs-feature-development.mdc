@@ -75,6 +75,7 @@ describe('UserProfile', () => {
 - Include usage examples and props documentation
 - Ensure accessibility compliance
 - Follow Storybook guidelines (@nextjs-storybook.mdc)
+- Use Storybook in development mode for instant verification of changes
 
 ```tsx
 // Example of a Storybook story
@@ -281,4 +282,4 @@ After feature implementation, consider the following:
 - Document lessons learned for future features
 - Share knowledge with the team
 
-By following this process, you'll ensure that new features are implemented with high quality, maintainability, and adherence to project standards. 
+By following this process, you'll ensure that new features are implemented with high quality, maintainability, and adherence to project standards.
