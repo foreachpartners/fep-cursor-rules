@@ -1,6 +1,6 @@
 ---
 description: "Comprehensive guide for Next.js application development with best practices and recommendations"
-globs:
+globs: 
 alwaysApply: true
 related: ["nextjs-project-structure.mdc", "nextjs-api-service-layer.mdc", "nextjs-typescript.mdc", "nextjs-testing.mdc", "nextjs-storybook.mdc", "nextjs-internationalization.mdc", "nextjs-linting.mdc"]
 ---
@@ -20,6 +20,7 @@ Next.js is a React framework that enables server-side rendering, static site gen
 5. **Performance First**: Optimize for Core Web Vitals and user experience
 6. **Testing Driven Development**: Write tests for critical functionality
 7. **Consistent Code Style**: Follow established linting and formatting rules
+8. **Type-Safe Constants and Enums**: Avoid string literals in favor of constants, enums, and other type-safe mechanisms
 
 ## Technology Stack
 
@@ -61,6 +62,7 @@ See [TypeScript Guidelines](@nextjs-typescript.mdc) for detailed information on:
 - Type definitions and interfaces
 - Type safety with App Router
 - State management with TypeScript
+- **Type-Safe Constants and Enums**: Avoid using string literals directly in code. Instead, use constants, enums, union types, and other type-safe mechanisms. See detailed examples in @nextjs-typescript.mdc.
 
 ### 4. Testing Strategy (@nextjs-testing.mdc)
 

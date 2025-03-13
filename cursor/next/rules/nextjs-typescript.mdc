@@ -772,4 +772,234 @@ Optimize VS Code for TypeScript development:
 }
 ```
 
-By following these TypeScript guidelines, you'll create a type-safe Next.js application that provides excellent developer experience and helps prevent runtime errors. 
+## Type-Safe Constants and Enums
+
+### Avoiding String Literals
+
+String literals should be avoided in favor of constants, enums, or other type-safe mechanisms. This improves type safety, enables better IDE autocompletion, and makes refactoring easier.
+
+#### Bad Practice:
+
+```tsx
+// Using string literals directly
+function fetchData(status: string) {
+  if (status === 'loading') {
+    // ...
+  } else if (status === 'success') {
+    // ...
+  } else if (status === 'error') {
+    // ...
+  }
+}
+
+// Calling with arbitrary strings
+fetchData('loading');
+fetchData('loaded'); // Typo! Should be 'success'
+```
+
+#### Good Practice:
+
+```tsx
+// Using an enum
+enum FetchStatus {
+  LOADING = 'loading',
+  SUCCESS = 'success',
+  ERROR = 'error'
+}
+
+function fetchData(status: FetchStatus) {
+  if (status === FetchStatus.LOADING) {
+    // ...
+  } else if (status === FetchStatus.SUCCESS) {
+    // ...
+  } else if (status === FetchStatus.ERROR) {
+    // ...
+  }
+}
+
+// Type-safe usage
+fetchData(FetchStatus.LOADING);
+fetchData('loaded'); // TypeScript error!
+```
+
+### Using const Enums for Better Performance
+
+For better runtime performance, use `const enum` when the enum values are only needed at compile time:
+
+```tsx
+const enum HttpMethod {
+  GET = 'GET',
+  POST = 'POST',
+  PUT = 'PUT',
+  DELETE = 'DELETE',
+  PATCH = 'PATCH'
+}
+
+function makeRequest(url: string, method: HttpMethod) {
+  // Implementation
+}
+
+makeRequest('/api/users', HttpMethod.GET);
+```
+
+### Using Union Types for Finite Sets
+
+For simple cases, union types can be more appropriate than enums:
+
+```tsx
+type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost';
+
+interface ButtonProps {
+  variant: ButtonVariant;
+  // Other props
+}
+
+function Button({ variant, ...props }: ButtonProps) {
+  // Implementation
+}
+
+// Type-safe usage
+<Button variant="primary" />
+<Button variant="invalid" /> // TypeScript error!
+```
+
+### Constants for Configuration Values
+
+Use constants for configuration values, API endpoints, and other string literals:
+
+```tsx
+// constants.ts
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.example.com';
+
+export const API_ENDPOINTS = {
+  AUTH: {
+    LOGIN: `${API_BASE_URL}/auth/login`,
+    REGISTER: `${API_BASE_URL}/auth/register`,
+    LOGOUT: `${API_BASE_URL}/auth/logout`,
+  },
+  USERS: {
+    LIST: `${API_BASE_URL}/users`,
+    DETAILS: (id: string) => `${API_BASE_URL}/users/${id}`,
+  },
+};
+
+// Usage
+fetch(API_ENDPOINTS.AUTH.LOGIN, { method: 'POST' });
+```
+
+### Using Record for Key-Value Mappings
+
+Use `Record` type for key-value mappings with type safety:
+
+```tsx
+type ThemeColor = 'primary' | 'secondary' | 'success' | 'error';
+
+const THEME_COLORS: Record<ThemeColor, string> = {
+  primary: '#0070f3',
+  secondary: '#7928ca',
+  success: '#0070f3',
+  error: '#ff0000',
+};
+
+function getColorByType(type: ThemeColor): string {
+  return THEME_COLORS[type];
+}
+
+// Type-safe usage
+const primaryColor = getColorByType('primary');
+const invalidColor = getColorByType('invalid'); // TypeScript error!
+```
+
+### Using as const for Readonly Arrays
+
+Use `as const` to create readonly arrays with specific literal types:
+
+```tsx
+const VALID_LOCALES = ['en', 'fr', 'de', 'es', 'ru'] as const;
+type Locale = typeof VALID_LOCALES[number]; // 'en' | 'fr' | 'de' | 'es' | 'ru'
+
+function setLocale(locale: Locale) {
+  // Implementation
+}
+
+// Type-safe usage
+setLocale('en');
+setLocale('invalid'); // TypeScript error!
+```
+
+### Using Object Maps Instead of Switch Statements
+
+Replace switch statements with object maps for better type safety and readability:
+
+```tsx
+// Instead of this:
+function getStatusText(status: string): string {
+  switch (status) {
+    case 'pending':
+      return 'Waiting for approval';
+    case 'approved':
+      return 'Approved';
+    case 'rejected':
+      return 'Rejected';
+    default:
+      return 'Unknown status';
+  }
+}
+
+// Do this:
+type OrderStatus = 'pending' | 'approved' | 'rejected';
+
+const STATUS_TEXT: Record<OrderStatus, string> = {
+  pending: 'Waiting for approval',
+  approved: 'Approved',
+  rejected: 'Rejected',
+};
+
+function getStatusText(status: OrderStatus): string {
+  return STATUS_TEXT[status] ?? 'Unknown status';
+}
+```
+
+### Using Branded Types for IDs
+
+Create branded types for different ID types to prevent mixing them up:
+
+```tsx
+type UserId = string & { readonly _brand: unique symbol };
+type ProductId = string & { readonly _brand: unique symbol };
+
+function createUserId(id: string): UserId {
+  return id as UserId;
+}
+
+function fetchUser(id: UserId) {
+  // Implementation
+}
+
+const userId = createUserId('user-123');
+const productId = createProductId('product-456');
+
+fetchUser(userId); // OK
+fetchUser(productId); // TypeScript error!
+```
+
+### ESLint Rules for Enforcing Type Safety
+
+Add ESLint rules to enforce the use of type-safe constructs:
+
+```json
+// .eslintrc.json
+{
+  "rules": {
+    "@typescript-eslint/no-explicit-any": "error",
+    "@typescript-eslint/no-unsafe-assignment": "error",
+    "@typescript-eslint/no-unsafe-member-access": "error",
+    "@typescript-eslint/no-unsafe-call": "error",
+    "@typescript-eslint/no-unsafe-return": "error",
+    "@typescript-eslint/prefer-enum-initializers": "error",
+    "@typescript-eslint/prefer-literal-enum-member": "error"
+  }
+}
+```
+
+By following these guidelines, you'll create more maintainable and type-safe Next.js applications with fewer runtime errors and better developer experience. 

@@ -447,6 +447,102 @@ export async function generateMetadata({
 
 ## Managing Translations
 
+### Type-Safe Translation Keys
+
+To ensure type safety when working with translations, create type definitions for your translation keys:
+
+```tsx
+// types/i18n.ts
+
+// Define supported locales as a const array
+export const SUPPORTED_LOCALES = ['en', 'ru', 'es'] as const;
+
+// Create a type from the array values
+export type Locale = typeof SUPPORTED_LOCALES[number];
+
+// Type guard for checking valid locales
+export function isValidLocale(locale: string): locale is Locale {
+  return SUPPORTED_LOCALES.includes(locale as Locale);
+}
+
+// Define translation namespace keys
+export const NAMESPACES = {
+  COMMON: 'Common',
+  AUTH: 'Auth',
+  NAVIGATION: 'Navigation',
+  ERRORS: 'Errors',
+  USER: 'User',
+} as const;
+
+export type Namespace = typeof NAMESPACES[keyof typeof NAMESPACES];
+
+// Define translation keys for each namespace
+export type CommonTranslations = {
+  submit: string;
+  cancel: string;
+  save: string;
+  delete: string;
+  edit: string;
+  loading: string;
+  error: string;
+  success: string;
+  noResults: string;
+  back: string;
+  next: string;
+  previous: string;
+};
+
+export type AuthTranslations = {
+  login: string;
+  register: string;
+  email: string;
+  password: string;
+  forgotPassword: string;
+  rememberMe: string;
+  errors: {
+    invalidCredentials: string;
+    requiredField: string;
+  };
+};
+
+// Type-safe translation access
+export type TranslationKeys = {
+  [NAMESPACES.COMMON]: CommonTranslations;
+  [NAMESPACES.AUTH]: AuthTranslations;
+  // Add other namespaces as needed
+};
+```
+
+Using these types in your components:
+
+```tsx
+// components/LoginForm.tsx
+'use client';
+
+import { useTranslations } from 'next-intl';
+import { NAMESPACES } from '@/types/i18n';
+
+export function LoginForm() {
+  // Type-safe namespace
+  const t = useTranslations(NAMESPACES.AUTH);
+  
+  return (
+    <form>
+      <div>
+        {/* Type-safe translation keys */}
+        <label>{t('email')}</label>
+        <input type="email" />
+      </div>
+      <div>
+        <label>{t('password')}</label>
+        <input type="password" />
+      </div>
+      <button type="submit">{t('login')}</button>
+    </form>
+  );
+}
+```
+
 ### Best Practices for Translation Keys
 
 1. **Use Namespaces**: Group translations by feature or page
