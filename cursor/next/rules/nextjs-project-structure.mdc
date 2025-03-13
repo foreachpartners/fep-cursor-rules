@@ -22,57 +22,58 @@ my-next-app/
 │   ├── favicon.ico
 │   ├── images/
 │   └── fonts/
-├── app/                   # App Router structure
-│   ├── auth/              # Authentication routes
-│   │   ├── login/
+├── src/                   # Source code directory
+│   ├── app/               # App Router structure
+│   │   ├── auth/          # Authentication routes
+│   │   │   ├── login/
+│   │   │   │   └── page.tsx
+│   │   │   ├── register/
+│   │   │   │   └── page.tsx
+│   │   │   └── layout.tsx
+│   │   ├── dashboard/     # Dashboard routes
+│   │   │   ├── layout.tsx
 │   │   │   └── page.tsx
-│   │   ├── register/
-│   │   │   └── page.tsx
-│   │   └── layout.tsx
-│   ├── dashboard/         # Dashboard routes
-│   │   ├── layout.tsx
-│   │   └── page.tsx
-│   ├── api/               # API Routes
-│   │   └── [...]
-│   ├── globals.css        # Global styles
-│   ├── layout.tsx         # Root layout
-│   └── page.tsx           # Home page
-├── components/            # UI Components (Atomic Design)
-│   ├── atoms/             # Basic building blocks (Button, Input, etc.)
-│   ├── molecules/         # Combinations of atoms (Form fields, etc.)
-│   ├── organisms/         # Combinations of molecules (Forms, etc.)
-│   ├── templates/         # Page layout templates
-│   └── index.ts           # Export all components
-├── hooks/                 # Custom React hooks
-│   ├── use-auth.ts
-│   ├── use-form.ts
-│   └── index.ts
-├── lib/                   # Utility functions and shared code
-│   ├── utils.ts
-│   ├── constants.ts
-│   └── types.ts
-├── services/              # API service layer
-│   ├── api-client.ts      # Base API client setup
-│   ├── endpoints.ts       # API endpoints constants
-│   ├── auth-service.ts    # Auth-related API calls
-│   ├── user-service.ts    # User-related API calls
-│   └── mock/              # Mock data for development
-│       ├── auth.json
-│       └── users.json
-├── store/                 # Zustand state management
-│   ├── auth-store.ts
-│   ├── user-store.ts
-│   └── index.ts
-├── styles/                # Component-specific styles (if not using CSS-in-JS)
-│   └── tailwind/          # Tailwind custom configurations
-│       └── theme.ts
-├── tests/                 # Test files
-│   ├── __mocks__/         # Test mocks
-│   ├── utils/             # Test utilities
-│   └── components/        # Component tests
-└── .storybook/            # Storybook configuration
-    ├── main.js
-    └── preview.js
+│   │   ├── api/           # API Routes
+│   │   │   └── [...]
+│   │   ├── globals.css    # Global styles
+│   │   ├── layout.tsx     # Root layout
+│   │   └── page.tsx       # Home page
+│   ├── components/        # UI Components (Atomic Design)
+│   │   ├── atoms/         # Basic building blocks (Button, Input, etc.)
+│   │   ├── molecules/     # Combinations of atoms (Form fields, etc.)
+│   │   ├── organisms/     # Combinations of molecules (Forms, etc.)
+│   │   ├── templates/     # Page layout templates
+│   │   └── index.ts       # Export all components
+│   ├── hooks/             # Custom React hooks
+│   │   ├── use-auth.ts
+│   │   ├── use-form.ts
+│   │   └── index.ts
+│   ├── lib/               # Utility functions and shared code
+│   │   ├── utils.ts
+│   │   ├── constants.ts
+│   │   └── types.ts
+│   ├── services/          # API service layer
+│   │   ├── api-client.ts  # Base API client setup
+│   │   ├── endpoints.ts   # API endpoints constants
+│   │   ├── auth-service.ts # Auth-related API calls
+│   │   ├── user-service.ts # User-related API calls
+│   │   └── mock/          # Mock data for development
+│   │       ├── auth.json
+│   │       └── users.json
+│   ├── store/             # Zustand state management
+│   │   ├── auth-store.ts
+│   │   ├── user-store.ts
+│   │   └── index.ts
+│   ├── styles/            # Component-specific styles (if not using CSS-in-JS)
+│   │   └── tailwind/      # Tailwind custom configurations
+│   │       └── theme.ts
+│   ├── tests/             # Test files
+│   │   ├── __mocks__/     # Test mocks
+│   │   ├── utils/         # Test utilities
+│   │   └── components/    # Component tests
+│   └── .storybook/        # Storybook configuration
+│       ├── main.js
+│       └── preview.js
 ```
 
 ## App Router Organization
@@ -160,8 +161,8 @@ Follow these naming conventions for files and folders in your Next.js applicatio
 
 1. **Routes and Pages**
    - Use kebab-case for route folders: `user-profile/`, `product-details/`
-   - Use standard Next.js file names for special files: `page.tsx`, `layout.tsx`
-   - **Never use parentheses or other special characters in folder names** (except for `@` in parallel routes and `[param]` for dynamic routes)
+   - Use PascalCase for page components: `page.tsx`
+   - Use descriptive, feature-based names for routes
 
 2. **Components**
    - Use PascalCase for component files: `Button.tsx`, `UserProfile.tsx`
@@ -283,18 +284,9 @@ Button/
 4. **Constants**:
    - Use UPPER_SNAKE_CASE for constants: `API_URL`, `MAX_RETRIES`
 
-## Importing Order
+## Import Structure
 
-Follow a consistent import order in all files:
-
-1. React and Next.js imports
-2. External library imports
-3. Internal absolute imports (components, hooks, etc.)
-4. Relative imports
-5. Type imports
-6. CSS/SCSS imports
-
-Example:
+Follow this order for imports to maintain consistency:
 
 ```tsx
 // React and Next.js imports
@@ -306,7 +298,7 @@ import Image from 'next/image';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 
-// Internal absolute imports
+// Internal absolute imports (note that src is not included in the import path)
 import { Button } from '@/components/atoms';
 import { useAuth } from '@/hooks';
 import { formatDate } from '@/lib/utils';
@@ -321,53 +313,66 @@ import type { User } from '@/types';
 import './styles.css';
 ```
 
-By following this structure, your Next.js project will be organized in a way that promotes maintainability, scalability, and developer productivity.
+By following this structure, your Next.js project will be organized in a way that promotes maintainability, scalability, and developer productivity. The `src` directory serves as the root for all source code, but it is not included in import paths thanks to the path aliases configured in `tsconfig.json`.
 
-### File and Folder Naming Conventions
+## Configuration Files
 
-Follow these naming conventions for files and folders in your Next.js application:
+### Next.js Configuration
 
-1. **Routes and Pages**
-   - Use kebab-case for route folders: `user-profile/`, `product-details/`
-   - Use PascalCase for page components: `page.tsx`
-   - Use descriptive, feature-based names for routes
+Configure Next.js in the `next.config.js` file:
 
-2. **Components**
-   - Use PascalCase for component files: `Button.tsx`, `UserProfile.tsx`
-   - Use PascalCase for component folders: `Button/`, `UserProfile/`
-   - Group related components in feature folders
+```js
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  reactStrictMode: true,
+  swcMinify: true,
+  // The src directory is automatically supported by Next.js
+  // No additional configuration is needed for the src directory
+  images: {
+    domains: ['example.com', 'cdn.example.com'],
+  },
+  experimental: {
+    // Enable experimental features as needed
+  },
+};
 
-3. **Utilities and Helpers**
-   - Use camelCase for utility files: `formatDate.ts`, `useLocalStorage.ts`
-   - Use descriptive, action-based names for utilities
+module.exports = nextConfig;
+```
 
-4. **Constants and Types**
-   - Use PascalCase for type files: `UserTypes.ts`, `ApiTypes.ts`
-   - Use UPPER_SNAKE_CASE for constant values: `API_ENDPOINTS`, `DEFAULT_LOCALE`
-   - Use camelCase for constant files: `apiEndpoints.ts`, `routeConstants.ts`
+### TypeScript Configuration
 
-5. **Special Files**
-   - Use the standard Next.js file names for special files: `layout.tsx`, `loading.tsx`, `error.tsx`, `not-found.tsx`
-   - Use `index.ts` for barrel exports from directories
+Configure TypeScript in the `tsconfig.json` file:
 
-6. **Test Files**
-   - Append `.test.ts` or `.test.tsx` to test files: `Button.test.tsx`
-   - Place test files next to the files they test
+```json
+{
+  "compilerOptions": {
+    "target": "es5",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": ["node_modules"]
+}
+```
 
-7. **Storybook Files**
-   - Append `.stories.ts` or `.stories.tsx` to Storybook files: `Button.stories.tsx`
-   - Place story files next to the components they document
-
-### App Router Special Files
-
-Next.js App Router uses several special files with specific purposes:
-
-| File             | Purpose                                                  |
-|------------------|----------------------------------------------------------|
-| `page.tsx`       | UI for a route segment, makes the route publicly accessible |
-| `layout.tsx`     | Shared UI for a segment and its children                 |
-| `loading.tsx`    | Loading UI for a segment and its children                |
-| `error.tsx`      | Error UI for a segment and its children                  |
-| `not-found.tsx`  | Not found UI for a segment and its children              |
-| `route.ts`       | Server-side API endpoint                                 |
-| `middleware.ts`  | Request middleware (at the app level)                    | 
+Note that the `paths` configuration maps `@/*` to `./src/*`, allowing you to use imports like `import { Button } from '@/components/atoms/Button'` without including `src` in the import path. 

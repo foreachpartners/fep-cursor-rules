@@ -30,7 +30,7 @@ The Storybook initialization will create a `.storybook` directory with the follo
 Update `.storybook/preview.js` to include your Tailwind styles:
 
 ```javascript
-import '../app/globals.css'; // Import your global CSS that includes Tailwind
+import '@/app/globals.css'; // Import your global CSS using path alias
 
 export const parameters = {
   actions: { argTypesRegex: '^on[A-Z].*' },
@@ -45,11 +45,13 @@ export const parameters = {
 
 #### Adding TypeScript Support
 
-Update `.storybook/main.js` to support TypeScript:
+Update `.storybook/main.js` to support TypeScript and configure path aliases:
 
 ```javascript
-const config = {
-  stories: ['../components/**/*.stories.@(js|jsx|ts|tsx)'],
+const path = require('path');
+
+module.exports = {
+  stories: ['../**/*.stories.@(js|jsx|ts|tsx)'],
   addons: [
     '@storybook/addon-links',
     '@storybook/addon-essentials',
@@ -64,9 +66,37 @@ const config = {
     autodocs: 'tag',
   },
   staticDirs: ['../public'],
+  webpackFinal: async (config) => {
+    // Configure path aliases to match Next.js configuration
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@': path.resolve(__dirname, '../src'),
+    };
+    
+    return config;
+  },
+};
+```
+
+This configuration allows you to use the same path aliases in your stories as you do in your Next.js application, avoiding direct references to the `src` directory.
+
+Example story file using path aliases:
+
+```tsx
+// components/Button/Button.stories.tsx
+import { Button } from '@/components/Button';
+
+export default {
+  title: 'Components/Button',
+  component: Button,
 };
 
-export default config;
+export const Primary = {
+  args: {
+    variant: 'primary',
+    children: 'Primary Button',
+  },
+};
 ```
 
 ### Adding Scripts to package.json

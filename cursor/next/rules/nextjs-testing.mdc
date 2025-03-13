@@ -34,11 +34,11 @@ const customJestConfig = {
   testEnvironment: 'jest-environment-jsdom',
   moduleNameMapper: {
     // Handle module aliases (if you use them in your project)
-    '^@/components/(.*)$': '<rootDir>/components/$1',
-    '^@/lib/(.*)$': '<rootDir>/lib/$1',
-    '^@/hooks/(.*)$': '<rootDir>/hooks/$1',
-    '^@/services/(.*)$': '<rootDir>/services/$1',
-    '^@/store/(.*)$': '<rootDir>/store/$1',
+    '^@/components/(.*)$': '<rootDir>/src/components/$1',
+    '^@/lib/(.*)$': '<rootDir>/src/lib/$1',
+    '^@/hooks/(.*)$': '<rootDir>/src/hooks/$1',
+    '^@/services/(.*)$': '<rootDir>/src/services/$1',
+    '^@/store/(.*)$': '<rootDir>/src/store/$1',
   },
   collectCoverageFrom: [
     '**/*.{js,jsx,ts,tsx}',

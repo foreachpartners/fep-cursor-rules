@@ -21,7 +21,7 @@ pnpm add next-intl
 Create a directory for your translation messages:
 
 ```
-messages/
+src/messages/
 ├── en.json
 ├── ru.json
 └── es.json
@@ -87,23 +87,26 @@ Create or update your `middleware.ts` file in the root of your project:
 ```typescript
 // middleware.ts
 import createMiddleware from 'next-intl/middleware';
- 
+
 export default createMiddleware({
   // A list of all locales that are supported
   locales: ['en', 'ru', 'es'],
- 
-  // The default locale to use when visiting a non-localized route
+  
+  // If this locale is matched, pathnames work without a prefix (e.g. `/about`)
   defaultLocale: 'en',
-
-  // Paths that should not be internationalized
+  
+  // Configure the locale prefix strategy
   localePrefix: 'as-needed',
-  localeDetection: true
+  
+  // Dynamically load messages
+  localeDetection: true,
 });
- 
+
 export const config = {
-  // Match all paths that should be internationalized
-  // Exclude paths like /api, /images, etc.
-  matcher: ['/((?!api|_next|_vercel|.*\\..*).*)']
+  // Match all pathnames except for
+  // - static files (e.g. /images, /favicon.ico)
+  // - API routes
+  matcher: ['/((?!api|_next|.*\\..*).*)']
 };
 ```
 
@@ -117,37 +120,42 @@ import {getRequestConfig} from 'next-intl/server';
  
 export default getRequestConfig(async ({locale}) => {
   return {
-    messages: (await import(`../messages/${locale}.json`)).default
+    messages: (await import(`../src/messages/${locale}.json`)).default
   };
 });
 ```
 
 #### 2. Create the root layout with Internationalization
 
-```typescript
+```tsx
 // app/[locale]/layout.tsx
-import {NextIntlClientProvider} from 'next-intl';
-import {notFound} from 'next/navigation';
-import {ReactNode} from 'react';
+import { notFound } from 'next/navigation';
+import { NextIntlClientProvider } from 'next-intl';
+import { ReactNode } from 'react';
 
-interface RootLayoutProps {
-  children: ReactNode;
-  params: {
-    locale: string;
-  };
+export function generateStaticParams() {
+  return [{ locale: 'en' }, { locale: 'ru' }, { locale: 'es' }];
 }
- 
-export default async function RootLayout({
+
+export default async function LocaleLayout({
   children,
-  params: {locale}
-}: RootLayoutProps) {
+  params: { locale },
+}: {
+  children: ReactNode;
+  params: { locale: string };
+}) {
+  // Validate that the incoming `locale` parameter is valid
+  const locales = ['en', 'ru', 'es'];
+  if (!locales.includes(locale)) notFound();
+
+  // Load the messages for the requested locale
   let messages;
   try {
-    messages = (await import(`../../messages/${locale}.json`)).default;
+    messages = (await import(`../../src/messages/${locale}.json`)).default;
   } catch (error) {
     notFound();
   }
- 
+
   return (
     <html lang={locale}>
       <body>
@@ -162,19 +170,19 @@ export default async function RootLayout({
 
 #### 3. Configure locale information
 
-```typescript
+```tsx
 // app/[locale]/page.tsx
-import {useTranslations} from 'next-intl';
- 
-export default function IndexPage() {
-  const t = useTranslations('Index');
- 
-  return (
-    <div>
-      <h1>{t('title')}</h1>
-      <p>{t('description')}</p>
-    </div>
-  );
+import { useTranslations } from 'next-intl';
+
+export default async function Home({
+  params: { locale }
+}: {
+  params: { locale: string }
+}) {
+  // Load the messages for the requested locale
+  const messages = (await import(`../../src/messages/${locale}.json`)).default;
+  
+  // Rest of your component
 }
 ```
 
