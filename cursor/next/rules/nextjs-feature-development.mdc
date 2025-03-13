@@ -249,6 +249,17 @@ npm run test:e2e
 - Document any configuration changes
 - Add usage examples for other developers
 
+#### 3.10. Verify Compliance with Development Guidelines
+
+- Review all changes against established development guidelines
+- Ensure compliance with project structure rules (@nextjs-project-structure.mdc)
+- Verify TypeScript best practices are followed (@nextjs-typescript.mdc)
+- Check that API service layer patterns are maintained (@nextjs-api-service-layer.mdc)
+- Confirm proper internationalization implementation (@nextjs-internationalization.mdc)
+- Validate that components follow design system principles
+- Ensure all code meets the team's quality standards
+- Address any deviations from guidelines with proper justification
+
 ## Feature Review Process
 
 After completing the implementation and post-implementation checklist, submit the feature for review:

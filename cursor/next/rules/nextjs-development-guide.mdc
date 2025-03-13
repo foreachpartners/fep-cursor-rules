@@ -102,5 +102,6 @@ See [Feature Development Guidelines](@nextjs-feature-development.mdc) for detail
 - Requirements analysis and planning
 - Incremental implementation approach
 - Post-implementation checklist
+- Verification of compliance with development guidelines
 - Feature review process
 - Continuous improvement
