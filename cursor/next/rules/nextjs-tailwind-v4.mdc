@@ -19,6 +19,8 @@ pnpm add tailwindcss
 pnpm add -D @tailwindcss/postcss
 ```
 
+For package management guidelines, see @nextjs-package-management.mdc.
+
 If you're using Vite as your build tool, install the Vite plugin instead:
 
 ```bash
@@ -327,6 +329,8 @@ import '../src/app/globals.css';
 2. Extract complex UI into components
 3. Extend theme in config instead of using arbitrary values
 4. Prefer utility classes over inline styles
+
+For linting and code quality guidelines, see @nextjs-linting.mdc.
 
 ## Troubleshooting
 

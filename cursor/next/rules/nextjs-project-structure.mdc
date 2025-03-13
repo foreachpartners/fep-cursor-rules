@@ -395,6 +395,8 @@ const nextConfig = {
 module.exports = nextConfig;
 ```
 
+For package management guidelines, see @nextjs-package-management.mdc.
+
 ### TypeScript Configuration
 
 Configure TypeScript in the `tsconfig.json` file:

@@ -71,6 +71,8 @@ pnpm add tailwindcss
 pnpm add -D @tailwindcss/postcss
 ```
 
+For package management guidelines, see @nextjs-package-management.mdc.
+
 If you're using Vite:
 
 ```bash
@@ -201,6 +203,8 @@ export default function RootLayout({
   );
 }
 ```
+
+For project structure guidelines, see @nextjs-project-structure.mdc.
 
 ### Storybook Integration
 

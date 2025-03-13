@@ -146,3 +146,30 @@ See [shadcn/ui Guidelines](@nextjs-shadcn-ui.mdc) for detailed information on:
 All documents are designed to work together. Each focuses on a specific aspect while maintaining consistency with the overall approach. When implementing features, refer to specific guidelines for details, but consider their integration with other practices.
 
 No need to contact support or development team.
+
+## Guidelines for LLM Agent
+
+When performing tasks, follow these instructions to determine which document to reference:
+
+1. **Creating a new project**: Start with @nextjs-project-structure.mdc, then @nextjs-typescript.mdc, @nextjs-tailwind-v4.mdc, and @nextjs-package-management.mdc
+
+2. **Adding features to existing project**: First check @nextjs-feature-development.mdc, then refer to specific guidelines based on the feature type
+
+3. **Working with components**: 
+   - UI components: @nextjs-shadcn-ui.mdc
+   - Component testing: @nextjs-testing.mdc
+   - Component documentation: @nextjs-storybook.mdc
+
+4. **API and data fetching**: @nextjs-api-service-layer.mdc
+
+5. **Styling and UI**: @nextjs-tailwind-v4.mdc and @nextjs-shadcn-ui.mdc
+
+6. **Internationalization**: @nextjs-internationalization.mdc
+
+7. **Code quality and linting**: @nextjs-linting.mdc
+
+8. **Package management**: @nextjs-package-management.mdc
+
+9. **Migrating from Tailwind CSS v3 to v4**: @nextjs-tailwind-v4-migration.mdc
+
+Always prioritize type safety (@nextjs-typescript.mdc) and project structure (@nextjs-project-structure.mdc) across all tasks.

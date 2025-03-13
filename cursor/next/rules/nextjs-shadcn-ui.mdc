@@ -99,7 +99,7 @@ If your project is using Tailwind CSS v3, first migrate to v4 following the inst
 
 After initializing shadcn/ui, ensure that the components are integrated into your existing project structure:
 
-1. **Check component location**: By default, shadcn/ui adds components to `src/components/ui/`. Make sure this aligns with your project structure.
+1. **Check component location**: By default, shadcn/ui adds components to `src/components/ui/`. Make sure this aligns with your project structure as described in @nextjs-project-structure.mdc.
 
 2. **Configure import paths**: Ensure your `tsconfig.json` has the correct import paths configured:
 
@@ -113,6 +113,8 @@ After initializing shadcn/ui, ensure that the components are integrated into you
   }
 }
 ```
+
+For TypeScript configuration guidelines, see @nextjs-typescript.mdc.
 
 3. **Update CSS**: Ensure your global CSS file (typically `src/app/globals.css`) imports Tailwind CSS and contains the necessary CSS variables for shadcn/ui.
 
