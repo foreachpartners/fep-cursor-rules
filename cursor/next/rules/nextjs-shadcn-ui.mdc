@@ -97,6 +97,225 @@ src/
 │   └── ...
 ```
 
+## Integration with Atomic Design
+
+shadcn/ui components can be seamlessly integrated with the Atomic Design methodology. This section explains how to combine these approaches effectively without creating conflicts.
+
+### Classifying shadcn/ui Components in Atomic Design
+
+shadcn/ui components can be classified according to the Atomic Design levels:
+
+1. **Atoms** (basic building blocks):
+   - Button, Input, Checkbox, Switch, Avatar, Badge, Label
+
+2. **Molecules** (groups of atoms):
+   - Card, Dialog, Select, Tabs, Form components, Accordion
+
+3. **Organisms** (complex UI sections):
+   - DataTable, Calendar, Carousel, Command, complex forms
+
+### Recommended Project Structure
+
+To integrate shadcn/ui with Atomic Design, we recommend the following project structure:
+
+```
+src/
+├── components/
+│   ├── ui/                # shadcn/ui base components
+│   │   ├── button.tsx
+│   │   ├── input.tsx
+│   │   └── ...
+│   ├── atoms/             # Custom atomic components
+│   │   ├── logo.tsx       # Custom atom
+│   │   ├── icon-button.tsx # Extended from ui/button
+│   │   └── ...
+│   ├── molecules/         # Composite components
+│   │   ├── search-bar.tsx # Uses ui/input and atoms/icon-button
+│   │   ├── user-card.tsx  # Uses ui/card and other components
+│   │   └── ...
+│   ├── organisms/         # Complex components
+│   │   ├── header.tsx     # Uses atoms and molecules
+│   │   ├── sidebar.tsx    # Complex navigation component
+│   │   └── ...
+│   └── templates/         # Page layouts
+│       ├── dashboard-layout.tsx
+│       └── ...
+```
+
+### Integration Strategies
+
+#### 1. Direct Usage
+
+Use shadcn/ui components directly in your Atomic Design structure when they fit your needs without modification:
+
+```tsx
+// src/components/molecules/notification-item.tsx
+import { Avatar } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+
+export function NotificationItem({ user, message, onDismiss }) {
+  return (
+    <div className="flex items-center gap-3 p-3 border rounded-lg">
+      <Avatar>
+        <AvatarImage src={user.avatarUrl} alt={user.name} />
+        <AvatarFallback>{user.initials}</AvatarFallback>
+      </Avatar>
+      <div className="flex-1">
+        <p className="font-medium">{user.name}</p>
+        <p className="text-sm text-muted-foreground">{message}</p>
+      </div>
+      <Button variant="ghost" size="sm" onClick={onDismiss}>
+        Dismiss
+      </Button>
+    </div>
+  );
+}
+```
+
+#### 2. Extension Pattern
+
+Extend shadcn/ui components to create your own atomic components with additional functionality or styling:
+
+```tsx
+// src/components/atoms/icon-button.tsx
+import { Button, ButtonProps } from "@/components/ui/button";
+import { LucideIcon } from "lucide-react";
+
+interface IconButtonProps extends ButtonProps {
+  icon: LucideIcon;
+  label: string;
+}
+
+export function IconButton({ 
+  icon: Icon, 
+  label, 
+  variant = "ghost", 
+  size = "icon", 
+  ...props 
+}: IconButtonProps) {
+  return (
+    <Button variant={variant} size={size} {...props}>
+      <Icon className="size-5" />
+      <span className="sr-only">{label}</span>
+    </Button>
+  );
+}
+```
+
+#### 3. Composition Pattern
+
+Compose shadcn/ui components to create higher-level components:
+
+```tsx
+// src/components/molecules/search-bar.tsx
+import { Input } from "@/components/ui/input";
+import { IconButton } from "@/components/atoms/icon-button";
+import { Search } from "lucide-react";
+
+interface SearchBarProps {
+  placeholder?: string;
+  onSearch: (value: string) => void;
+}
+
+export function SearchBar({ 
+  placeholder = "Search...", 
+  onSearch 
+}: SearchBarProps) {
+  const [value, setValue] = useState("");
+  
+  const handleSearch = () => {
+    onSearch(value);
+  };
+  
+  return (
+    <div className="relative">
+      <Input 
+        placeholder={placeholder} 
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+      />
+      <div className="absolute right-2 top-1/2 -translate-y-1/2">
+        <IconButton 
+          icon={Search} 
+          label="Search" 
+          onClick={handleSearch}
+        />
+      </div>
+    </div>
+  );
+}
+```
+
+### Avoiding Conflicts
+
+To avoid conflicts between shadcn/ui and Atomic Design, follow these guidelines:
+
+1. **Clear Separation of Concerns**:
+   - Keep shadcn/ui components in the `ui/` directory
+   - Place your custom atomic components in their respective directories (`atoms/`, `molecules/`, etc.)
+   - Use clear naming conventions to distinguish between base and extended components
+
+2. **Consistent Component API**:
+   - When extending shadcn/ui components, maintain their original API
+   - Add new props with clear types and default values
+   - Document the relationship between your custom components and shadcn/ui components
+
+3. **Documentation and Mapping**:
+   - Create a component map that shows how shadcn/ui components map to your Atomic Design structure
+   - Document which shadcn/ui components are used in each custom component
+   - Use JSDoc comments to explain component relationships
+
+4. **Incremental Adoption**:
+   - Start by integrating shadcn/ui at the atomic level
+   - Gradually build up to molecules and organisms
+   - Refactor existing components incrementally rather than all at once
+
+### Example: Component Documentation
+
+```tsx
+/**
+ * PrimaryButton - Atom
+ * 
+ * An extension of the shadcn/ui Button component with our primary styling.
+ * 
+ * @extends {Button} from "@/components/ui/button"
+ */
+export function PrimaryButton({ children, ...props }: ButtonProps) {
+  return (
+    <Button 
+      variant="default" 
+      className="rounded-full px-8 font-semibold" 
+      {...props}
+    >
+      {children}
+    </Button>
+  );
+}
+```
+
+### Example: Component Mapping Document
+
+Consider creating a `COMPONENTS.md` file in your project that maps shadcn/ui components to your Atomic Design structure:
+
+```markdown
+# Component Mapping
+
+## Atoms
+- Button (shadcn/ui) → PrimaryButton, SecondaryButton, IconButton
+- Input (shadcn/ui) → SearchInput, FormInput
+- Avatar (shadcn/ui) → UserAvatar, TeamAvatar
+
+## Molecules
+- Card (shadcn/ui) → UserCard, ProductCard, NotificationCard
+- Dialog (shadcn/ui) → ConfirmationDialog, FormDialog
+- Form components (shadcn/ui) → LoginForm, SignupForm, ProfileForm
+
+## Organisms
+- DataTable (shadcn/ui) → UsersTable, ProductsTable
+- Navigation components → MainNavigation, Sidebar, Footer
+```
+
 ## Best Practices
 
 ### 1. Component Customization
