@@ -2,11 +2,11 @@
 description: "Guidelines for setting up and using Tailwind CSS v4 in Next.js applications"
 globs: 
 alwaysApply: false
-related: ["nextjs-project-structure.mdc", "nextjs-linting.mdc", "nextjs-package-management.mdc", "nextjs-tailwind-v4-migration.mdc"]
+related: ["nextjs-project-structure.mdc", "nextjs-linting.mdc", "nextjs-package-management.mdc", "nextjs-tailwind-v4-migration.mdc", "nextjs-shadcn-ui.mdc"]
 ---
 # Next.js Tailwind CSS v4 Guidelines
 
-This document outlines the recommended approach to setting up and using Tailwind CSS v4 in Next.js applications. For project structure guidelines, see @nextjs-project-structure.mdc. For linting configuration, refer to @nextjs-linting.mdc. For package management guidelines, see @nextjs-package-management.mdc. For detailed migration instructions, see @nextjs-tailwind-v4-migration.mdc.
+This document outlines the recommended approach to setting up and using Tailwind CSS v4 in Next.js applications. For project structure guidelines, see @nextjs-project-structure.mdc. For linting configuration, refer to @nextjs-linting.mdc. For package management guidelines, see @nextjs-package-management.mdc. For detailed migration instructions, see @nextjs-tailwind-v4-migration.mdc. For shadcn/ui integration, see @nextjs-shadcn-ui.mdc.
 
 ## Setting Up Tailwind CSS v4
 
@@ -230,6 +230,28 @@ export default function RootLayout({
       <body>{children}</body>
     </html>
   );
+}
+```
+
+## Integration with shadcn/ui
+
+Tailwind CSS v4 works seamlessly with shadcn/ui components. For detailed instructions on setting up and using shadcn/ui with Tailwind CSS v4, see @nextjs-shadcn-ui.mdc.
+
+Here's a quick example of using Tailwind CSS v4 with shadcn/ui:
+
+```tsx
+import { Button } from "@/components/ui/button"
+
+export default function Example() {
+  return (
+    <div className="flex flex-col gap-4 p-4">
+      <h1 className="text-2xl font-bold">Tailwind CSS v4 with shadcn/ui</h1>
+      <p className="text-muted-foreground">
+        This example demonstrates using Tailwind CSS v4 with shadcn/ui components.
+      </p>
+      <Button>Click me</Button>
+    </div>
+  )
 }
 ```
 
