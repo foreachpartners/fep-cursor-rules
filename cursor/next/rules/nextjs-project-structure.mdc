@@ -125,8 +125,7 @@ app/
 ```
 
 **Important rules:**
-- **Avoid special characters in folder names** - as a general rule, don't use parentheses, brackets, or other special characters in folder names
-- **Exception for parallel routes**: The `@` symbol is the only allowed special character, used specifically for slot names in parallel routes (e.g., `@sidebar`, `@content`)
+- **No special characters in folder names** except `@` for parallel routes
 - Use descriptive, feature-based folder names
 - Create logical hierarchies that match your application's information architecture
 - Use shared layouts at appropriate levels of the hierarchy

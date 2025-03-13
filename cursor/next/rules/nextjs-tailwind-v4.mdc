@@ -227,104 +227,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
-    </html>
-  );
-}
-```
-
-### Example: Theme Configuration with App Router
-
-Here's a complete example of setting up a custom theme with Tailwind CSS v4 in a Next.js App Router project:
-
-```tsx
-// tailwind.config.js
-/** @type {import('tailwindcss').Config} */
-export default {
-  content: [
-    './src/app/**/*.{js,ts,jsx,tsx}',
-    './src/components/**/*.{js,ts,jsx,tsx}',
-  ],
-  theme: {
-    extend: {
-      colors: {
-        primary: {
-          50: '#f0f9ff',
-          100: '#e0f2fe',
-          200: '#bae6fd',
-          300: '#7dd3fc',
-          400: '#38bdf8',
-          500: '#0ea5e9',
-          600: '#0284c7',
-          700: '#0369a1',
-          800: '#075985',
-          900: '#0c4a6e',
-          950: '#082f49',
-        },
-        secondary: {
-          // Custom secondary color palette
-        },
-      },
-      fontFamily: {
-        sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
-        heading: ['var(--font-montserrat)', 'system-ui', 'sans-serif'],
-      },
-    },
-  },
-  plugins: [],
-};
-```
-
-```css
-/* src/app/globals.css */
-@import "tailwindcss";
-
-/* Custom CSS variables */
-:root {
-  --font-inter: 'Inter', system-ui, sans-serif;
-  --font-montserrat: 'Montserrat', system-ui, sans-serif;
-}
-
-/* Custom utilities */
-@utility flex-center {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-@utility text-gradient {
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
-}
-```
-
-```tsx
-// src/app/layout.tsx
-import './globals.css';
-import { Inter, Montserrat } from 'next/font/google';
-
-// Load fonts
-const inter = Inter({ 
-  subsets: ['latin'],
-  variable: '--font-inter',
-  display: 'swap',
-});
-
-const montserrat = Montserrat({
-  subsets: ['latin'],
-  variable: '--font-montserrat',
-  display: 'swap',
-});
-
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return (
-    <html lang="en" className={`${inter.variable} ${montserrat.variable}`}>
-      <body className="font-sans bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-50">
+      <body className="bg-gray-50 dark:bg-gray-900">
         {children}
       </body>
     </html>
@@ -332,53 +235,61 @@ export default function RootLayout({
 }
 ```
 
+### Example: Theme Configuration with App Router
+
+Minimal example of custom theme setup:
+
 ```tsx
-// src/app/page.tsx
-export default function Home() {
+// tailwind.config.js
+export default {
+  content: ['./src/**/*.{js,ts,jsx,tsx}'],
+  theme: {
+    extend: {
+      colors: {
+        primary: {
+          500: '#0ea5e9',
+          600: '#0284c7',
+        },
+      },
+    },
+  },
+};
+```
+
+```css
+/* src/app/globals.css */
+@import "tailwindcss";
+
+@utility flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+```
+
+```tsx
+// src/app/layout.tsx
+import './globals.css';
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <main className="flex-center min-h-screen p-6">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="font-heading text-4xl md:text-6xl font-bold mb-6">
-          Welcome to <span className="text-gradient bg-gradient-to-r from-primary-500 to-purple-500">Next.js</span>
-        </h1>
-        <p className="text-lg mb-8">
-          This example demonstrates Tailwind CSS v4 with Next.js App Router.
-        </p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
-            <h2 className="font-heading text-xl font-semibold mb-4">Custom Colors</h2>
-            <div className="flex flex-wrap gap-2">
-              {[50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950].map((weight) => (
-                <div 
-                  key={weight}
-                  className={`w-12 h-12 rounded-md bg-primary-${weight} flex-center`}
-                  title={`primary-${weight}`}
-                />
-              ))}
-            </div>
-          </div>
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
-            <h2 className="font-heading text-xl font-semibold mb-4">Custom Utilities</h2>
-            <div className="flex-center h-32 bg-gray-100 dark:bg-gray-700 rounded-md">
-              <p className="text-gradient bg-gradient-to-r from-blue-500 to-purple-500 font-bold text-xl">
-                Centered with custom utilities
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </main>
+    <html lang="en">
+      <body className="bg-gray-50 dark:bg-gray-900">
+        {children}
+      </body>
+    </html>
   );
 }
 ```
 
-This example demonstrates:
-- Custom color palette configuration
-- Font setup with Next.js font optimization
-- Custom utilities with the new `@utility` syntax
-- Responsive design
+Key features:
+- Custom color palette
+- Custom utilities with `@utility`
 - Dark mode support
-- Integration with App Router
 
 ## Integration with shadcn/ui
 
@@ -404,44 +315,23 @@ export default function Example() {
 
 ## Integration with Storybook
 
-To use Tailwind CSS v4 with Storybook, update your `.storybook/preview.js`:
+For Storybook, update `.storybook/preview.js`:
 
 ```javascript
-import '../src/app/globals.css'; // Import your global CSS
-
-export const parameters = {
-  actions: { argTypesRegex: '^on[A-Z].*' },
-  controls: {
-    matchers: {
-      color: /(background|color)$/i,
-      date: /Date$/,
-    },
-  },
-};
+import '../src/app/globals.css';
 ```
 
 ## Best Practices
 
-1. **Organize Utility Classes**: Group related utility classes together for better readability
-2. **Extract Components**: For complex UI elements, create reusable components
-3. **Use JIT Mode**: Tailwind CSS v4 uses JIT (Just-In-Time) mode by default for faster builds
-4. **Avoid Inline Styles**: Prefer Tailwind utility classes over inline styles
-5. **Use Theme Configuration**: Extend the theme in `tailwind.config.js` rather than using arbitrary values
+1. Group related utility classes
+2. Extract complex UI into components
+3. Extend theme in config instead of using arbitrary values
+4. Prefer utility classes over inline styles
 
 ## Troubleshooting
 
-### Common Issues
-
-1. **Classes Not Applied**: Ensure your content paths in `tailwind.config.js` are correct
-2. **Build Errors**: Check that you've installed the correct dependencies for your build tool
-3. **CSS Import Issues**: Verify that you're using the new `@import "tailwindcss"` syntax
-4. **Compatibility with Plugins**: Some v3 plugins may not be compatible with v4 yet
-
-### Debugging
-
-If you encounter issues, try these steps:
-
-1. Check the console for error messages
-2. Verify your configuration files
-3. Ensure all dependencies are up to date
-4. Try running the upgrade tool again with the `--debug` flag 
+Common issues:
+1. Check content paths in config
+2. Verify correct dependencies
+3. Use `@import "tailwindcss"` syntax
+4. Check plugin compatibility with v4

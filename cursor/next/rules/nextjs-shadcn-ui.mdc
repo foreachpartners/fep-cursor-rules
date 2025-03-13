@@ -25,10 +25,10 @@ shadcn/ui is not a traditional component library but rather a collection of reus
 
 ### For New Projects with Tailwind CSS v4 and React 19
 
-Use the `canary` version of the CLI to initialize a new project. Note that this is a temporary recommendation until the stable version of shadcn/ui with Tailwind CSS v4 support is released (expected in Q3 2024):
+Use `shadcn@canary` until stable release (Q3 2024):
 
 ```bash
-# First, create a new Next.js project with our recommended structure
+# Create Next.js project
 pnpm create next-app@canary my-app --tailwind --eslint --typescript --app --src-dir --import-alias="@/*"
 
 cd my-app
