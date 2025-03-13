@@ -23,13 +23,13 @@ my-next-app/
 │   ├── images/
 │   └── fonts/
 ├── app/                   # App Router structure
-│   ├── (auth)/            # Grouped route for authentication
+│   ├── auth/              # Authentication routes
 │   │   ├── login/
 │   │   │   └── page.tsx
 │   │   ├── register/
 │   │   │   └── page.tsx
 │   │   └── layout.tsx
-│   ├── (dashboard)/       # Grouped route for dashboard
+│   ├── dashboard/         # Dashboard routes
 │   │   ├── layout.tsx
 │   │   └── page.tsx
 │   ├── api/               # API Routes
@@ -81,17 +81,127 @@ The App Router follows a file-system based approach to routing:
 
 - `app/page.tsx`: The main entry page of your application
 - `app/layout.tsx`: The root layout that wraps all pages
-- `app/(group)/`: Route groups allow you to organize routes without affecting the URL structure
 - `app/api/`: API routes that run on the server
 - `app/[param]/`: Dynamic route segments
 
-### Conventions
+### Route Organization and Naming Conventions
 
-1. **Route Groups**: Use parentheses to create route groups that don't affect the URL structure: `(auth)`, `(dashboard)`, etc.
-2. **Shared Layouts**: Create shared layouts with `layout.tsx` to avoid UI duplication
-3. **Loading States**: Use `loading.tsx` for route segment loading UI
-4. **Error Handling**: Use `error.tsx` for error boundaries at the route level
-5. **Not Found Pages**: Use `not-found.tsx` for custom 404 pages within route segments
+When organizing routes in the App Router, follow these guidelines:
+
+#### Standard Route Structure
+
+Use a clear, hierarchical folder structure that directly maps to your URL paths:
+
+```
+app/
+  ├── auth/             # URL: /auth
+  │   ├── login/        # URL: /auth/login
+  │   │   └── page.tsx
+  │   ├── register/     # URL: /auth/register
+  │   │   └── page.tsx
+  │   └── layout.tsx    # Shared layout for auth routes
+  ├── dashboard/        # URL: /dashboard
+  │   ├── page.tsx
+  │   ├── settings/     # URL: /dashboard/settings
+  │   │   └── page.tsx
+  │   └── layout.tsx    # Shared layout for dashboard routes
+  └── page.tsx          # URL: /
+```
+
+**Important rules:**
+- **Never use parentheses in folder names** - avoid Next.js route groups
+- Use descriptive, feature-based folder names
+- Create logical hierarchies that match your application's information architecture
+- Use shared layouts at appropriate levels of the hierarchy
+
+#### Multiple Layouts
+
+To implement different layouts for different sections of your app:
+
+```
+app/
+  ├── layout.tsx        # Base layout with minimal shared elements
+  ├── auth/
+  │   ├── layout.tsx    # Auth-specific layout
+  │   ├── login/
+  │   │   └── page.tsx
+  │   └── register/
+  │       └── page.tsx
+  ├── dashboard/
+  │   ├── layout.tsx    # Dashboard-specific layout
+  │   └── page.tsx
+  └── page.tsx
+```
+
+This approach uses nested layouts instead of route groups to achieve the same result of having different layouts for different sections.
+
+#### Parallel Routes
+
+For complex UI with multiple independent sections, use parallel routes with slots:
+
+```
+app/
+  ├── layout.tsx        # Layout with slots: @sidebar and @content
+  ├── @sidebar/         # Sidebar slot
+  │   ├── page.tsx      # Default sidebar
+  │   └── settings/
+  │       └── page.tsx  # Settings sidebar
+  └── @content/         # Main content slot
+      ├── page.tsx      # Default content
+      └── settings/
+          └── page.tsx  # Settings content
+```
+
+Note: The `@` symbol is used for slot names in parallel routes and is a valid part of the Next.js routing system. This is the only exception to our "no special characters in folder names" rule.
+
+### File and Folder Naming Conventions
+
+Follow these naming conventions for files and folders in your Next.js application:
+
+1. **Routes and Pages**
+   - Use kebab-case for route folders: `user-profile/`, `product-details/`
+   - Use standard Next.js file names for special files: `page.tsx`, `layout.tsx`
+   - **Never use parentheses or other special characters in folder names** (except for `@` in parallel routes and `[param]` for dynamic routes)
+
+2. **Components**
+   - Use PascalCase for component files: `Button.tsx`, `UserProfile.tsx`
+   - Use PascalCase for component folders: `Button/`, `UserProfile/`
+   - Group related components in feature folders
+
+3. **Utilities and Helpers**
+   - Use camelCase for utility files: `formatDate.ts`, `useLocalStorage.ts`
+   - Use descriptive, action-based names for utilities
+
+4. **Constants and Types**
+   - Use PascalCase for type files: `UserTypes.ts`, `ApiTypes.ts`
+   - Use UPPER_SNAKE_CASE for constant values: `API_ENDPOINTS`, `DEFAULT_LOCALE`
+   - Use camelCase for constant files: `apiEndpoints.ts`, `routeConstants.ts`
+
+5. **Special Files**
+   - Use the standard Next.js file names for special files: `layout.tsx`, `loading.tsx`, `error.tsx`, `not-found.tsx`
+   - Use `index.ts` for barrel exports from directories
+
+6. **Test Files**
+   - Append `.test.ts` or `.test.tsx` to test files: `Button.test.tsx`
+   - Place test files next to the files they test
+
+7. **Storybook Files**
+   - Append `.stories.ts` or `.stories.tsx` to Storybook files: `Button.stories.tsx`
+   - Place story files next to the components they document
+
+### App Router Special Files
+
+Next.js App Router uses several special files with specific purposes:
+
+| File             | Purpose                                                  |
+|------------------|----------------------------------------------------------|
+| `page.tsx`       | UI for a route segment, makes the route publicly accessible |
+| `layout.tsx`     | Shared UI for a segment and its children                 |
+| `loading.tsx`    | Loading UI for a segment and its children                |
+| `error.tsx`      | Error UI for a segment and its children                  |
+| `not-found.tsx`  | Not found UI for a segment and its children              |
+| `route.ts`       | Server-side API endpoint                                 |
+| `middleware.ts`  | Request middleware (at the app level)                    |
 
 ## Component Organization (Atomic Design)
 
@@ -211,4 +321,53 @@ import type { User } from '@/types';
 import './styles.css';
 ```
 
-By following this structure, your Next.js project will be organized in a way that promotes maintainability, scalability, and developer productivity. 
+By following this structure, your Next.js project will be organized in a way that promotes maintainability, scalability, and developer productivity.
+
+### File and Folder Naming Conventions
+
+Follow these naming conventions for files and folders in your Next.js application:
+
+1. **Routes and Pages**
+   - Use kebab-case for route folders: `user-profile/`, `product-details/`
+   - Use PascalCase for page components: `page.tsx`
+   - Use descriptive, feature-based names for routes
+
+2. **Components**
+   - Use PascalCase for component files: `Button.tsx`, `UserProfile.tsx`
+   - Use PascalCase for component folders: `Button/`, `UserProfile/`
+   - Group related components in feature folders
+
+3. **Utilities and Helpers**
+   - Use camelCase for utility files: `formatDate.ts`, `useLocalStorage.ts`
+   - Use descriptive, action-based names for utilities
+
+4. **Constants and Types**
+   - Use PascalCase for type files: `UserTypes.ts`, `ApiTypes.ts`
+   - Use UPPER_SNAKE_CASE for constant values: `API_ENDPOINTS`, `DEFAULT_LOCALE`
+   - Use camelCase for constant files: `apiEndpoints.ts`, `routeConstants.ts`
+
+5. **Special Files**
+   - Use the standard Next.js file names for special files: `layout.tsx`, `loading.tsx`, `error.tsx`, `not-found.tsx`
+   - Use `index.ts` for barrel exports from directories
+
+6. **Test Files**
+   - Append `.test.ts` or `.test.tsx` to test files: `Button.test.tsx`
+   - Place test files next to the files they test
+
+7. **Storybook Files**
+   - Append `.stories.ts` or `.stories.tsx` to Storybook files: `Button.stories.tsx`
+   - Place story files next to the components they document
+
+### App Router Special Files
+
+Next.js App Router uses several special files with specific purposes:
+
+| File             | Purpose                                                  |
+|------------------|----------------------------------------------------------|
+| `page.tsx`       | UI for a route segment, makes the route publicly accessible |
+| `layout.tsx`     | Shared UI for a segment and its children                 |
+| `loading.tsx`    | Loading UI for a segment and its children                |
+| `error.tsx`      | Error UI for a segment and its children                  |
+| `not-found.tsx`  | Not found UI for a segment and its children              |
+| `route.ts`       | Server-side API endpoint                                 |
+| `middleware.ts`  | Request middleware (at the app level)                    | 

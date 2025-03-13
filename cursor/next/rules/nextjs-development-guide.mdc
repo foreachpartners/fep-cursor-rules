@@ -21,6 +21,7 @@ Next.js is a React framework that enables server-side rendering, static site gen
 6. **Testing Driven Development**: Write tests for critical functionality
 7. **Consistent Code Style**: Follow established linting and formatting rules
 8. **Type-Safe Constants and Enums**: Avoid string literals in favor of constants, enums, and other type-safe mechanisms
+9. **Clean Folder Structure**: Use descriptive folder names without special characters (no parentheses in folder names)
 
 ## Technology Stack
 
