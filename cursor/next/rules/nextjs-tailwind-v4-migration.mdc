@@ -17,10 +17,13 @@ Before starting the migration process, take these preparatory steps:
    git checkout -b tailwind-v4-migration
    ```
 
-2. **Ensure Node.js compatibility**: Tailwind CSS v4 requires Node.js 18.0.0 or later
+2. **Ensure Node.js compatibility**: 
+   - Tailwind CSS v4 requires Node.js 18.0.0 or later
+   - The official upgrade tool requires Node.js 20.0.0 or later
    ```bash
    node --version
    ```
+   If you're using Node.js 18.x, you'll need to perform a manual migration (see Manual Migration Steps below).
 
 3. **Backup your configuration**: Make a copy of your existing Tailwind configuration
    ```bash
@@ -42,6 +45,27 @@ This tool will:
 - Handle class name changes in your templates
 
 > **Note**: The upgrade tool requires Node.js 20 or higher. If you're using an older version, you'll need to upgrade Node.js first or perform a manual migration.
+
+### Compatibility with Other Tools
+
+The `@tailwindcss/upgrade` tool is compatible with:
+
+- **Next.js**: Works with both Pages Router and App Router
+- **shadcn/ui**: Compatible with shadcn/ui components, but you may need to update to the latest shadcn/ui versions afterward
+- **Storybook**: Works with Storybook configurations
+- **Jest/Testing Library**: No conflicts with testing setups
+- **ESLint/Prettier**: No conflicts with linting configurations
+
+The tool does not modify:
+- Custom component logic
+- Business logic
+- Test files
+- Third-party library imports
+
+After running the upgrade tool, you should:
+1. Test your application thoroughly
+2. Update any third-party libraries that depend on Tailwind CSS
+3. Check for any custom utilities that might need manual updates
 
 ## Manual Migration Steps
 

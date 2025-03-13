@@ -140,3 +140,9 @@ See [shadcn/ui Guidelines](@nextjs-shadcn-ui.mdc) for detailed information on:
 - Integration with Tailwind CSS v4
 - Advanced usage patterns
 - Recommended components for common use cases
+
+## Consistency Across Guidelines
+
+All guidelines in this documentation set are designed to work together seamlessly. Each document focuses on a specific aspect of Next.js development while maintaining consistency with the overall approach. When implementing features, refer to the specific guidelines for detailed instructions, but always consider how they integrate with the broader development practices outlined here.
+
+For any questions or clarifications about these guidelines, please refer to the specific documents linked above or contact the development team lead.

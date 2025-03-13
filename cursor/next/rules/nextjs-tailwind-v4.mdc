@@ -233,6 +233,153 @@ export default function RootLayout({
 }
 ```
 
+### Example: Theme Configuration with App Router
+
+Here's a complete example of setting up a custom theme with Tailwind CSS v4 in a Next.js App Router project:
+
+```tsx
+// tailwind.config.js
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: [
+    './src/app/**/*.{js,ts,jsx,tsx}',
+    './src/components/**/*.{js,ts,jsx,tsx}',
+  ],
+  theme: {
+    extend: {
+      colors: {
+        primary: {
+          50: '#f0f9ff',
+          100: '#e0f2fe',
+          200: '#bae6fd',
+          300: '#7dd3fc',
+          400: '#38bdf8',
+          500: '#0ea5e9',
+          600: '#0284c7',
+          700: '#0369a1',
+          800: '#075985',
+          900: '#0c4a6e',
+          950: '#082f49',
+        },
+        secondary: {
+          // Custom secondary color palette
+        },
+      },
+      fontFamily: {
+        sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
+        heading: ['var(--font-montserrat)', 'system-ui', 'sans-serif'],
+      },
+    },
+  },
+  plugins: [],
+};
+```
+
+```css
+/* src/app/globals.css */
+@import "tailwindcss";
+
+/* Custom CSS variables */
+:root {
+  --font-inter: 'Inter', system-ui, sans-serif;
+  --font-montserrat: 'Montserrat', system-ui, sans-serif;
+}
+
+/* Custom utilities */
+@utility flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+@utility text-gradient {
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+```
+
+```tsx
+// src/app/layout.tsx
+import './globals.css';
+import { Inter, Montserrat } from 'next/font/google';
+
+// Load fonts
+const inter = Inter({ 
+  subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap',
+});
+
+const montserrat = Montserrat({
+  subsets: ['latin'],
+  variable: '--font-montserrat',
+  display: 'swap',
+});
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en" className={`${inter.variable} ${montserrat.variable}`}>
+      <body className="font-sans bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-50">
+        {children}
+      </body>
+    </html>
+  );
+}
+```
+
+```tsx
+// src/app/page.tsx
+export default function Home() {
+  return (
+    <main className="flex-center min-h-screen p-6">
+      <div className="max-w-4xl mx-auto">
+        <h1 className="font-heading text-4xl md:text-6xl font-bold mb-6">
+          Welcome to <span className="text-gradient bg-gradient-to-r from-primary-500 to-purple-500">Next.js</span>
+        </h1>
+        <p className="text-lg mb-8">
+          This example demonstrates Tailwind CSS v4 with Next.js App Router.
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
+            <h2 className="font-heading text-xl font-semibold mb-4">Custom Colors</h2>
+            <div className="flex flex-wrap gap-2">
+              {[50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950].map((weight) => (
+                <div 
+                  key={weight}
+                  className={`w-12 h-12 rounded-md bg-primary-${weight} flex-center`}
+                  title={`primary-${weight}`}
+                />
+              ))}
+            </div>
+          </div>
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
+            <h2 className="font-heading text-xl font-semibold mb-4">Custom Utilities</h2>
+            <div className="flex-center h-32 bg-gray-100 dark:bg-gray-700 rounded-md">
+              <p className="text-gradient bg-gradient-to-r from-blue-500 to-purple-500 font-bold text-xl">
+                Centered with custom utilities
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  );
+}
+```
+
+This example demonstrates:
+- Custom color palette configuration
+- Font setup with Next.js font optimization
+- Custom utilities with the new `@utility` syntax
+- Responsive design
+- Dark mode support
+- Integration with App Router
+
 ## Integration with shadcn/ui
 
 Tailwind CSS v4 works seamlessly with shadcn/ui components. For detailed instructions on setting up and using shadcn/ui with Tailwind CSS v4, see @nextjs-shadcn-ui.mdc.
