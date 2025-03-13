@@ -18,7 +18,7 @@ Before starting, verify that pnpm is available in your system:
 pnpm --version
 ```
 
-If not available, install it according to your operating system requirements.
+If not available, the agent should ask the user to install pnpm. For installation instructions, refer the user to the [official pnpm documentation](https://pnpm.io/installation).
 
 ### Creating a New Next.js Project
 
