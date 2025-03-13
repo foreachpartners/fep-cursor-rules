@@ -16,6 +16,8 @@ This document outlines the recommended approach to implementing internationaliza
 pnpm add next-intl
 ```
 
+> **Note**: Make sure you have configured pnpm as the default package manager in your project by adding `package-manager=pnpm` to your `.npmrc` file as described in @nextjs-package-management.mdc.
+
 ### Creating Translation Files
 
 Create a directory for your translation messages:

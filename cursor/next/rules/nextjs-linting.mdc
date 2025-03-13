@@ -20,6 +20,8 @@ If you're starting a new Next.js project, ESLint is usually already installed. Y
 pnpm lint
 ```
 
+> **Note**: Make sure you have configured pnpm as the default package manager in your project by adding `package-manager=pnpm` to your `.npmrc` file as described in @nextjs-package-management.mdc.
+
 If you need to set up ESLint manually, run:
 
 ```bash

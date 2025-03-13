@@ -44,6 +44,7 @@ After creating the project, add a `.npmrc` file in the project root to enforce u
 ```
 # .npmrc
 engine-strict=true
+package-manager=pnpm
 ```
 
 Update the `package.json` to specify pnpm as the required package manager:
@@ -57,6 +58,45 @@ Update the `package.json` to specify pnpm as the required package manager:
   "packageManager": "pnpm@8.x"
 }
 ```
+
+## Configuring pnpm as Default Package Manager
+
+To avoid specifying `--package-manager=pnpm` in every command, you can configure pnpm as the default package manager in your project. There are several ways to do this:
+
+### Using .npmrc File
+
+Create or update the `.npmrc` file in your project root with the following settings:
+
+```
+# .npmrc
+package-manager=pnpm
+```
+
+This setting tells pnpm to use itself as the package manager for all operations, eliminating the need to specify `--package-manager=pnpm` in every command.
+
+### Global Configuration
+
+You can also set this configuration globally for all your projects:
+
+```bash
+pnpm config set package-manager pnpm
+```
+
+This will update your global pnpm configuration, making pnpm the default package manager for all your projects.
+
+### Using package.json
+
+Another approach is to specify pnpm as the package manager in your `package.json` file:
+
+```json
+{
+  "packageManager": "pnpm@8.x"
+}
+```
+
+This tells Node.js and compatible tools that pnpm is the preferred package manager for this project.
+
+By using any of these methods, you can avoid explicitly specifying `--package-manager=pnpm` in every command, making your scripts cleaner and more maintainable.
 
 ## Day-to-Day Usage
 

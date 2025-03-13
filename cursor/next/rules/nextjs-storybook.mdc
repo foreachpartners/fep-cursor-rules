@@ -16,7 +16,9 @@ This document outlines the recommended approach to setting up and using Storyboo
 pnpm dlx storybook@latest init
 ```
 
-This will install the necessary dependencies and create the basic Storybook configuration.
+This will install the necessary dependencies and create the basic Storybook configuration with pnpm в качестве пакетного менеджера.
+
+> **Note**: Make sure you have configured pnpm as the default package manager in your project by adding `package-manager=pnpm` to your `.npmrc` file as described in @nextjs-package-management.mdc.
 
 ### Configuration
 
@@ -682,4 +684,4 @@ jobs:
 
 10. **Maintain a Component Library**: Use Storybook as a living component library for your team.
 
-By following these guidelines, you'll create a robust Storybook setup that serves as both documentation and a development environment for your Next.js components. 
+By following these guidelines, you'll create a robust Storybook setup that serves as both documentation and a development environment for your Next.js components.

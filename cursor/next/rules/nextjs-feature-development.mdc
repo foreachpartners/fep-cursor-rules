@@ -44,6 +44,8 @@ After implementing each atomic task, complete the following steps:
 - Ensure adequate test coverage
 - Follow testing guidelines (@nextjs-testing.mdc)
 
+> **Note**: Make sure you have configured pnpm as the default package manager in your project by adding `package-manager=pnpm` to your `.npmrc` file as described in @nextjs-package-management.mdc.
+
 ```tsx
 // Example of a component test
 import { render, screen, fireEvent } from '@testing-library/react';
@@ -206,7 +208,6 @@ export const userServiceMock = {
 - Follow linting guidelines (@nextjs-linting.mdc)
 
 ```bash
-# Example linting commands
 pnpm lint
 pnpm format
 ```
@@ -219,7 +220,6 @@ pnpm format
 - Test in different environments (development, production)
 
 ```bash
-# Example test commands
 pnpm test
 pnpm test:coverage
 pnpm test:e2e
