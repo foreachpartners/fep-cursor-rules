@@ -80,6 +80,59 @@ module.exports = {
 };
 ```
 
+#### Preventing Storybook from Crashing on Syntax Errors
+
+To ensure Storybook doesn't crash when encountering syntax errors, update your `.storybook/main.js` configuration:
+
+```javascript
+module.exports = {
+  // ... other configuration
+  
+  typescript: {
+    // Prevents Storybook from crashing on TypeScript errors
+    check: false,
+    // Optionally, show TypeScript errors as warnings instead of crashing
+    checkOptions: { 
+      typescript: {
+        diagnosticOptions: {
+          semantic: true,
+          syntactic: true,
+        }
+      }
+    },
+  },
+  
+  // Prevents Storybook from crashing on webpack errors
+  core: {
+    builder: {
+      name: 'webpack5',
+      options: {
+        fsCache: true,
+        lazyCompilation: true,
+      }
+    },
+    disableTelemetry: true,
+  },
+  
+  // Prevents Storybook from crashing on ESLint errors
+  features: {
+    buildStoriesJson: true,
+    storyStoreV7: true,
+    breakingChangesV7: true,
+    // Ignore ESLint errors
+    eslintWarnings: false,
+  },
+};
+```
+
+This configuration:
+1. Disables TypeScript type checking during build (but still shows errors as warnings)
+2. Enables lazy compilation to improve performance and resilience
+3. Disables ESLint warnings from breaking the build
+4. Uses webpack caching to speed up rebuilds
+
+These settings ensure that Storybook will continue to run even when there are syntax errors in your components or stories, allowing you to fix issues without restarting the development server.
+
 This configuration allows you to use the same path aliases in your stories as you do in your Next.js application, avoiding direct references to the `src` directory.
 
 Example story file using path aliases:
@@ -138,6 +191,7 @@ After starting, Storybook will be available at `http://localhost:6006`. It autom
 - Keep the browser tab with Storybook open during component development
 - Use the Controls addon for interactive modification of component props
 - Check components in different states and screen sizes
+- Configure Storybook to not crash on syntax errors (see [Preventing Storybook from Crashing on Syntax Errors](#preventing-storybook-from-crashing-on-syntax-errors))
 
 ## Story Organization
 
@@ -705,10 +759,12 @@ jobs:
 
 7. **Include Accessibility Information**: Document accessibility features and include a11y tests.
 
-8. **Use Composition**: Compose complex components from simpler ones in stories.
+8. **Keep Storybook Running**: Configure Storybook to not crash on syntax errors, allowing continuous development even when fixing issues.
 
-9. **Keep Stories Close to Components**: Put stories in the same directory as their components.
+9. **Use Composition**: Compose complex components from simpler ones in stories.
 
-10. **Maintain a Component Library**: Use Storybook as a living component library for your team.
+10. **Keep Stories Close to Components**: Put stories in the same directory as their components.
+
+11. **Maintain a Component Library**: Use Storybook as a living component library for your team.
 
 By following these guidelines, you'll create a robust Storybook setup that serves as both documentation and a development environment for your Next.js components.
