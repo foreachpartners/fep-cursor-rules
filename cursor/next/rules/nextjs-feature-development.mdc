@@ -1,0 +1,273 @@
+---
+description: "Process for implementing new features in Next.js applications with a focus on quality and maintainability"
+globs: 
+alwaysApply: false
+related: ["nextjs-project-structure.mdc", "nextjs-testing.mdc", "nextjs-storybook.mdc", "nextjs-internationalization.mdc", "nextjs-api-service-layer.mdc", "nextjs-linting.mdc"]
+---
+# Next.js Feature Development Process
+
+This document outlines the recommended process for implementing new features in Next.js applications. For project structure guidelines, see @nextjs-project-structure.mdc. For testing strategies, refer to @nextjs-testing.mdc. For component documentation, see @nextjs-storybook.mdc.
+
+## Feature Development Workflow
+
+### 1. Requirements Analysis and Planning
+
+Before starting implementation, thoroughly analyze requirements and create a detailed plan:
+
+- Document the feature requirements and acceptance criteria
+- Break down the feature into smaller, atomic tasks
+- Identify dependencies and potential challenges
+- Create a development plan with estimated timelines
+- Discuss the approach with team members to gather feedback
+- Consider the impact on existing functionality and performance
+
+### 2. Incremental Implementation
+
+Implement the feature by completing one atomic task at a time:
+
+- Focus on a single, well-defined task
+- Follow the established project structure (@nextjs-project-structure.mdc)
+- Use TypeScript for type safety (@nextjs-typescript.mdc)
+- Implement the UI components and business logic
+- Ensure proper error handling and edge cases
+- Commit changes frequently with descriptive commit messages
+
+### 3. Post-Implementation Checklist
+
+After implementing each atomic task, complete the following steps:
+
+#### 3.1. Unit Testing
+
+- Write comprehensive unit tests for the new functionality
+- Test both success and failure scenarios
+- Mock external dependencies
+- Ensure adequate test coverage
+- Follow testing guidelines (@nextjs-testing.mdc)
+
+```tsx
+// Example of a component test
+import { render, screen, fireEvent } from '@testing-library/react';
+import { UserProfile } from './UserProfile';
+
+describe('UserProfile', () => {
+  it('should display user information correctly', () => {
+    render(<UserProfile user={{ name: 'John Doe', email: 'john@example.com' }} />);
+    
+    expect(screen.getByText('John Doe')).toBeInTheDocument();
+    expect(screen.getByText('john@example.com')).toBeInTheDocument();
+  });
+  
+  it('should handle edit mode correctly', () => {
+    render(<UserProfile user={{ name: 'John Doe', email: 'john@example.com' }} />);
+    
+    fireEvent.click(screen.getByText('Edit Profile'));
+    expect(screen.getByLabelText('Name')).toHaveValue('John Doe');
+  });
+});
+```
+
+#### 3.2. Storybook Documentation
+
+- Create Storybook stories for all new components
+- Document different component states and variations
+- Include usage examples and props documentation
+- Ensure accessibility compliance
+- Follow Storybook guidelines (@nextjs-storybook.mdc)
+
+```tsx
+// Example of a Storybook story
+import type { Meta, StoryObj } from '@storybook/react';
+import { UserProfile } from './UserProfile';
+
+const meta: Meta<typeof UserProfile> = {
+  title: 'Features/User/UserProfile',
+  component: UserProfile,
+  parameters: {
+    layout: 'centered',
+  },
+  tags: ['autodocs'],
+};
+
+export default meta;
+type Story = StoryObj<typeof UserProfile>;
+
+export const Default: Story = {
+  args: {
+    user: {
+      name: 'John Doe',
+      email: 'john@example.com',
+      avatar: '/images/avatars/john.jpg',
+    },
+  },
+};
+
+export const Loading: Story = {
+  args: {
+    isLoading: true,
+  },
+};
+
+export const Error: Story = {
+  args: {
+    error: 'Failed to load user profile',
+  },
+};
+```
+
+#### 3.3. Internationalization
+
+- Add all new text strings to translation files
+- Use translation keys instead of hardcoded strings
+- Test the feature with different locales
+- Ensure proper formatting of dates, numbers, and currencies
+- Follow internationalization guidelines (@nextjs-internationalization.mdc)
+
+```tsx
+// Example of internationalized component
+'use client';
+
+import { useTranslations } from 'next-intl';
+import { NAMESPACES } from '@/types/i18n';
+
+export function UserProfile({ user }) {
+  const t = useTranslations(NAMESPACES.USER);
+  
+  return (
+    <div>
+      <h2>{t('profile.title')}</h2>
+      <div>
+        <label>{t('profile.name')}</label>
+        <p>{user.name}</p>
+      </div>
+      <div>
+        <label>{t('profile.email')}</label>
+        <p>{user.email}</p>
+      </div>
+      <button>{t('profile.editButton')}</button>
+    </div>
+  );
+}
+```
+
+#### 3.4. Mock Services Implementation
+
+- Create mock services for the new API endpoints
+- Ensure mocks return realistic data
+- Implement different scenarios (success, error, loading)
+- Document the API contract
+- Follow API service layer guidelines (@nextjs-api-service-layer.mdc)
+
+```tsx
+// Example of a mock service
+import { User } from '@/types/user';
+import { mockUsers } from './mock-data';
+
+export const userServiceMock = {
+  getUser: async (id: string): Promise<User> => {
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    const user = mockUsers.find(user => user.id === id);
+    
+    if (!user) {
+      throw new Error('User not found');
+    }
+    
+    return user;
+  },
+  
+  updateUser: async (id: string, data: Partial<User>): Promise<User> => {
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    const userIndex = mockUsers.findIndex(user => user.id === id);
+    
+    if (userIndex === -1) {
+      throw new Error('User not found');
+    }
+    
+    const updatedUser = {
+      ...mockUsers[userIndex],
+      ...data,
+    };
+    
+    mockUsers[userIndex] = updatedUser;
+    
+    return updatedUser;
+  },
+};
+```
+
+#### 3.5. Linting and Code Formatting
+
+- Run ESLint to check for code quality issues
+- Run Prettier to ensure consistent code formatting
+- Fix any linting errors or warnings
+- Ensure compliance with project coding standards
+- Follow linting guidelines (@nextjs-linting.mdc)
+
+```bash
+# Example linting commands
+npm run lint
+npm run format
+```
+
+#### 3.6. Run All Tests
+
+- Run the entire test suite to ensure no regressions
+- Check test coverage for the new code
+- Verify integration with existing functionality
+- Test in different environments (development, production)
+
+```bash
+# Example test commands
+npm run test
+npm run test:coverage
+npm run test:e2e
+```
+
+#### 3.7. Analyze Results and Fix Issues
+
+- Review test results and fix any failures
+- Address any performance issues
+- Optimize code where necessary
+- Ensure proper error handling
+- Verify browser compatibility
+
+#### 3.8. Verify Requirements Compliance
+
+- Review the implementation against the original requirements
+- Ensure all acceptance criteria are met
+- Get feedback from stakeholders or team members
+- Verify edge cases and error scenarios
+- Check for any missing functionality
+
+#### 3.9. Update Documentation
+
+- Update project documentation with the new feature
+- Document any API changes or new endpoints
+- Update README files if necessary
+- Document any configuration changes
+- Add usage examples for other developers
+
+## Feature Review Process
+
+After completing the implementation and post-implementation checklist, submit the feature for review:
+
+1. Create a pull request with a detailed description
+2. Link to the original requirements or ticket
+3. Provide a summary of changes and testing performed
+4. Request review from appropriate team members
+5. Address review comments and make necessary changes
+6. Once approved, merge the changes into the main branch
+
+## Continuous Improvement
+
+After feature implementation, consider the following:
+
+- Gather feedback from users and stakeholders
+- Monitor performance and usage metrics
+- Identify areas for improvement
+- Document lessons learned for future features
+- Share knowledge with the team
+
+By following this process, you'll ensure that new features are implemented with high quality, maintainability, and adherence to project standards. 

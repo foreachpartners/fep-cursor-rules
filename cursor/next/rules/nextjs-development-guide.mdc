@@ -2,7 +2,7 @@
 description: "Comprehensive guide for Next.js application development with best practices and recommendations"
 globs: 
 alwaysApply: true
-related: ["nextjs-project-structure.mdc", "nextjs-api-service-layer.mdc", "nextjs-typescript.mdc", "nextjs-testing.mdc", "nextjs-storybook.mdc", "nextjs-internationalization.mdc", "nextjs-linting.mdc"]
+related: ["nextjs-project-structure.mdc", "nextjs-api-service-layer.mdc", "nextjs-typescript.mdc", "nextjs-testing.mdc", "nextjs-storybook.mdc", "nextjs-internationalization.mdc", "nextjs-linting.mdc", "nextjs-feature-development.mdc"]
 ---
 
 # Next.js Development Guide
@@ -95,3 +95,12 @@ See [Linting and Formatting Guidelines](@nextjs-linting.mdc) for detailed inform
 - Prettier setup
 - VS Code integration
 - Git hooks with Husky
+
+### 8. Feature Development Process (@nextjs-feature-development.mdc)
+
+See [Feature Development Guidelines](@nextjs-feature-development.mdc) for detailed information on:
+- Requirements analysis and planning
+- Incremental implementation approach
+- Post-implementation checklist
+- Feature review process
+- Continuous improvement
