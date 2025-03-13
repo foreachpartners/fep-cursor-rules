@@ -2,7 +2,7 @@
 description: "Comprehensive guide for Next.js application development with best practices and recommendations"
 globs: 
 alwaysApply: true
-related: ["nextjs-project-structure.mdc", "nextjs-api-service-layer.mdc", "nextjs-typescript.mdc", "nextjs-testing.mdc", "nextjs-storybook.mdc", "nextjs-internationalization.mdc", "nextjs-linting.mdc", "nextjs-feature-development.mdc", "nextjs-package-management.mdc"]
+related: ["nextjs-project-structure.mdc", "nextjs-api-service-layer.mdc", "nextjs-typescript.mdc", "nextjs-testing.mdc", "nextjs-storybook.mdc", "nextjs-internationalization.mdc", "nextjs-linting.mdc", "nextjs-feature-development.mdc", "nextjs-package-management.mdc", "nextjs-tailwind-v4.mdc"]
 ---
 
 # Next.js Development Guide
@@ -30,7 +30,7 @@ Our Next.js applications are built with the following technology stack:
 
 - **Next.js 14+**: Utilizing the App Router architecture
 - **TypeScript**: For type safety and better developer experience
-- **Tailwind CSS**: For styling and responsive design
+- **Tailwind CSS v4**: For styling and responsive design
 - **Zustand**: For state management
 - **TanStack Query**: For data fetching and caching
 - **next-intl**: For internationalization
@@ -117,3 +117,15 @@ See [Package Management Guidelines](@nextjs-package-management.mdc) for detailed
 - CI/CD configuration
 - Migration from npm or yarn
 - Enforcing pnpm usage across the team
+
+### 10. Tailwind CSS v4 (@nextjs-tailwind-v4.mdc)
+
+See [Tailwind CSS v4 Guidelines](@nextjs-tailwind-v4.mdc) for detailed information on:
+- Setting up Tailwind CSS v4
+- Configuration and customization
+- Migration from Tailwind CSS v3
+- Best practices for using Tailwind CSS v4
+- Integration with Next.js App Router
+- Troubleshooting common issues
+
+For a comprehensive step-by-step migration guide from Tailwind CSS v3 to v4, see [Tailwind CSS v4 Migration Guide](@nextjs-tailwind-v4-migration.mdc).

@@ -1,0 +1,254 @@
+---
+description: "Step-by-step guide for migrating from Tailwind CSS v3 to v4 in Next.js applications"
+globs: 
+alwaysApply: false
+related: ["nextjs-tailwind-v4.mdc", "nextjs-project-structure.mdc", "nextjs-package-management.mdc"]
+---
+# Migrating to Tailwind CSS v4 in Next.js
+
+This document provides a comprehensive guide for migrating existing Next.js applications from Tailwind CSS v3 to v4. For general Tailwind CSS v4 guidelines, see @nextjs-tailwind-v4.mdc. For project structure guidelines, refer to @nextjs-project-structure.mdc. For package management guidelines, see @nextjs-package-management.mdc.
+
+## Preparation
+
+Before starting the migration process, take these preparatory steps:
+
+1. **Create a new branch**: Always work in a separate branch to isolate migration changes
+   ```bash
+   git checkout -b tailwind-v4-migration
+   ```
+
+2. **Ensure Node.js compatibility**: Tailwind CSS v4 requires Node.js 18.0.0 or later
+   ```bash
+   node --version
+   ```
+
+3. **Backup your configuration**: Make a copy of your existing Tailwind configuration
+   ```bash
+   cp tailwind.config.js tailwind.config.backup.js
+   ```
+
+## Automated Migration
+
+Tailwind CSS provides an official upgrade tool that automates most of the migration process:
+
+```bash
+npx @tailwindcss/upgrade
+```
+
+This tool will:
+- Update your dependencies
+- Migrate your configuration files
+- Update your CSS files to use the new import syntax
+- Handle class name changes in your templates
+
+> **Note**: The upgrade tool requires Node.js 20 or higher. If you're using an older version, you'll need to upgrade Node.js first or perform a manual migration.
+
+## Manual Migration Steps
+
+If you prefer to migrate manually or need to make adjustments after running the upgrade tool, follow these steps:
+
+### 1. Update Dependencies
+
+Update your Tailwind CSS dependencies:
+
+```bash
+pnpm remove tailwindcss postcss-import autoprefixer
+pnpm add tailwindcss
+pnpm add -D @tailwindcss/postcss
+```
+
+If you're using Vite:
+
+```bash
+pnpm add -D @tailwindcss/vite
+```
+
+### 2. Update PostCSS Configuration
+
+Update your `postcss.config.mjs` file:
+
+```javascript
+export default {
+  plugins: {
+    '@tailwindcss/postcss': {},
+  },
+};
+```
+
+Note that Tailwind CSS v4 handles imports and vendor prefixing automatically, so you no longer need `postcss-import` and `autoprefixer`.
+
+### 3. Update Tailwind Configuration
+
+Convert your `tailwind.config.js` file to use the new export syntax:
+
+```javascript
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: [
+    './src/app/**/*.{js,ts,jsx,tsx}',
+    './src/pages/**/*.{js,ts,jsx,tsx}',
+    './src/components/**/*.{js,ts,jsx,tsx}',
+  ],
+  theme: {
+    extend: {
+      // Your theme extensions
+    },
+  },
+  plugins: [
+    // Your plugins
+  ],
+};
+```
+
+### 4. Update CSS Files
+
+Update your global CSS file (typically `src/app/globals.css`):
+
+```css
+@import "tailwindcss";
+
+/* Your custom CSS here */
+```
+
+Replace all `@tailwind` directives with a single `@import "tailwindcss"` statement.
+
+### 5. Update Custom Utilities
+
+If you have custom utilities defined with `@layer utilities`, update them to use the new `@utility` API:
+
+```css
+/* Old syntax */
+@layer utilities {
+  .flex-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+}
+
+/* New syntax */
+@utility flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+```
+
+### 6. Update Class Names
+
+Update class names that have changed in v4:
+
+| Old Class (v3) | New Class (v4) |
+|----------------|---------------|
+| bg-opacity-* | bg-black/50 (opacity syntax) |
+| text-opacity-* | text-black/50 |
+| border-opacity-* | border-black/50 |
+| flex-shrink-* | shrink-* |
+| overflow-ellipsis | text-ellipsis |
+| shadow-sm | shadow-xs |
+| shadow-md | shadow-sm |
+| shadow-lg | shadow-md |
+| shadow-xl | shadow-lg |
+| shadow-2xl | shadow-xl |
+| blur-sm | blur-xs |
+| blur-md | blur-sm |
+| blur-lg | blur-md |
+| blur-xl | blur-lg |
+| blur-2xl | blur-xl |
+| blur-3xl | blur-2xl |
+
+### 7. Update Plugins
+
+Check if your Tailwind plugins are compatible with v4. You may need to update or replace some plugins:
+
+```bash
+pnpm add -D @tailwindcss/forms@latest @tailwindcss/typography@latest
+```
+
+## Next.js Specific Considerations
+
+### Next.js App Router
+
+If you're using the App Router, ensure your CSS is properly imported in your root layout:
+
+```tsx
+// src/app/layout.tsx
+import './globals.css';
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en">
+      <body>{children}</body>
+    </html>
+  );
+}
+```
+
+### Storybook Integration
+
+Update your Storybook configuration to work with Tailwind CSS v4:
+
+```javascript
+// .storybook/preview.js
+import '../src/app/globals.css';
+
+export const parameters = {
+  // Your Storybook parameters
+};
+```
+
+### Testing
+
+After migration, thoroughly test your application to ensure all styles are applied correctly:
+
+1. Check all components for visual regressions
+2. Test responsive layouts
+3. Verify dark mode functionality (if used)
+4. Test any custom utilities or plugins
+
+## Troubleshooting Common Issues
+
+### Classes Not Applied
+
+If your classes aren't being applied, check:
+- Content paths in `tailwind.config.js`
+- CSS import syntax in your global CSS file
+- Class name changes that might have been missed
+
+### Build Errors
+
+If you encounter build errors:
+- Verify all dependencies are correctly installed
+- Check your PostCSS configuration
+- Ensure your Tailwind configuration uses the correct export syntax
+
+### Plugin Compatibility
+
+If plugins aren't working:
+- Check if the plugin is compatible with Tailwind CSS v4
+- Look for updated versions of the plugin
+- Consider alternatives if the plugin is no longer maintained
+
+## Rollback Plan
+
+If you encounter critical issues that can't be resolved quickly:
+
+1. Revert to your original branch
+   ```bash
+   git checkout main
+   ```
+
+2. Restore your original dependencies
+   ```bash
+   pnpm install
+   ```
+
+## Additional Resources
+
+- [Official Tailwind CSS v4 Documentation](https://tailwindcss.com/docs)
+- [Tailwind CSS v4 Migration Guide](https://tailwindcss.com/docs/upgrade-guide)
+- [Tailwind CSS v4 GitHub Repository](https://github.com/tailwindlabs/tailwindcss) 

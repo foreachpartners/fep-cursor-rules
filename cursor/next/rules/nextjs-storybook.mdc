@@ -2,11 +2,11 @@
 description: "Setup and usage of Storybook for documenting components in Next.js applications"
 globs: 
 alwaysApply: false
-related: ["nextjs-project-structure.mdc", "nextjs-testing.mdc", "nextjs-typescript.mdc"]
+related: ["nextjs-project-structure.mdc", "nextjs-testing.mdc", "nextjs-typescript.mdc", "nextjs-tailwind-v4.mdc"]
 ---
 # Next.js Storybook Guidelines
 
-This document outlines the recommended approach to setting up and using Storybook for documenting components in Next.js applications. For project structure guidelines, see @nextjs-project-structure.mdc. For testing strategies, refer to @nextjs-testing.mdc. For TypeScript integration, see @nextjs-typescript.mdc.
+This document outlines the recommended approach to setting up and using Storybook for documenting components in Next.js applications. For project structure guidelines, see @nextjs-project-structure.mdc. For testing strategies, refer to @nextjs-testing.mdc. For TypeScript integration, see @nextjs-typescript.mdc. For Tailwind CSS v4 integration, see @nextjs-tailwind-v4.mdc.
 
 ## Setting Up Storybook
 
@@ -44,6 +44,8 @@ export const parameters = {
   },
 };
 ```
+
+> **Note for Tailwind CSS v4**: If you're using Tailwind CSS v4, make sure your `globals.css` file uses the new import syntax `@import "tailwindcss";` instead of the old `@tailwind` directives. For more details on Tailwind CSS v4 integration, see @nextjs-tailwind-v4.mdc.
 
 #### Adding TypeScript Support
 

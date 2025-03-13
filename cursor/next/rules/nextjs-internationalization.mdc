@@ -721,7 +721,7 @@ Configure Tailwind CSS for RTL support:
 
 ```js
 // tailwind.config.js
-module.exports = {
+export default {
   theme: {
     extend: {},
   },
@@ -730,6 +730,8 @@ module.exports = {
   ],
 }
 ```
+
+> **Note for Tailwind CSS v4**: If you're using Tailwind CSS v4, make sure to use the new export syntax in your configuration file and check compatibility with the RTL plugin. For more details on Tailwind CSS v4 integration, see @nextjs-tailwind-v4.mdc.
 
 Use RTL-aware classes in your components:
 

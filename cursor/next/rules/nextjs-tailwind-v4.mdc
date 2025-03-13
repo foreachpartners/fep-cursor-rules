@@ -1,0 +1,278 @@
+---
+description: "Guidelines for setting up and using Tailwind CSS v4 in Next.js applications"
+globs: 
+alwaysApply: false
+related: ["nextjs-project-structure.mdc", "nextjs-linting.mdc", "nextjs-package-management.mdc", "nextjs-tailwind-v4-migration.mdc"]
+---
+# Next.js Tailwind CSS v4 Guidelines
+
+This document outlines the recommended approach to setting up and using Tailwind CSS v4 in Next.js applications. For project structure guidelines, see @nextjs-project-structure.mdc. For linting configuration, refer to @nextjs-linting.mdc. For package management guidelines, see @nextjs-package-management.mdc. For detailed migration instructions, see @nextjs-tailwind-v4-migration.mdc.
+
+## Setting Up Tailwind CSS v4
+
+### Installation
+
+Install Tailwind CSS v4 and its dependencies using pnpm:
+
+```bash
+pnpm add tailwindcss
+pnpm add -D @tailwindcss/postcss
+```
+
+If you're using Vite as your build tool, install the Vite plugin instead:
+
+```bash
+pnpm add -D @tailwindcss/vite
+```
+
+### Configuration
+
+#### PostCSS Configuration
+
+Create or update your `postcss.config.mjs` file:
+
+```javascript
+export default {
+  plugins: {
+    '@tailwindcss/postcss': {},
+  },
+};
+```
+
+Note that in Tailwind CSS v4, imports and vendor prefixing are handled automatically, so you no longer need `postcss-import` and `autoprefixer`.
+
+#### Vite Configuration (if applicable)
+
+If you're using Vite, update your `vite.config.ts` file:
+
+```typescript
+import { defineConfig } from 'vite';
+import tailwindcss from '@tailwindcss/vite';
+
+export default defineConfig({
+  plugins: [
+    tailwindcss(),
+  ],
+});
+```
+
+#### Tailwind CSS Configuration
+
+Create a `tailwind.config.js` file in the root of your project:
+
+```javascript
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: [
+    './src/app/**/*.{js,ts,jsx,tsx}',
+    './src/pages/**/*.{js,ts,jsx,tsx}',
+    './src/components/**/*.{js,ts,jsx,tsx}',
+  ],
+  theme: {
+    extend: {
+      colors: {
+        // Add your custom colors here
+      },
+      fontFamily: {
+        // Add your custom fonts here
+      },
+    },
+  },
+  plugins: [],
+};
+```
+
+### CSS Setup
+
+Create or update your global CSS file (typically `src/app/globals.css`):
+
+```css
+@import "tailwindcss";
+
+/* Your custom CSS here */
+```
+
+Note that in Tailwind CSS v4, the `@tailwind` directives are replaced with a simple `@import` statement.
+
+## Using Tailwind CSS v4 in Next.js
+
+### Basic Usage
+
+Use Tailwind CSS utility classes directly in your components:
+
+```tsx
+export default function Button({ children }) {
+  return (
+    <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+      {children}
+    </button>
+  );
+}
+```
+
+### Custom Utilities
+
+In Tailwind CSS v4, you can create custom utilities using the `@utility` API:
+
+```css
+/* src/app/globals.css */
+@import "tailwindcss";
+
+@utility flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+@utility text-gradient {
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+```
+
+Then use these custom utilities in your components:
+
+```tsx
+<div className="flex-center h-screen">
+  <h1 className="text-gradient bg-gradient-to-r from-blue-500 to-purple-500">
+    Hello, Tailwind CSS v4!
+  </h1>
+</div>
+```
+
+### Responsive Design
+
+Tailwind CSS v4 maintains the same responsive design approach as v3:
+
+```tsx
+<div className="text-sm md:text-base lg:text-lg">
+  Responsive text
+</div>
+```
+
+### Dark Mode
+
+Configure dark mode in your `tailwind.config.js`:
+
+```javascript
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: [
+    './src/app/**/*.{js,ts,jsx,tsx}',
+    './src/pages/**/*.{js,ts,jsx,tsx}',
+    './src/components/**/*.{js,ts,jsx,tsx}',
+  ],
+  darkMode: 'class', // or 'media' for system preference
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+};
+```
+
+Then use dark mode variants in your components:
+
+```tsx
+<div className="bg-white dark:bg-gray-800 text-black dark:text-white">
+  Dark mode compatible content
+</div>
+```
+
+## Migrating from Tailwind CSS v3 to v4
+
+If you're migrating an existing project from Tailwind CSS v3 to v4, you can use the official upgrade tool:
+
+```bash
+npx @tailwindcss/upgrade
+```
+
+This tool will:
+1. Update your dependencies
+2. Migrate your configuration files
+3. Update your CSS files to use the new import syntax
+4. Handle class name changes in your templates
+
+For a comprehensive step-by-step migration guide, see @nextjs-tailwind-v4-migration.mdc.
+
+### Key Changes from v3 to v4
+
+Be aware of these key changes when migrating:
+
+1. **CSS Import Syntax**: Replace `@tailwind` directives with `@import "tailwindcss"`
+2. **Utility Class Changes**:
+   - `bg-opacity-*` → `bg-black/50` (opacity syntax)
+   - `flex-shrink-*` → `shrink-*`
+   - `overflow-ellipsis` → `text-ellipsis`
+3. **Size Class Renaming**:
+   - `shadow-sm` → `shadow-xs`
+   - Similar changes to other size-based utilities
+4. **Ring, Shadow, and Blur Scales**:
+   - Default `ring` is now 1px (was 3px in v3)
+5. **Custom Utilities API**:
+   - `@layer utilities` → `@utility`
+
+## Integration with Next.js App Router
+
+When using Tailwind CSS v4 with Next.js App Router, ensure your CSS is properly imported in your root layout:
+
+```tsx
+// src/app/layout.tsx
+import './globals.css';
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en">
+      <body>{children}</body>
+    </html>
+  );
+}
+```
+
+## Integration with Storybook
+
+To use Tailwind CSS v4 with Storybook, update your `.storybook/preview.js`:
+
+```javascript
+import '../src/app/globals.css'; // Import your global CSS
+
+export const parameters = {
+  actions: { argTypesRegex: '^on[A-Z].*' },
+  controls: {
+    matchers: {
+      color: /(background|color)$/i,
+      date: /Date$/,
+    },
+  },
+};
+```
+
+## Best Practices
+
+1. **Organize Utility Classes**: Group related utility classes together for better readability
+2. **Extract Components**: For complex UI elements, create reusable components
+3. **Use JIT Mode**: Tailwind CSS v4 uses JIT (Just-In-Time) mode by default for faster builds
+4. **Avoid Inline Styles**: Prefer Tailwind utility classes over inline styles
+5. **Use Theme Configuration**: Extend the theme in `tailwind.config.js` rather than using arbitrary values
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Classes Not Applied**: Ensure your content paths in `tailwind.config.js` are correct
+2. **Build Errors**: Check that you've installed the correct dependencies for your build tool
+3. **CSS Import Issues**: Verify that you're using the new `@import "tailwindcss"` syntax
+4. **Compatibility with Plugins**: Some v3 plugins may not be compatible with v4 yet
+
+### Debugging
+
+If you encounter issues, try these steps:
+
+1. Check the console for error messages
+2. Verify your configuration files
+3. Ensure all dependencies are up to date
+4. Try running the upgrade tool again with the `--debug` flag 
