@@ -521,8 +521,8 @@ To support multiple languages in your stories:
 ```tsx
 // .storybook/preview.js
 import { NextIntlClientProvider } from 'next-intl';
-import enMessages from '../messages/en.json';
-import esMessages from '../messages/es.json';
+import enMessages from '@/messages/en.json';
+import esMessages from '@/messages/es.json';
 
 const locales = ['en', 'es'];
 const messages = {
