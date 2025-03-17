@@ -189,3 +189,98 @@ Based on analysis of existing Python and Next.js rules, effective Cursor Rules s
 - External service communication
 - Database access patterns
 - Content management
+
+### 11. Dependency Management
+
+- Package manager conventions (npm, pnpm, yarn, uv, pip, etc.)
+- Dependency versioning strategy
+- Monorepo management (if applicable)
+- Dependency update policies
+- Local dependency management
+
+### 12. Code Style Guidelines
+
+- Formatting conventions
+- Naming conventions
+- Comment style and requirements
+- File structure templates
+- Code organization within files
+
+### 13. Documentation Standards
+
+- Code documentation (docstrings, JSDoc, etc.)
+- API documentation
+- Architecture documentation
+- README and contributor guidelines
+- Changelog maintenance
+
+### 14. Logging Framework
+
+- Logging levels and when to use them
+- Structured logging patterns
+- Log rotation and management
+- Contextual logging
+- Error correlation in logs
+
+### 15. Configuration Management
+
+- Environment variables usage
+- Configuration file structures
+- Secret management
+- Feature flags
+- Environment-specific configurations
+
+## Master Rules Document
+
+Each technology stack should include a master rules document with these characteristics:
+
+- Extremely concise overview of all rules (maximum 1-2 pages)
+- Clear references to detailed rule documents
+- Hierarchical organization mirroring the rule structure
+- Priority indicators for each rule section
+- Quick reference for the most critical rules
+- Navigation guides for LLM to find detailed information
+
+## Low-Priority Aspects
+
+The following aspects are explicitly defined as low-priority in our rules:
+
+### 1. DevOps Concerns
+
+- CI/CD pipelines
+- Deployment strategies
+- Infrastructure as code
+- Container orchestration
+- Release automation
+
+### 2. Advanced Performance Optimization
+
+- Micro-optimizations
+- Extreme performance tuning
+- Framework-specific performance tricks
+- Database query optimization
+- Network protocol optimization
+
+### 3. Enterprise-level Security
+
+- Advanced security hardening
+- Penetration testing
+- Security certification compliance
+- Cryptographic implementations
+- Zero-trust architecture
+
+### 4. Advanced Monitoring
+
+- APM integration
+- Metric collection systems
+- Dashboard creation
+- Alerting systems
+- Log aggregation
+
+### 5. Future-proof Architecture
+
+- The rules prioritize simplicity over future-proofing
+- Architecture should solve current problems efficiently
+- Avoid speculative generalization
+- Minimize abstractions not immediately needed
+- Focus on maintainability of current codebase
