@@ -105,3 +105,87 @@
 - Include metrics to evaluate rule effectiveness
 - Provide mechanisms to track rule adherence
 - Enable quantitative feedback on rule usefulness
+
+## Required Coverage Aspects
+
+Based on analysis of existing Python and Next.js rules, effective Cursor Rules should cover these technical aspects:
+
+### 1. Code Structure and Organization
+
+- Project directory structure and file organization
+- Module and package organization
+- Component hierarchy (UI frameworks)
+- File naming conventions and locations
+- Import/export patterns
+
+### 2. Architectural Patterns
+
+- Design principles (DRY, SOLID, etc.)
+- Layered architecture approaches
+- Separation of concerns
+- Dependency direction and management
+- State management patterns
+
+### 3. Typing and Type Safety
+
+- Type system usage and conventions
+- Generic types and type parameters
+- Interface/type definitions
+- Type guards and narrowing
+- Type inference optimization
+
+### 4. Error Handling
+
+- Exception/error hierarchies
+- Error propagation patterns
+- Retry mechanisms
+- Graceful degradation strategies
+- Logging integration with errors
+
+### 5. Testing Strategies
+
+- Unit/integration/E2E testing approaches
+- Test organization and naming
+- Mocking strategies
+- Test data management
+- Coverage requirements
+
+### 6. Performance Optimization
+
+- Resource management
+- Caching strategies
+- Lazy loading patterns
+- Rendering optimization
+- Bundle size management
+
+### 7. Security Practices
+
+- Input validation
+- Authentication/authorization patterns
+- Data sanitization
+- Secure API access
+- Environment variable management
+
+### 8. Developer Experience
+
+- IDE configuration
+- Code formatting and linting
+- Documentation requirements
+- Debugging practices
+- Development workflow
+
+### 9. Framework-Specific Patterns
+
+- Routing and navigation
+- Data fetching strategies
+- Component lifecycle management
+- Server/client code separation
+- Framework feature utilization
+
+### 10. Integration Points
+
+- API service layer organization
+- Third-party library integration
+- External service communication
+- Database access patterns
+- Content management
