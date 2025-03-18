@@ -19,32 +19,48 @@ alwaysApply: true
 2. Place the most important and frequently used rules first
 3. Include examples for all critical instructions
 4. Optimize for use within limited context windows
-5. MUST implement self-verification mechanisms (strictly follow @5-cursor-rules-testing.mdc)
-6. MUST follow development workflow (strictly adhere to @2-cursor-rules-workflow.mdc)
-7. ALWAYS consult this guide first before creating specific rules
-8. REQUIRED to use coverage checklist (STRICTLY follow @6-cursor-rules-coverage.mdc)
+5. CRITICAL: Maintain strict consistency between all rules documents
 
-## 3. Rule Formatting (P0)
+## 3. Success Criteria and Metrics (P1)
 
-1. Use valid Markdown checked with markdownlint
-2. Include YAML frontmatter (description, globs, related files)
-3. Apply hierarchical heading structure
-4. Prefer lists over long paragraphs
-5. Write all rules in English only
-6. MUST follow formatting requirements (strictly implement @3-cursor-rules-format.mdc)
+1. **Consistency**: Rules are fully aligned and form a cohesive system without contradictions
+2. **Context Efficiency**: Content is not duplicated between rules, maximizing available context
+3. **Clarity**: Rules are unambiguous and easy to understand
+4. **Adoption**: Rules are consistently followed in the codebase
+5. **Effectiveness**: Rules lead to measurable improvements in code quality
+6. **Feedback**: Positive user responses on rule usefulness
+7. **Maintenance**: Minimal effort required to keep rules updated
 
-## 4. Success Criteria and Metrics (P2)
+## 4. Rule Navigation Guide (P0)
 
-1. **Clarity**: Rules are unambiguous and easy to understand
-2. **Adoption**: Rules are consistently followed in the codebase
-3. **Effectiveness**: Rules lead to measurable improvements in code quality
-4. **Feedback**: Positive user responses on rule usefulness
-5. **Maintenance**: Minimal effort required to keep rules updated
+When you are addressing specific needs, MUST consult these rules:
 
-## 5. Self-Verification (P1)
+### 4.1. Starting New Rule Development
 
-Each rule should include verification questions:
-1. Does this rule apply to the current file?
-2. Is the rule being followed correctly?
-3. What specific aspects need improvement?
-4. REQUIRED: Implement verification methods from @5-cursor-rules-testing.mdc
+1. ALWAYS begin with @1-cursor-rules-guide.mdc for foundational principles
+2. MUST follow process in @2-cursor-rules-workflow.mdc to structure your work
+3. REQUIRED to check @6-cursor-rules-coverage.mdc for technical aspects to address
+
+### 4.2. Creating Rule Documents
+
+1. MUST follow formatting standards in @3-cursor-rules-format.mdc
+2. CRITICAL to structure documents according to @4-cursor-rules-structure.mdc
+3. REQUIRED to include self-verification as specified in @5-cursor-rules-testing.mdc section 7
+
+### 4.3. Reviewing Existing Rules
+
+1. MUST verify consistency using @5-cursor-rules-testing.mdc section 15
+2. REQUIRED to ensure complete coverage per @6-cursor-rules-coverage.mdc
+3. CRITICAL to check for redundancy and duplication per @4-cursor-rules-structure.mdc section 10
+
+### 4.4. Updating Rules
+
+1. MUST follow @2-cursor-rules-workflow.mdc section 8 for maintenance
+2. REQUIRED to confirm updated rules meet all testing criteria in @5-cursor-rules-testing.mdc
+3. CRITICAL to preserve internal and cross-rule consistency
+
+### 4.5. Validating Rule Effectiveness
+
+1. MUST implement metrics from @5-cursor-rules-testing.mdc section 9
+2. REQUIRED to compare against success criteria in section 3 of this document
+3. CRITICAL to document validation results as specified in @5-cursor-rules-testing.mdc section 12

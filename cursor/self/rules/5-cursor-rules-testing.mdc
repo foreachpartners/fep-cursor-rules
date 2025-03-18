@@ -92,17 +92,28 @@ alwaysApply: false
 
 ## 7. LLM Self-Verification (P0)
 
-Rules should include mechanisms for LLMs to self-verify application:
+Every rule document MUST include basic verification questions:
 
-```markdown
-## Verification Questions
+1. **Basic verification questions**:
+   - Does this rule apply to the current file?
+   - Is the rule being followed correctly?
+   - What specific aspects need improvement?
 
-When applying this rule, ask yourself:
-1. Does the current code follow the pattern described?
-2. Are there any exceptions that should be made?
-3. Is the implementation consistent with related rules?
-4. What metrics would indicate successful application?
-```
+2. **Advanced verification mechanisms**:
+   ```markdown
+   ## Verification Questions
+   
+   When applying this rule, ask yourself:
+   1. Does the current code follow the pattern described?
+   2. Are there any exceptions that should be made?
+   3. Is the implementation consistent with related rules?
+   4. What metrics would indicate successful application?
+   ```
+
+3. **Required placement**:
+   - Self-verification section MUST be included near the end of each rule document
+   - Questions MUST be specific to the rule's domain
+   - ALWAYS include both general and rule-specific verification questions
 
 ## 8. Context Budget Optimization (P0)
 
@@ -166,3 +177,29 @@ Before releasing a new rule, MUST verify:
 - Error messages should be clear and actionable
 - Use consistent terminology across testing documentation
 - Define technical terms when they're first used 
+
+## 15. Consistency Testing (P0)
+
+1. CRITICAL: Prior to finalizing any rule, perform these consistency tests:
+
+   - **Duplication Test**: 
+     - Scan all rule files for similar content
+     - Flag any duplicate explanations, examples, or guidelines
+     - MUST consolidate duplicate content to a single authoritative source
+   
+   - **Contradiction Test**:
+     - Compare rule with all related rules
+     - Verify no contradictory guidance exists
+     - Resolve any conflicting instructions
+   
+   - **Reference Test**:
+     - Ensure all references to other rules are valid
+     - Verify referenced rules contain the expected content
+     - Check that reference targets haven't been moved or renamed
+   
+   - **Context Usage Test**:
+     - Measure token consumption of rules
+     - Identify opportunities to reference rather than duplicate
+     - Optimize for maximum information within context limits
+
+2. REQUIRED: Document the results of consistency tests before approval 

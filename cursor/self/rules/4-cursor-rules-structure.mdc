@@ -148,3 +148,18 @@ Define measurable outcomes for rule effectiveness:
 - Use consistent terminology across all documents
 - Be precise with technical terms
 - Define specialized terms when first used 
+
+## 10. Consistency and Non-Duplication (P0)
+
+1. CRITICAL: Each concept MUST be defined in exactly one place
+2. ALWAYS reference existing rules rather than duplicating content
+3. When concepts overlap between rules, MUST designate one authoritative source
+4. NEVER include redundant information that already exists in other rules
+5. When similar topics appear in multiple rules, reference the canonical definition
+6. REQUIRED to validate consistency between related rules before publishing
+
+Example of correct cross-reference:
+
+```markdown
+For formatting code examples, STRICTLY follow the standards in @3-cursor-rules-format.mdc rather than duplicating those guidelines here.
+``` 

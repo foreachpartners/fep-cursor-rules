@@ -13,7 +13,17 @@ alwaysApply: false
 3. **P2** - Recommended (medium importance)
 4. **P3** - Consider when possible (lower importance)
 
-## 2. General Format Requirements (P0)
+## 2. Basic Rule Formatting Requirements (P0)
+
+1. Use valid Markdown syntax checked with markdownlint
+2. Include complete YAML frontmatter with required fields
+3. Apply consistent hierarchical heading structure (H1→H2→H3→H4)
+4. Prefer concise lists over long text paragraphs 
+5. Write all rules in English only (no exceptions)
+6. MUST follow all detailed formatting requirements in this document
+7. REQUIRED to apply these rules to ALL Cursor rule documents
+
+## 3. General Format Requirements (P0)
 
 - Use `.mdc` file extension for all rules
 - Validate Markdown syntax with markdownlint
@@ -23,7 +33,7 @@ alwaysApply: false
   - Context Budget: Rules ≤20% of context window
   - Examples: 5-10 lines per code snippet
 
-## 3. YAML Frontmatter (P0)
+## 4. YAML Frontmatter (P0)
 
 All rule files must begin with a YAML frontmatter block:
 
@@ -35,7 +45,7 @@ alwaysApply: false
 ---
 ```
 
-### 3.1. Frontmatter Fields
+### 4.1. Frontmatter Fields
 
 | Field | Description | Required |
 |-------|-------------|----------|
@@ -43,7 +53,7 @@ alwaysApply: false
 | `globs` | File glob patterns (empty string recommended) | Yes |
 | `alwaysApply` | Flag indicating whether to always apply the rule | No (default `false`) |
 
-## 4. Document Structure (P0)
+## 5. Document Structure (P0)
 
 1. YAML frontmatter
 2. H1 heading with rule name
@@ -52,14 +62,14 @@ alwaysApply: false
 5. Examples (code, counter-examples)
 6. References to related rules using `@cursor-rules` prefix
 
-## 5. Headings (P0)
+## 6. Headings (P0)
 
 - **H1** - only for rule name (one per document)
 - **H2** - for main sections
 - **H3** - for subsections
 - **H4** - for subsection details
 
-## 6. Code Examples (P1)
+## 7. Code Examples (P1)
 
 ```markdown
 ## Good Example
@@ -87,7 +97,7 @@ def calc(a, b):
 ​```
 ```
 
-## 7. Optimization Tips (P1)
+## 8. Optimization Tips (P1)
 
 - Use bullet lists instead of numbered lists where order is not important
 - Apply tables for structured data
@@ -98,7 +108,7 @@ def calc(a, b):
 - Use explicit patterns (Always X / Never Y)
 - Provide minimal but sufficient examples
 
-## 8. Self-Verification Mechanisms (P1)
+## 9. Self-Verification Mechanisms (P1)
 
 Rule documents should include self-verification mechanisms:
 
@@ -117,7 +127,7 @@ Check your implementation against these criteria:
 - [ ] Have you included appropriate documentation?
 ```
 
-## 9. Success Metrics (P2)
+## 10. Success Metrics (P2)
 
 Each rule should include metrics to measure its effectiveness:
 
@@ -126,7 +136,7 @@ Each rule should include metrics to measure its effectiveness:
 - **Error Reduction**: Reduction in related bugs or issues
 - **Onboarding Impact**: Effect on new developer productivity
 
-## 10. Avoid (P0)
+## 11. Avoid (P0)
 
 - Long text paragraphs without structure
 - Redundant repetition of information
@@ -134,7 +144,7 @@ Each rule should include metrics to measure its effectiveness:
 - Complex nested lists deeper than 2 levels
 - HTML markup within Markdown
 
-## 11. Cross-References (P1)
+## 12. Cross-References (P1)
 
 For links to other rules, ALWAYS use the `@` prefix and emphasize the mandatory nature:
 
@@ -150,7 +160,7 @@ REQUIRED to implement @javascript/react-components.mdc for component guidelines.
 
 NEVER use relative paths (./file.mdc) for linking between rules.
 
-## 12. Language (P0)
+## 13. Language (P0)
 
 - Write all rules in English only
 - Use clear, concise language

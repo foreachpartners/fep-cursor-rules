@@ -42,9 +42,11 @@ alwaysApply: false
 
 1. Draft initial rule document
 2. Review against formatting standards
-3. Gather feedback from team members
-4. Refine and clarify based on feedback
-5. Test with sample code or documents
+3. CRITICAL: Check for duplicate content across rule files
+4. REQUIRED: Verify consistency with existing rules
+5. Gather feedback from team members
+6. Refine and clarify based on feedback
+7. Test with sample code or documents
 
 ## 6. Testing Phase (P1)
 
