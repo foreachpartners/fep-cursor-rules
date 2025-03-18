@@ -1,0 +1,105 @@
+---
+description: "Organization and structure of rules for Cursor"
+globs: "**/*.mdc"
+alwaysApply: false
+related: ["cursor-rules-guide.mdc", "cursor-rules-format.mdc"]
+---
+
+# Cursor Rules Structure
+
+## Priority Levels
+
+- **P0** - Must implement (critical)
+- **P1** - Should implement (high importance)
+- **P2** - Recommended (medium importance)
+- **P3** - Consider when possible (lower importance)
+
+## Directory Organization (P0)
+
+Organize rules by technology stack:
+
+```
+cursor/self/rules/
+├── cursor-rules-guide.mdc            # General guide
+├── cursor-rules-format.mdc           # Formatting requirements
+├── cursor-rules-structure.mdc        # Structure guidelines
+├── cursor-rules-testing.mdc          # Testing guidelines
+├── javascript/                       # JavaScript stack rules
+│   ├── react/                        # React-specific rules
+│   ├── vue/                          # Vue-specific rules
+│   └── ...
+├── python/                           # Python stack rules
+├── golang/                           # Go stack rules
+└── ...
+```
+
+## File Naming (P0)
+
+- Use kebab-case for all rule filenames
+- Follow the pattern: `technology-area-rule.mdc`
+- Examples:
+  - `react-component-structure.mdc`
+  - `python-error-handling.mdc`
+  - `typescript-typing-best-practices.mdc`
+
+## Required Sections (P0)
+
+Each rule document must include:
+
+1. YAML frontmatter with `description`, `globs`, and `related` fields
+2. H1 heading with rule name
+3. Priority levels table
+4. Basic concept description
+5. Examples (good and bad)
+6. Implementation details
+
+## Recommended Sections (P1)
+
+Consider including:
+
+- Common pitfalls
+- Best practices
+- Compatibility notes
+- Performance considerations
+- Security implications
+
+## Section Ordering (P1)
+
+1. YAML frontmatter
+2. H1 title
+3. Priority levels
+4. Introduction/overview
+5. Main guidelines
+6. Examples
+7. Best practices
+8. Common issues
+9. References
+
+## Rule Hierarchy (P2)
+
+Implement hierarchical structure for rules:
+
+1. **Meta rules** - Rules about rules (like this document)
+2. **Framework rules** - General rules for frameworks
+3. **Component/module rules** - Rules for specific components 
+4. **Implementation rules** - Detailed implementation guidelines
+
+## Rule Dependencies (P2)
+
+- Clearly document dependencies between rules
+- Use `related` field in frontmatter to indicate related rules
+- Include explicit references in text when one rule builds on another
+
+## Versioning (P1)
+
+- Rules should include a version in the frontmatter
+- Major version changes for breaking changes
+- Minor version changes for additions
+- Patch version for corrections and clarifications
+
+## Language (P0)
+
+- Write all rules in English only
+- Use consistent terminology across all documents
+- Be precise with technical terms
+- Define specialized terms when first used 

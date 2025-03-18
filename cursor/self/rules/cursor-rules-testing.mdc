@@ -1,0 +1,120 @@
+---
+description: "Methods for testing and verifying Cursor rules"
+globs: "**/*.mdc"
+alwaysApply: false
+related: ["cursor-rules-guide.mdc", "cursor-rules-structure.mdc"]
+---
+
+# Testing Cursor Rules
+
+## Priority Levels
+
+- **P0** - Must implement (critical)
+- **P1** - Should implement (high importance)
+- **P2** - Recommended (medium importance)
+- **P3** - Consider when possible (lower importance)
+
+## Key Testing Principles (P0)
+
+- **Reproducibility** - Tests must produce consistent results
+- **Clarity** - Test results should be easy to understand
+- **Coverage** - Tests should cover all aspects of the rule
+- **Objectivity** - Tests should measure objective criteria
+- **Traceability** - Test failures should be traceable to specific issues
+
+## Test Types (P0)
+
+### Format Validation Tests
+
+- Verify YAML frontmatter structure
+- Check markdown syntax validity
+- Confirm heading structure follows guidelines
+- Validate link references
+
+### Applicability Tests
+
+- Verify that glob patterns correctly match intended files
+- Ensure rule exclusions work as expected
+- Test edge cases for glob pattern matching
+
+### Rule Effectiveness Tests
+
+- Measure how well the rule addresses its intended purpose
+- Track improvement in code quality metrics
+- Gather user feedback on rule clarity and usefulness
+
+## Testing Methods (P1)
+
+### Manual Testing
+
+1. Follow checklist of requirements
+2. Review for clarity and completeness
+3. Verify that examples reflect best practices
+4. Check for consistent terminology
+
+### Automated Testing
+
+- Run markdownlint for style checking
+- Validate YAML with schema checks
+- Test glob patterns against sample codebases
+- Check for broken links and references
+
+## Testing Tools (P1)
+
+| Tool | Purpose | Priority |
+|------|---------|----------|
+| markdownlint | Validate markdown syntax | P0 |
+| yamllint | Check YAML frontmatter | P0 |
+| link-checker | Verify links are valid | P1 |
+| glob-tester | Test glob pattern matching | P1 |
+| spell-checker | Find spelling errors | P2 |
+
+## Testing Process (P1)
+
+1. **Pre-commit testing**
+   - Run automated format validation
+   - Verify frontmatter structure
+   - Check for broken links
+
+2. **Review testing**
+   - Peer review by another team member
+   - Verify rule clarity and usefulness
+   - Test against sample code
+
+3. **Integration testing**
+   - Apply rule to actual codebases
+   - Verify rule interactions with other rules
+   - Collect metrics on effectiveness
+
+## Quality Metrics (P2)
+
+- **Clarity score** - Based on readability metrics
+- **Precision** - How accurately the rule targets issues
+- **Recall** - How completely the rule covers issues
+- **Action rate** - How often the rule leads to changes
+- **False positive rate** - How often the rule falsely flags issues
+
+## Rule Refinement (P2)
+
+- Collect feedback from actual rule application
+- Track metrics on rule effectiveness
+- Periodically review and update based on new insights
+- Maintain versioning for significant changes
+
+## Release Checklist (P1)
+
+Before releasing a new rule, verify:
+
+- [ ] Format validation passes
+- [ ] Applicability tests confirm correct targeting
+- [ ] All examples are valid and follow best practices
+- [ ] Related rules are properly cross-referenced
+- [ ] Rule has been peer-reviewed
+- [ ] Rule is written in English only
+
+## Language Considerations (P0)
+
+- All test documentation must be in English
+- Error messages should be clear and actionable
+- Use consistent terminology across testing documentation
+- Define technical terms when they're first used 

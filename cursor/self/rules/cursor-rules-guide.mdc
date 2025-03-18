@@ -1,0 +1,65 @@
+---
+description: "General guidelines for developing Cursor rules"
+globs: "**/*.mdc"
+alwaysApply: true
+related: ["cursor-rules-format.mdc", "cursor-rules-structure.mdc", "cursor-rules-testing.mdc"]
+---
+
+# Cursor Rules Development Guide
+
+## Priority Levels
+
+- **P0** - Must implement (critical)
+- **P1** - Should implement (high importance)
+- **P2** - Recommended (medium importance)
+- **P3** - Consider when possible (lower importance)
+
+## Core Principles (P0)
+
+- Write rules as direct instructions, not suggestions
+- Place the most important and frequently used rules first
+- Include examples for all critical instructions
+- Optimize for use within limited context windows
+
+## Required Aspects (P0)
+
+1. **Code Structure**: directories, files, imports, naming
+2. **Architectural Decisions**: design principles, patterns
+3. **Type System**: interfaces, types, validation, generics
+4. **Error Handling**: exception hierarchy, recovery
+5. **Testing**: approaches, mocks, organization
+6. **Dependency Management**: package managers, versioning
+7. **Code Style**: formatting, naming conventions
+8. **Documentation**: comments, API docs, README
+9. **String Literals**: text constants, internationalization
+10. **Constants**: types, placement, naming
+11. **Configuration**: environment variables, config files
+12. **Logging**: log levels, formatting, context
+
+## Additional Aspects (P1)
+
+- **Framework Patterns**: framework-specific recommendations
+- **Integration Points**: APIs, external services, databases
+- **Developer Experience**: IDE, linting, workflow
+
+## Low-Priority Areas (P2)
+
+- DevOps/CI/CD
+- Advanced performance optimization
+- Enterprise security
+- Monitoring
+- Future-proofing design
+
+## Rule Formatting (P0)
+
+- Use valid Markdown checked with markdownlint
+- Include YAML frontmatter (description, globs, related files)
+- Apply hierarchical heading structure
+- Prefer lists over long paragraphs
+- Write all rules in English only
+
+## Related Rules
+
+- [Rules Format](./cursor-rules-format.mdc)
+- [Rules Structure](./cursor-rules-structure.mdc)
+- [Rules Testing](./cursor-rules-testing.mdc) 
