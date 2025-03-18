@@ -8,31 +8,34 @@ alwaysApply: false
 
 ## 1. Directory Organization (P0)
 
-Organize rules by technology stack:
+1. All rules for a technology stack MUST be placed in a flat directory structure:
+   ```
+   techstackname/rules/
+   ├── 1-techstack-rules-guide.mdc      # Primary rule file
+   ├── 2-techstack-rules-workflow.mdc   # Development workflow
+   ├── 3-techstack-rules-coverage.mdc   # Technical aspects
+   ├── 4-techstack-rules-testing.mdc    # Testing guidelines
+   ├── 5-techstack-rules-structure.mdc  # Structure guidelines
+   ├── 6-techstack-rules-format.mdc     # Formatting requirements
+   └── N-techstack-specific-rule.mdc    # Additional rules as needed
+   ```
 
-```
-cursor/self/rules/
-├── cursor-rules-guide.mdc            # General guide
-├── cursor-rules-format.mdc           # Formatting requirements
-├── cursor-rules-structure.mdc        # Structure guidelines
-├── cursor-rules-testing.mdc          # Testing guidelines
-├── javascript/                       # JavaScript stack rules
-│   ├── react/                        # React-specific rules
-│   ├── vue/                          # Vue-specific rules
-│   └── ...
-├── python/                           # Python stack rules
-├── golang/                           # Go stack rules
-└── ...
-```
+2. CRITICAL requirements:
+   - NEVER create nested subdirectories within the rules folder
+   - ALL rule files MUST use the `.mdc` extension
+   - ALWAYS use a consistent prefix for all files (e.g., `typescript-`, `python-`, `react-`)
+   - REQUIRED to follow numerical ordering (1-N) for easier navigation
 
 ## 2. File Naming (P0)
 
-- Use kebab-case for all rule filenames
-- Follow the pattern: `technology-area-rule.mdc`
-- Examples:
-  - `react-component-structure.mdc`
-  - `python-error-handling.mdc`
-  - `typescript-typing-best-practices.mdc`
+1. Use kebab-case for all rule filenames
+2. MUST include numerical prefix for ordering (e.g., `1-`, `2-`, `3-`)
+3. MUST follow the pattern: `N-techstackname-area-rule.mdc`
+4. Examples:
+   - `1-python-rules-guide.mdc`
+   - `2-python-rules-workflow.mdc`
+   - `7-python-error-handling.mdc`
+   - `8-python-testing-practices.mdc`
 
 ## 3. Required Sections (P0)
 
@@ -40,7 +43,7 @@ Each rule document must include:
 
 1. YAML frontmatter with `description` field
 2. H1 heading with rule name
-3. Priority levels table
+3. Priority levels table (only in Primary Rule File)
 4. Basic concept description
 5. Examples (good and bad)
 6. Implementation details
@@ -49,32 +52,21 @@ Each rule document must include:
 
 Consider including:
 
-- Common pitfalls
-- Best practices
-- Compatibility notes
-- Performance considerations
-- Security implications
+1. Common pitfalls
+2. Best practices
+3. Compatibility notes
 
 ## 5. Section Ordering (P1)
 
 1. YAML frontmatter
 2. H1 title
-3. Priority levels
+3. Priority levels (only in Primary Rule File)
 4. Introduction/overview
 5. Main guidelines
 6. Examples
 7. Best practices
 8. Common issues
 9. References
-
-## 6. Rule Hierarchy (P2)
-
-Implement hierarchical structure for rules:
-
-1. **Meta rules** - Rules about rules (like this document)
-2. **Framework rules** - General rules for frameworks
-3. **Component/module rules** - Rules for specific components 
-4. **Implementation rules** - Detailed implementation guidelines
 
 ## 7. Rule Dependencies (P2)
 
@@ -85,24 +77,24 @@ Implement hierarchical structure for rules:
 Example:
 
 ```markdown
-This rule STRICTLY builds upon concepts introduced in @1-cursor-rules-guide.mdc.
+This rule STRICTLY builds upon concepts introduced in @1-python-rules-guide.mdc.
 ```
 
 ## 8. Versioning (P1)
 
-- Track major changes for breaking changes
-- Track minor changes for additions
-- Track patch changes for corrections and clarifications
-- Keep a changelog for significant updates
-- Maintain consistent versioning across related rules
+1. Track major changes for breaking changes
+2. Track minor changes for additions
+3. Track patch changes for corrections and clarifications
+4. Keep a changelog for significant updates
+5. Maintain consistent versioning across related rules
 
 ## 9. Context Budget Requirements (P0)
 
-- Ensure rules occupy ≤20% of total context window
-- Prioritize critical information at the beginning of documents
-- Remove redundant information that increases token usage
-- Break large rule sets into smaller, focused documents
-- Use concise language optimized for token efficiency
+1. Ensure rules occupy ≤20% of total context window
+2. Prioritize critical information at the beginning of documents
+3. Remove redundant information that increases token usage
+4. Break large rule sets into smaller, focused documents
+5. Use concise language optimized for token efficiency
 
 ## 10. Self-Verification Mechanisms (P1)
 
@@ -120,7 +112,7 @@ Example:
 To verify this rule is being followed, check:
 
 - [ ] Is the directory structure following the prescribed pattern?
-- [ ] Are all file names using kebab-case?
+- [ ] Are all file names using kebab-case with numerical prefixes?
 - [ ] Do all rules have the required sections?
 - [ ] Are cross-references properly linked?
 ```
@@ -129,20 +121,20 @@ To verify this rule is being followed, check:
 
 Define measurable outcomes for rule effectiveness:
 
-- **Consistency**: Uniformity across rule documents
-- **Discoverability**: Ease of finding relevant rules
-- **Maintenance**: Effort required to update rules
-- **Comprehension**: Developer understanding of rules
-- **Implementation**: Rate of successful application
+1. **Consistency**: Uniformity across rule documents
+2. **Discoverability**: Ease of finding relevant rules
+3. **Maintenance**: Effort required to update rules
+4. **Comprehension**: Developer understanding of rules
+5. **Implementation**: Rate of successful application
 
 ## 12. Language (P0)
 
-- Write all rules in English only
-- Use consistent terminology across all documents
-- Be precise with technical terms
-- Define specialized terms when first used 
+1. Write all rules in English only
+2. Use consistent terminology across all documents
+3. Be precise with technical terms
+4. Define specialized terms when first used 
 
-## 10. Consistency and Non-Duplication (P0)
+## 13. Consistency and Non-Duplication (P0)
 
 1. CRITICAL: Each concept MUST be defined in exactly one place
 2. ALWAYS reference existing rules rather than duplicating content
@@ -154,5 +146,5 @@ Define measurable outcomes for rule effectiveness:
 Example of correct cross-reference:
 
 ```markdown
-For formatting code examples, STRICTLY follow the standards in @3-cursor-rules-format.mdc rather than duplicating those guidelines here.
+For formatting code examples, STRICTLY follow the standards in @6-python-rules-format.mdc rather than duplicating those guidelines here.
 ``` 

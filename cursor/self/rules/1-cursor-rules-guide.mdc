@@ -13,16 +13,23 @@ alwaysApply: true
 3. **P2** - Recommended (medium importance)
 4. **P3** - Consider when possible (lower importance)
 
-## 2. Core Principles (P0)
+## 2. Glossary
 
-1. Write rules as direct instructions, not suggestions
-2. Place the most important and frequently used rules first
-3. Include examples for all critical instructions
-4. Optimize for use within limited context windows
-5. CRITICAL: Maintain strict consistency between all rules documents
-6. NEVER duplicate content across rule files to preserve context
+1. **Primary Rule File** - The main file in a rule set (always named 1-techstack-rules-guide.mdc)
+2. **Technical Aspect** - A specific area of software development covered by rules (e.g., Error Handling)
+3. **Secondary Rule File** - Any rule document beyond the Primary Rule File, focusing on specific aspects
 
-## 3. Success Criteria and Metrics (P1)
+## 3. Core Principles (P0)
+
+1. CRITICAL: Rules are written for LLM agents, not humans - requiring conciseness, clear examples, bullet points, and direct instructions for optimal machine parsing
+2. Write rules as direct instructions, not suggestions
+3. Place the most important and frequently used rules first
+4. Include examples for all critical instructions
+5. Optimize for use within limited context windows
+6. CRITICAL: Maintain strict consistency between all rules documents
+7. NEVER duplicate content across rule files to preserve context
+
+## 4. Success Criteria and Metrics (P1)
 
 1. **Consistency**: Rules are fully aligned and form a cohesive system without contradictions
 2. **Context Efficiency**: Content is not duplicated between rules, maximizing available context
@@ -32,36 +39,36 @@ alwaysApply: true
 6. **Feedback**: Positive user responses on rule usefulness
 7. **Maintenance**: Minimal effort required to keep rules updated
 
-## 4. Rule Navigation Guide (P0)
+## 5. Rule Navigation Guide (P0)
 
 When you are addressing specific needs, MUST consult these rules:
 
-### 4.1. Starting New Rule Development
+### 5.1. Starting New Rule Development
 
 1. ALWAYS begin with @1-cursor-rules-guide.mdc for foundational principles
-2. MUST follow process in @3-cursor-rules-workflow.mdc to structure your work
-3. REQUIRED to check @2-cursor-rules-coverage.mdc for technical aspects to address
+2. MUST follow process in @2-cursor-rules-workflow.mdc to structure your work
+3. REQUIRED to check @3-cursor-rules-coverage.mdc for technical aspects to address
 
-### 4.2. Creating Rule Documents
+### 5.2. Creating Rule Documents
 
 1. MUST follow formatting standards in @6-cursor-rules-format.mdc
 2. CRITICAL to structure documents according to @5-cursor-rules-structure.mdc
 3. REQUIRED to include self-verification as specified in @4-cursor-rules-testing.mdc section 6
 
-### 4.3. Reviewing Existing Rules
+### 5.3. Reviewing Existing Rules
 
 1. MUST verify consistency using @4-cursor-rules-testing.mdc section 14
-2. REQUIRED to ensure complete coverage per @2-cursor-rules-coverage.mdc
+2. REQUIRED to ensure complete coverage per @3-cursor-rules-coverage.mdc
 3. CRITICAL to check for redundancy and duplication per @5-cursor-rules-structure.mdc section 9
 
-### 4.4. Updating Rules
+### 5.4. Updating Rules
 
-1. MUST follow @3-cursor-rules-workflow.mdc section 7 for maintenance
+1. MUST follow @2-cursor-rules-workflow.mdc section 7 for maintenance
 2. REQUIRED to confirm updated rules meet all testing criteria in @4-cursor-rules-testing.mdc
 3. CRITICAL to preserve internal and cross-rule consistency
 
-### 4.5. Validating Rule Effectiveness
+### 5.5. Validating Rule Effectiveness
 
 1. MUST implement metrics from @4-cursor-rules-testing.mdc section 8
-2. REQUIRED to compare against success criteria in section 3 of this document
+2. REQUIRED to compare against success criteria in section 4 of this document
 3. CRITICAL to document validation results as specified in @4-cursor-rules-testing.mdc section 11
