@@ -3,6 +3,7 @@ description: "Organization and structure of rules for Cursor"
 globs: "**/*.mdc"
 alwaysApply: false
 related: ["cursor-rules-guide.mdc", "cursor-rules-format.mdc"]
+version: "1.0.0"
 ---
 
 # Cursor Rules Structure
@@ -92,10 +93,51 @@ Implement hierarchical structure for rules:
 
 ## Versioning (P1)
 
-- Rules should include a version in the frontmatter
-- Major version changes for breaking changes
-- Minor version changes for additions
-- Patch version for corrections and clarifications
+- Rules must include a version in the frontmatter (format: `version: "X.Y.Z"`)
+- Major version (X) changes for breaking changes
+- Minor version (Y) changes for additions
+- Patch version (Z) for corrections and clarifications
+- Keep a changelog for significant updates
+- Version numbers should be consistent across related rules
+
+## Context Budget Requirements (P0)
+
+- Ensure rules occupy ≤20% of total context window
+- Prioritize critical information at the beginning of documents
+- Remove redundant information that increases token usage
+- Break large rule sets into smaller, focused documents
+- Use concise language optimized for token efficiency
+
+## Self-Verification Mechanisms (P1)
+
+Each rule document should include:
+
+1. **Self-assessment questions** to verify rule application
+2. **Validation checklist** for rule compliance
+3. **Testing methods** specific to the rule
+
+Example:
+
+```markdown
+## Self-Verification
+
+To verify this rule is being followed, check:
+
+- [ ] Is the directory structure following the prescribed pattern?
+- [ ] Are all file names using kebab-case?
+- [ ] Do all rules have the required sections?
+- [ ] Are cross-references properly linked?
+```
+
+## Success Criteria (P2)
+
+Define measurable outcomes for rule effectiveness:
+
+- **Consistency**: Uniformity across rule documents
+- **Discoverability**: Ease of finding relevant rules
+- **Maintenance**: Effort required to update rules
+- **Comprehension**: Developer understanding of rules
+- **Implementation**: Rate of successful application
 
 ## Language (P0)
 

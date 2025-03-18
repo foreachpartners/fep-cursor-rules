@@ -3,6 +3,7 @@ description: "Methods for testing and verifying Cursor rules"
 globs: "**/*.mdc"
 alwaysApply: false
 related: ["cursor-rules-guide.mdc", "cursor-rules-structure.mdc"]
+version: "1.0.0"
 ---
 
 # Testing Cursor Rules
@@ -86,6 +87,32 @@ related: ["cursor-rules-guide.mdc", "cursor-rules-structure.mdc"]
    - Verify rule interactions with other rules
    - Collect metrics on effectiveness
 
+4. **Self-verification testing**
+   - Implement automatic self-checks
+   - Include validation questions within rules
+   - Create verification checklists
+
+## LLM Self-Verification (P0)
+
+Rules should include mechanisms for LLMs to self-verify application:
+
+```markdown
+## Verification Questions
+
+When applying this rule, ask yourself:
+1. Does the current code follow the pattern described?
+2. Are there any exceptions that should be made?
+3. Is the implementation consistent with related rules?
+4. What metrics would indicate successful application?
+```
+
+## Context Budget Optimization (P0)
+
+- Rules should occupy ≤20% of total context window
+- Testing documentation should be concise
+- Verification steps should be clear and direct
+- Examples should demonstrate concepts efficiently
+
 ## Quality Metrics (P2)
 
 - **Clarity score** - Based on readability metrics
@@ -100,6 +127,28 @@ related: ["cursor-rules-guide.mdc", "cursor-rules-structure.mdc"]
 - Track metrics on rule effectiveness
 - Periodically review and update based on new insights
 - Maintain versioning for significant changes
+
+## Workflow Testing (P1)
+
+Test the entire development workflow:
+
+1. Assess user preferences and priorities
+2. Collect input on all technical aspects
+3. Prioritize based on project needs
+4. Implement in priority order
+5. Validate with LLM testing
+6. Collect metrics and feedback
+7. Refine rules based on results
+
+## Success Criteria Validation (P1)
+
+Validate that rules meet their defined success criteria:
+
+- Verify metrics collection is working
+- Review feedback mechanisms
+- Assess impact on code quality
+- Measure developer productivity effects
+- Track long-term maintenance costs
 
 ## Release Checklist (P1)
 

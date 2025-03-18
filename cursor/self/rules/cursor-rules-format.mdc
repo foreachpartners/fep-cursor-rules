@@ -3,6 +3,7 @@ description: "Formatting requirements for Cursor rules"
 globs: "**/*.mdc"
 alwaysApply: false
 related: ["cursor-rules-guide.mdc", "cursor-rules-structure.mdc"]
+version: "1.0.0"
 ---
 
 # Cursor Rules Formatting
@@ -19,8 +20,10 @@ related: ["cursor-rules-guide.mdc", "cursor-rules-structure.mdc"]
 - Use `.mdc` file extension for all rules
 - Validate Markdown syntax with markdownlint
 - Adhere to size constraints:
-  - Rules Guide: 150-250 lines
-  - Specific Rule: 300-500 lines
+  - Rules Guide: 150-250 lines (~5-7K tokens)
+  - Specific Rule: 300-500 lines (~10-15K tokens)
+  - Context Budget: Rules ≤20% of context window
+  - Examples: 5-10 lines per code snippet
 
 ## YAML Frontmatter (P0)
 
@@ -95,6 +98,37 @@ def calc(a, b):
 - Use emphasis (`**bold**`, `*italic*`) to highlight important points
 - Group related rules into logical sections
 - Use H2 headings as anchor points for navigation
+- Optimize token usage with concise language
+- Use explicit patterns (Always X / Never Y)
+- Provide minimal but sufficient examples
+
+## Self-Verification Mechanisms (P1)
+
+Rule documents should include self-verification mechanisms:
+
+- **Checklist**: Include a checklist of required elements
+- **Validation Questions**: Add questions that verify correct application
+- **Testing Guidance**: Provide guidance on how to test the rule
+
+Example of verification section:
+
+```markdown
+## Verification
+
+Check your implementation against these criteria:
+- [ ] Does the code follow the pattern described above?
+- [ ] Are naming conventions consistent?
+- [ ] Have you included appropriate documentation?
+```
+
+## Success Metrics (P2)
+
+Each rule should include metrics to measure its effectiveness:
+
+- **Compliance Rate**: Percentage of codebase following the rule
+- **Developer Feedback**: Survey results on rule clarity
+- **Error Reduction**: Reduction in related bugs or issues
+- **Onboarding Impact**: Effect on new developer productivity
 
 ## Avoid (P0)
 
