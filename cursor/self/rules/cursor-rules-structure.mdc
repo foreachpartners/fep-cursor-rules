@@ -8,14 +8,14 @@ version: "1.0.0"
 
 # Cursor Rules Structure
 
-## Priority Levels
+## 1. Priority Levels
 
 - **P0** - Must implement (critical)
 - **P1** - Should implement (high importance)
 - **P2** - Recommended (medium importance)
 - **P3** - Consider when possible (lower importance)
 
-## Directory Organization (P0)
+## 2. Directory Organization (P0)
 
 Organize rules by technology stack:
 
@@ -34,7 +34,7 @@ cursor/self/rules/
 └── ...
 ```
 
-## File Naming (P0)
+## 3. File Naming (P0)
 
 - Use kebab-case for all rule filenames
 - Follow the pattern: `technology-area-rule.mdc`
@@ -43,7 +43,7 @@ cursor/self/rules/
   - `python-error-handling.mdc`
   - `typescript-typing-best-practices.mdc`
 
-## Required Sections (P0)
+## 4. Required Sections (P0)
 
 Each rule document must include:
 
@@ -54,7 +54,7 @@ Each rule document must include:
 5. Examples (good and bad)
 6. Implementation details
 
-## Recommended Sections (P1)
+## 5. Recommended Sections (P1)
 
 Consider including:
 
@@ -64,7 +64,7 @@ Consider including:
 - Performance considerations
 - Security implications
 
-## Section Ordering (P1)
+## 6. Section Ordering (P1)
 
 1. YAML frontmatter
 2. H1 title
@@ -76,7 +76,7 @@ Consider including:
 8. Common issues
 9. References
 
-## Rule Hierarchy (P2)
+## 7. Rule Hierarchy (P2)
 
 Implement hierarchical structure for rules:
 
@@ -85,13 +85,13 @@ Implement hierarchical structure for rules:
 3. **Component/module rules** - Rules for specific components 
 4. **Implementation rules** - Detailed implementation guidelines
 
-## Rule Dependencies (P2)
+## 8. Rule Dependencies (P2)
 
 - Clearly document dependencies between rules
 - Use `related` field in frontmatter to indicate related rules
 - Include explicit references in text when one rule builds on another
 
-## Versioning (P1)
+## 9. Versioning (P1)
 
 - Rules must include a version in the frontmatter (format: `version: "X.Y.Z"`)
 - Major version (X) changes for breaking changes
@@ -100,7 +100,7 @@ Implement hierarchical structure for rules:
 - Keep a changelog for significant updates
 - Version numbers should be consistent across related rules
 
-## Context Budget Requirements (P0)
+## 10. Context Budget Requirements (P0)
 
 - Ensure rules occupy ≤20% of total context window
 - Prioritize critical information at the beginning of documents
@@ -108,7 +108,7 @@ Implement hierarchical structure for rules:
 - Break large rule sets into smaller, focused documents
 - Use concise language optimized for token efficiency
 
-## Self-Verification Mechanisms (P1)
+## 11. Self-Verification Mechanisms (P1)
 
 Each rule document should include:
 
@@ -129,7 +129,7 @@ To verify this rule is being followed, check:
 - [ ] Are cross-references properly linked?
 ```
 
-## Success Criteria (P2)
+## 12. Success Criteria (P2)
 
 Define measurable outcomes for rule effectiveness:
 
@@ -139,7 +139,7 @@ Define measurable outcomes for rule effectiveness:
 - **Comprehension**: Developer understanding of rules
 - **Implementation**: Rate of successful application
 
-## Language (P0)
+## 13. Language (P0)
 
 - Write all rules in English only
 - Use consistent terminology across all documents

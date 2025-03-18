@@ -8,14 +8,14 @@ version: "1.0.0"
 
 # Testing Cursor Rules
 
-## Priority Levels
+## 1. Priority Levels
 
 - **P0** - Must implement (critical)
 - **P1** - Should implement (high importance)
 - **P2** - Recommended (medium importance)
 - **P3** - Consider when possible (lower importance)
 
-## Key Testing Principles (P0)
+## 2. Key Testing Principles (P0)
 
 - **Reproducibility** - Tests must produce consistent results
 - **Clarity** - Test results should be easy to understand
@@ -23,44 +23,44 @@ version: "1.0.0"
 - **Objectivity** - Tests should measure objective criteria
 - **Traceability** - Test failures should be traceable to specific issues
 
-## Test Types (P0)
+## 3. Test Types (P0)
 
-### Format Validation Tests
+### 3.1. Format Validation Tests
 
 - Verify YAML frontmatter structure
 - Check markdown syntax validity
 - Confirm heading structure follows guidelines
 - Validate link references
 
-### Applicability Tests
+### 3.2. Applicability Tests
 
 - Verify that glob patterns correctly match intended files
 - Ensure rule exclusions work as expected
 - Test edge cases for glob pattern matching
 
-### Rule Effectiveness Tests
+### 3.3. Rule Effectiveness Tests
 
 - Measure how well the rule addresses its intended purpose
 - Track improvement in code quality metrics
 - Gather user feedback on rule clarity and usefulness
 
-## Testing Methods (P1)
+## 4. Testing Methods (P1)
 
-### Manual Testing
+### 4.1. Manual Testing
 
 1. Follow checklist of requirements
 2. Review for clarity and completeness
 3. Verify that examples reflect best practices
 4. Check for consistent terminology
 
-### Automated Testing
+### 4.2. Automated Testing
 
 - Run markdownlint for style checking
 - Validate YAML with schema checks
 - Test glob patterns against sample codebases
 - Check for broken links and references
 
-## Testing Tools (P1)
+## 5. Testing Tools (P1)
 
 | Tool | Purpose | Priority |
 |------|---------|----------|
@@ -70,7 +70,7 @@ version: "1.0.0"
 | glob-tester | Test glob pattern matching | P1 |
 | spell-checker | Find spelling errors | P2 |
 
-## Testing Process (P1)
+## 6. Testing Process (P1)
 
 1. **Pre-commit testing**
    - Run automated format validation
@@ -92,7 +92,7 @@ version: "1.0.0"
    - Include validation questions within rules
    - Create verification checklists
 
-## LLM Self-Verification (P0)
+## 7. LLM Self-Verification (P0)
 
 Rules should include mechanisms for LLMs to self-verify application:
 
@@ -106,14 +106,14 @@ When applying this rule, ask yourself:
 4. What metrics would indicate successful application?
 ```
 
-## Context Budget Optimization (P0)
+## 8. Context Budget Optimization (P0)
 
 - Rules should occupy ≤20% of total context window
 - Testing documentation should be concise
 - Verification steps should be clear and direct
 - Examples should demonstrate concepts efficiently
 
-## Quality Metrics (P2)
+## 9. Quality Metrics (P2)
 
 - **Clarity score** - Based on readability metrics
 - **Precision** - How accurately the rule targets issues
@@ -121,14 +121,14 @@ When applying this rule, ask yourself:
 - **Action rate** - How often the rule leads to changes
 - **False positive rate** - How often the rule falsely flags issues
 
-## Rule Refinement (P2)
+## 10. Rule Refinement (P2)
 
 - Collect feedback from actual rule application
 - Track metrics on rule effectiveness
 - Periodically review and update based on new insights
 - Maintain versioning for significant changes
 
-## Workflow Testing (P1)
+## 11. Workflow Testing (P1)
 
 Test the entire development workflow:
 
@@ -140,7 +140,7 @@ Test the entire development workflow:
 6. Collect metrics and feedback
 7. Refine rules based on results
 
-## Success Criteria Validation (P1)
+## 12. Success Criteria Validation (P1)
 
 Validate that rules meet their defined success criteria:
 
@@ -150,7 +150,7 @@ Validate that rules meet their defined success criteria:
 - Measure developer productivity effects
 - Track long-term maintenance costs
 
-## Release Checklist (P1)
+## 13. Release Checklist (P1)
 
 Before releasing a new rule, verify:
 
@@ -161,7 +161,7 @@ Before releasing a new rule, verify:
 - [ ] Rule has been peer-reviewed
 - [ ] Rule is written in English only
 
-## Language Considerations (P0)
+## 14. Language Considerations (P0)
 
 - All test documentation must be in English
 - Error messages should be clear and actionable

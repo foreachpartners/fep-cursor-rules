@@ -8,14 +8,14 @@ version: "1.0.0"
 
 # Cursor Rules Formatting
 
-## Priority Levels
+## 1. Priority Levels
 
 - **P0** - Must implement (critical)
 - **P1** - Should implement (high importance)
 - **P2** - Recommended (medium importance)
 - **P3** - Consider when possible (lower importance)
 
-## General Format Requirements (P0)
+## 2. General Format Requirements (P0)
 
 - Use `.mdc` file extension for all rules
 - Validate Markdown syntax with markdownlint
@@ -25,7 +25,7 @@ version: "1.0.0"
   - Context Budget: Rules ≤20% of context window
   - Examples: 5-10 lines per code snippet
 
-## YAML Frontmatter (P0)
+## 3. YAML Frontmatter (P0)
 
 All rule files must begin with a YAML frontmatter block:
 
@@ -38,7 +38,7 @@ related: ["related-rule-1.mdc", "related-rule-2.mdc"]
 ---
 ```
 
-### Frontmatter Fields
+### 3.1. Frontmatter Fields
 
 | Field | Description | Required |
 |-------|-------------|----------|
@@ -47,7 +47,7 @@ related: ["related-rule-1.mdc", "related-rule-2.mdc"]
 | `alwaysApply` | Flag indicating whether to always apply the rule | No (default `false`) |
 | `related` | List of related rules | No |
 
-## Document Structure (P0)
+## 4. Document Structure (P0)
 
 1. YAML frontmatter
 2. H1 heading with rule name
@@ -56,14 +56,14 @@ related: ["related-rule-1.mdc", "related-rule-2.mdc"]
 5. Examples (code, counter-examples)
 6. Links to related rules
 
-## Headings (P0)
+## 5. Headings (P0)
 
 - **H1** - only for rule name (one per document)
 - **H2** - for main sections
 - **H3** - for subsections
 - **H4** - for subsection details
 
-## Code Examples (P1)
+## 6. Code Examples (P1)
 
 ```markdown
 ## Good Example
@@ -91,7 +91,7 @@ def calc(a, b):
 ​```
 ```
 
-## Optimization Tips (P1)
+## 7. Optimization Tips (P1)
 
 - Use bullet lists instead of numbered lists where order is not important
 - Apply tables for structured data
@@ -102,7 +102,7 @@ def calc(a, b):
 - Use explicit patterns (Always X / Never Y)
 - Provide minimal but sufficient examples
 
-## Self-Verification Mechanisms (P1)
+## 8. Self-Verification Mechanisms (P1)
 
 Rule documents should include self-verification mechanisms:
 
@@ -121,7 +121,7 @@ Check your implementation against these criteria:
 - [ ] Have you included appropriate documentation?
 ```
 
-## Success Metrics (P2)
+## 9. Success Metrics (P2)
 
 Each rule should include metrics to measure its effectiveness:
 
@@ -130,7 +130,7 @@ Each rule should include metrics to measure its effectiveness:
 - **Error Reduction**: Reduction in related bugs or issues
 - **Onboarding Impact**: Effect on new developer productivity
 
-## Avoid (P0)
+## 10. Avoid (P0)
 
 - Long text paragraphs without structure
 - Redundant repetition of information
@@ -138,7 +138,7 @@ Each rule should include metrics to measure its effectiveness:
 - Complex nested lists deeper than 2 levels
 - HTML markup within Markdown
 
-## Cross-References (P1)
+## 11. Cross-References (P1)
 
 For links to other rules, use relative paths:
 
@@ -152,7 +152,7 @@ Or direct link to a heading with an anchor:
 See [examples section](#code-examples-p1) for examples.
 ```
 
-## Language (P0)
+## 12. Language (P0)
 
 - Write all rules in English only
 - Use clear, concise language

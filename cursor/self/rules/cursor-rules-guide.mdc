@@ -8,14 +8,14 @@ version: "1.0.0"
 
 # Cursor Rules Development Guide
 
-## Priority Levels
+## 1. Priority Levels
 
 - **P0** - Must implement (critical)
 - **P1** - Should implement (high importance)
 - **P2** - Recommended (medium importance)
 - **P3** - Consider when possible (lower importance)
 
-## Core Principles (P0)
+## 2. Core Principles (P0)
 
 - Write rules as direct instructions, not suggestions
 - Place the most important and frequently used rules first
@@ -24,7 +24,7 @@ version: "1.0.0"
 - Ensure rules occupy ≤20% of total context window
 - Use self-verification mechanisms (see Testing document)
 
-## Development Workflow (P1)
+## 3. Development Workflow (P1)
 
 1. Assess user preferences and priorities
 2. Collect input on all technical aspects
@@ -32,7 +32,7 @@ version: "1.0.0"
 4. Implement in priority order
 5. Validate with LLM testing
 
-## Required Aspects (P0)
+## 4. Required Aspects (P0)
 
 1. **Code Structure**: directories, files, imports, naming
 2. **Architectural Decisions**: design principles, patterns
@@ -47,13 +47,13 @@ version: "1.0.0"
 11. **Configuration**: environment variables, config files
 12. **Logging**: log levels, formatting, context
 
-## Additional Aspects (P1)
+## 5. Additional Aspects (P1)
 
 - **Framework Patterns**: framework-specific recommendations
 - **Integration Points**: APIs, external services, databases
 - **Developer Experience**: IDE, linting, workflow
 
-## Low-Priority Areas (P2)
+## 6. Low-Priority Areas (P2)
 
 - DevOps/CI/CD
 - Advanced performance optimization
@@ -61,7 +61,7 @@ version: "1.0.0"
 - Monitoring
 - Future-proofing design
 
-## Rule Formatting (P0)
+## 7. Rule Formatting (P0)
 
 - Use valid Markdown checked with markdownlint
 - Include YAML frontmatter (description, globs, related files)
@@ -69,7 +69,7 @@ version: "1.0.0"
 - Prefer lists over long paragraphs
 - Write all rules in English only
 
-## Success Criteria and Metrics (P2)
+## 8. Success Criteria and Metrics (P2)
 
 - **Clarity**: Rules are unambiguous and easy to understand
 - **Adoption**: Rules are consistently followed in the codebase
@@ -77,14 +77,14 @@ version: "1.0.0"
 - **Feedback**: Positive user responses on rule usefulness
 - **Maintenance**: Minimal effort required to keep rules updated
 
-## Self-Verification (P1)
+## 9. Self-Verification (P1)
 
 Each rule should include verification questions:
 - Does this rule apply to the current file?
 - Is the rule being followed correctly?
 - What specific aspects need improvement?
 
-## Related Rules
+## 10. Related Rules
 
 - [Rules Format](./cursor-rules-format.mdc)
 - [Rules Structure](./cursor-rules-structure.mdc)
