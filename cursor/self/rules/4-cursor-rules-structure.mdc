@@ -1,19 +1,17 @@
 ---
-description: "Organization and structure of rules for Cursor"
-globs: "**/*.mdc"
+description: "Organization and structural guidelines for rule files and directories. Apply these when creating new rules, organizing rule directories, managing rule dependencies, or structuring documentation. These standards establish consistent file hierarchies, naming conventions, and relationship management between rules."
+globs: ""
 alwaysApply: false
-related: ["cursor-rules-guide.mdc", "cursor-rules-format.mdc"]
-version: "1.0.0"
 ---
 
 # Cursor Rules Structure
 
 ## 1. Priority Levels
 
-- **P0** - Must implement (critical)
-- **P1** - Should implement (high importance)
-- **P2** - Recommended (medium importance)
-- **P3** - Consider when possible (lower importance)
+1. **P0** - Must implement (critical)
+2. **P1** - Should implement (high importance)
+3. **P2** - Recommended (medium importance)
+4. **P3** - Consider when possible (lower importance)
 
 ## 2. Directory Organization (P0)
 
@@ -47,7 +45,7 @@ cursor/self/rules/
 
 Each rule document must include:
 
-1. YAML frontmatter with `description`, `globs`, and `related` fields
+1. YAML frontmatter with `description` field
 2. H1 heading with rule name
 3. Priority levels table
 4. Basic concept description
@@ -87,18 +85,23 @@ Implement hierarchical structure for rules:
 
 ## 8. Rule Dependencies (P2)
 
-- Clearly document dependencies between rules
-- Use `related` field in frontmatter to indicate related rules
-- Include explicit references in text when one rule builds on another
+1. MUST clearly document dependencies between rules
+2. ALWAYS use `@` prefix to reference other rules
+3. REQUIRED to include explicit references when one rule builds on another
+
+Example:
+
+```markdown
+This rule STRICTLY builds upon concepts introduced in @1-cursor-rules-guide.mdc.
+```
 
 ## 9. Versioning (P1)
 
-- Rules must include a version in the frontmatter (format: `version: "X.Y.Z"`)
-- Major version (X) changes for breaking changes
-- Minor version (Y) changes for additions
-- Patch version (Z) for corrections and clarifications
+- Track major changes for breaking changes
+- Track minor changes for additions
+- Track patch changes for corrections and clarifications
 - Keep a changelog for significant updates
-- Version numbers should be consistent across related rules
+- Maintain consistent versioning across related rules
 
 ## 10. Context Budget Requirements (P0)
 
