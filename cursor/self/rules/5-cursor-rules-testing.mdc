@@ -147,6 +147,7 @@ Validate that rules meet their defined success criteria:
 - Assess impact on code quality
 - Measure developer productivity effects
 - Track long-term maintenance costs
+- MUST ensure all required aspects are covered (see @6-cursor-rules-coverage.mdc)
 
 ## 13. Release Checklist (P1)
 

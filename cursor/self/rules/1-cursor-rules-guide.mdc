@@ -22,37 +22,9 @@ alwaysApply: true
 5. MUST implement self-verification mechanisms (strictly follow @5-cursor-rules-testing.mdc)
 6. MUST follow development workflow (strictly adhere to @2-cursor-rules-workflow.mdc)
 7. ALWAYS consult this guide first before creating specific rules
+8. REQUIRED to use coverage checklist (STRICTLY follow @6-cursor-rules-coverage.mdc)
 
-## 4. Required Aspects (P0)
-
-1. **Code Structure**: directories, files, imports, naming
-2. **Architectural Decisions**: design principles, patterns
-3. **Type System**: interfaces, types, validation, generics
-4. **Error Handling**: exception hierarchy, recovery
-5. **Testing**: approaches, mocks, organization (follow testing standards in @5-cursor-rules-testing.mdc)
-6. **Dependency Management**: package managers, versioning
-7. **Code Style**: formatting, naming conventions (strictly adhere to @3-cursor-rules-format.mdc)
-8. **Documentation**: comments, API docs, README
-9. **String Literals**: text constants, internationalization
-10. **Constants**: types, placement, naming
-11. **Configuration**: environment variables, config files
-12. **Logging**: log levels, formatting, context
-
-## 5. Additional Aspects (P1)
-
-1. **Framework Patterns**: framework-specific recommendations
-2. **Integration Points**: APIs, external services, databases
-3. **Developer Experience**: IDE, linting, workflow (implement according to @2-cursor-rules-workflow.mdc)
-
-## 6. Low-Priority Areas (P2)
-
-1. DevOps/CI/CD
-2. Advanced performance optimization
-3. Enterprise security
-4. Monitoring
-5. Future-proofing design
-
-## 7. Rule Formatting (P0)
+## 3. Rule Formatting (P0)
 
 1. Use valid Markdown checked with markdownlint
 2. Include YAML frontmatter (description, globs, related files)
@@ -61,7 +33,7 @@ alwaysApply: true
 5. Write all rules in English only
 6. MUST follow formatting requirements (strictly implement @3-cursor-rules-format.mdc)
 
-## 8. Success Criteria and Metrics (P2)
+## 4. Success Criteria and Metrics (P2)
 
 1. **Clarity**: Rules are unambiguous and easy to understand
 2. **Adoption**: Rules are consistently followed in the codebase
@@ -69,7 +41,7 @@ alwaysApply: true
 4. **Feedback**: Positive user responses on rule usefulness
 5. **Maintenance**: Minimal effort required to keep rules updated
 
-## 9. Self-Verification (P1)
+## 5. Self-Verification (P1)
 
 Each rule should include verification questions:
 1. Does this rule apply to the current file?

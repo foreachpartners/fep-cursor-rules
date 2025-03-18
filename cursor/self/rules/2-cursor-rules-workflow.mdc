@@ -20,6 +20,7 @@ alwaysApply: false
 3. MUST apply formatting standards from @3-cursor-rules-format.mdc
 4. REQUIRED to organize according to @4-cursor-rules-structure.mdc
 5. STRICTLY implement test methods from @5-cursor-rules-testing.mdc
+6. MUST ensure complete coverage by referring to @6-cursor-rules-coverage.mdc
 
 ## 3. Development Workflow (P1)
 
