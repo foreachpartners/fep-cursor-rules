@@ -6,14 +6,7 @@ alwaysApply: false
 
 # Cursor Rules Structure
 
-## 1. Priority Levels
-
-1. **P0** - Must implement (critical)
-2. **P1** - Should implement (high importance)
-3. **P2** - Recommended (medium importance)
-4. **P3** - Consider when possible (lower importance)
-
-## 2. Directory Organization (P0)
+## 1. Directory Organization (P0)
 
 Organize rules by technology stack:
 
@@ -32,7 +25,7 @@ cursor/self/rules/
 └── ...
 ```
 
-## 3. File Naming (P0)
+## 2. File Naming (P0)
 
 - Use kebab-case for all rule filenames
 - Follow the pattern: `technology-area-rule.mdc`
@@ -41,7 +34,7 @@ cursor/self/rules/
   - `python-error-handling.mdc`
   - `typescript-typing-best-practices.mdc`
 
-## 4. Required Sections (P0)
+## 3. Required Sections (P0)
 
 Each rule document must include:
 
@@ -52,7 +45,7 @@ Each rule document must include:
 5. Examples (good and bad)
 6. Implementation details
 
-## 5. Recommended Sections (P1)
+## 4. Recommended Sections (P1)
 
 Consider including:
 
@@ -62,7 +55,7 @@ Consider including:
 - Performance considerations
 - Security implications
 
-## 6. Section Ordering (P1)
+## 5. Section Ordering (P1)
 
 1. YAML frontmatter
 2. H1 title
@@ -74,7 +67,7 @@ Consider including:
 8. Common issues
 9. References
 
-## 7. Rule Hierarchy (P2)
+## 6. Rule Hierarchy (P2)
 
 Implement hierarchical structure for rules:
 
@@ -83,7 +76,7 @@ Implement hierarchical structure for rules:
 3. **Component/module rules** - Rules for specific components 
 4. **Implementation rules** - Detailed implementation guidelines
 
-## 8. Rule Dependencies (P2)
+## 7. Rule Dependencies (P2)
 
 1. MUST clearly document dependencies between rules
 2. ALWAYS use `@` prefix to reference other rules
@@ -95,7 +88,7 @@ Example:
 This rule STRICTLY builds upon concepts introduced in @1-cursor-rules-guide.mdc.
 ```
 
-## 9. Versioning (P1)
+## 8. Versioning (P1)
 
 - Track major changes for breaking changes
 - Track minor changes for additions
@@ -103,7 +96,7 @@ This rule STRICTLY builds upon concepts introduced in @1-cursor-rules-guide.mdc.
 - Keep a changelog for significant updates
 - Maintain consistent versioning across related rules
 
-## 10. Context Budget Requirements (P0)
+## 9. Context Budget Requirements (P0)
 
 - Ensure rules occupy ≤20% of total context window
 - Prioritize critical information at the beginning of documents
@@ -111,7 +104,7 @@ This rule STRICTLY builds upon concepts introduced in @1-cursor-rules-guide.mdc.
 - Break large rule sets into smaller, focused documents
 - Use concise language optimized for token efficiency
 
-## 11. Self-Verification Mechanisms (P1)
+## 10. Self-Verification Mechanisms (P1)
 
 Each rule document should include:
 
@@ -132,7 +125,7 @@ To verify this rule is being followed, check:
 - [ ] Are cross-references properly linked?
 ```
 
-## 12. Success Criteria (P2)
+## 11. Success Criteria (P2)
 
 Define measurable outcomes for rule effectiveness:
 
@@ -142,7 +135,7 @@ Define measurable outcomes for rule effectiveness:
 - **Comprehension**: Developer understanding of rules
 - **Implementation**: Rate of successful application
 
-## 13. Language (P0)
+## 12. Language (P0)
 
 - Write all rules in English only
 - Use consistent terminology across all documents

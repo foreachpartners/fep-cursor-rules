@@ -6,14 +6,7 @@ alwaysApply: false
 
 # Cursor Rules Development Workflow
 
-## 1. Priority Levels
-
-1. **P0** - Must implement (critical)
-2. **P1** - Should implement (high importance)
-3. **P2** - Recommended (medium importance)
-4. **P3** - Consider when possible (lower importance)
-
-## 2. Development Process Overview (P0)
+## 1. Development Process Overview (P0)
 
 1. FIRST consult and strictly follow @1-cursor-rules-guide.mdc
 2. ALWAYS follow the structured workflow described in this document
@@ -22,7 +15,7 @@ alwaysApply: false
 5. STRICTLY implement test methods from @5-cursor-rules-testing.mdc
 6. MUST ensure complete coverage by referring to @6-cursor-rules-coverage.mdc
 
-## 3. Development Workflow (P1)
+## 2. Development Workflow (P1)
 
 1. Assess user preferences and priorities
 2. Collect input on all technical aspects
@@ -30,7 +23,7 @@ alwaysApply: false
 4. Implement in priority order
 5. Validate with LLM testing
 
-## 4. Planning Phase (P1)
+## 3. Planning Phase (P1)
 
 1. Identify the problem or need the rule addresses
 2. Research existing best practices in the domain
@@ -38,7 +31,7 @@ alwaysApply: false
 4. Set measurable success criteria
 5. Create a development timeline
 
-## 5. Implementation Phase (P0)
+## 4. Implementation Phase (P0)
 
 1. Draft initial rule document
 2. Review against formatting standards
@@ -48,7 +41,7 @@ alwaysApply: false
 6. Refine and clarify based on feedback
 7. Test with sample code or documents
 
-## 6. Testing Phase (P1)
+## 5. Testing Phase (P1)
 
 1. Apply rule to real-world examples
 2. Verify rule clarity and usefulness
@@ -56,7 +49,7 @@ alwaysApply: false
 4. Document edge cases and limitations
 5. Make final adjustments based on testing
 
-## 7. Deployment Phase (P2)
+## 6. Deployment Phase (P2)
 
 1. Add rule to appropriate directory
 2. Update any related rule references
@@ -64,7 +57,7 @@ alwaysApply: false
 4. Announce to team members
 5. Collect initial usage feedback
 
-## 8. Maintenance Phase (P2)
+## 7. Maintenance Phase (P2)
 
 1. Schedule regular reviews
 2. Track application metrics
@@ -72,7 +65,7 @@ alwaysApply: false
 4. Update for new technologies or practices
 5. Archive or replace outdated rules
 
-## 9. Self-Verification (P1)
+## 8. Self-Verification (P1)
 
 When developing rules, ask:
 1. Does the workflow process match the project needs?

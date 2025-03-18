@@ -6,14 +6,7 @@ alwaysApply: false
 
 # Testing Cursor Rules
 
-## 1. Priority Levels
-
-1. **P0** - Must implement (critical)
-2. **P1** - Should implement (high importance)
-3. **P2** - Recommended (medium importance)
-4. **P3** - Consider when possible (lower importance)
-
-## 2. Key Testing Principles (P0)
+## 1. Key Testing Principles (P0)
 
 - **Reproducibility** - Tests must produce consistent results
 - **Clarity** - Test results should be easy to understand
@@ -21,44 +14,44 @@ alwaysApply: false
 - **Objectivity** - Tests should measure objective criteria
 - **Traceability** - Test failures should be traceable to specific issues
 
-## 3. Test Types (P0)
+## 2. Test Types (P0)
 
-### 3.1. Format Validation Tests
+### 2.1. Format Validation Tests
 
 - Verify YAML frontmatter structure
 - Check markdown syntax validity
 - Confirm heading structure follows guidelines
 - Validate link references
 
-### 3.2. Applicability Tests
+### 2.2. Applicability Tests
 
 - Verify that glob patterns correctly match intended files
 - Ensure rule exclusions work as expected
 - Test edge cases for glob pattern matching
 
-### 3.3. Rule Effectiveness Tests
+### 2.3. Rule Effectiveness Tests
 
 - Measure how well the rule addresses its intended purpose
 - Track improvement in code quality metrics
 - Gather user feedback on rule clarity and usefulness
 
-## 4. Testing Methods (P1)
+## 3. Testing Methods (P1)
 
-### 4.1. Manual Testing
+### 3.1. Manual Testing
 
 1. Follow checklist of requirements
 2. Review for clarity and completeness
 3. Verify that examples reflect best practices
 4. Check for consistent terminology
 
-### 4.2. Automated Testing
+### 3.2. Automated Testing
 
 - Run markdownlint for style checking
 - Validate YAML with schema checks
 - Test glob patterns against sample codebases
 - Check for broken links and references
 
-## 5. Testing Tools (P1)
+## 4. Testing Tools (P1)
 
 | Tool | Purpose | Priority |
 |------|---------|----------|
@@ -68,7 +61,7 @@ alwaysApply: false
 | glob-tester | Test glob pattern matching | P1 |
 | spell-checker | Find spelling errors | P2 |
 
-## 6. Testing Process (P1)
+## 5. Testing Process (P1)
 
 1. **Pre-commit testing**
    - Run automated format validation
@@ -90,7 +83,7 @@ alwaysApply: false
    - Include validation questions within rules
    - Create verification checklists
 
-## 7. LLM Self-Verification (P0)
+## 6. LLM Self-Verification (P0)
 
 Every rule document MUST include basic verification questions:
 
@@ -115,14 +108,14 @@ Every rule document MUST include basic verification questions:
    - Questions MUST be specific to the rule's domain
    - ALWAYS include both general and rule-specific verification questions
 
-## 8. Context Budget Optimization (P0)
+## 7. Context Budget Optimization (P0)
 
 - Rules should occupy ≤20% of total context window
 - Testing documentation should be concise
 - Verification steps should be clear and direct
 - Examples should demonstrate concepts efficiently
 
-## 9. Quality Metrics (P2)
+## 8. Quality Metrics (P2)
 
 - **Clarity score** - Based on readability metrics
 - **Precision** - How accurately the rule targets issues
@@ -130,14 +123,14 @@ Every rule document MUST include basic verification questions:
 - **Action rate** - How often the rule leads to changes
 - **False positive rate** - How often the rule falsely flags issues
 
-## 10. Rule Refinement (P2)
+## 9. Rule Refinement (P2)
 
 - Collect feedback from actual rule application
 - Track metrics on rule effectiveness
 - Periodically review and update based on new insights
 - Maintain versioning for significant changes
 
-## 11. Workflow Testing (P1)
+## 10. Workflow Testing (P1)
 
 Test the entire development workflow:
 
@@ -149,7 +142,7 @@ Test the entire development workflow:
 6. Collect metrics and feedback
 7. Refine rules based on results
 
-## 12. Success Criteria Validation (P1)
+## 11. Success Criteria Validation (P1)
 
 Validate that rules meet their defined success criteria:
 
@@ -160,7 +153,7 @@ Validate that rules meet their defined success criteria:
 - Track long-term maintenance costs
 - MUST ensure all required aspects are covered (see @6-cursor-rules-coverage.mdc)
 
-## 13. Release Checklist (P1)
+## 12. Release Checklist (P1)
 
 Before releasing a new rule, MUST verify:
 
@@ -171,14 +164,14 @@ Before releasing a new rule, MUST verify:
 5. [ ] Rule has been peer-reviewed
 6. [ ] Rule is written in English only
 
-## 14. Language Considerations (P0)
+## 13. Language Considerations (P0)
 
 - All test documentation must be in English
 - Error messages should be clear and actionable
 - Use consistent terminology across testing documentation
 - Define technical terms when they're first used 
 
-## 15. Consistency Testing (P0)
+## 14. Consistency Testing (P0)
 
 1. CRITICAL: Prior to finalizing any rule, perform these consistency tests:
 
