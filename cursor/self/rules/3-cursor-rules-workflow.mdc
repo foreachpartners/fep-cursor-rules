@@ -10,10 +10,10 @@ alwaysApply: false
 
 1. FIRST consult and strictly follow @1-cursor-rules-guide.mdc
 2. ALWAYS follow the structured workflow described in this document
-3. MUST apply formatting standards from @3-cursor-rules-format.mdc
-4. REQUIRED to organize according to @4-cursor-rules-structure.mdc
-5. STRICTLY implement test methods from @5-cursor-rules-testing.mdc
-6. MUST ensure complete coverage by referring to @6-cursor-rules-coverage.mdc
+3. MUST apply formatting standards from @6-cursor-rules-format.mdc
+4. REQUIRED to organize according to @5-cursor-rules-structure.mdc
+5. STRICTLY implement test methods from @4-cursor-rules-testing.mdc
+6. MUST ensure complete coverage by referring to @2-cursor-rules-coverage.mdc
 
 ## 2. Development Workflow (P1)
 

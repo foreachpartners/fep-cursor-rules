@@ -49,7 +49,6 @@ alwaysApply: false
    - Mock/stub usage patterns
    - Test organization
    - Coverage expectations
-   - STRICTLY follow @5-cursor-rules-testing.mdc
 
 6. **Dependency Management**: 
    - Package manager configuration
@@ -63,7 +62,6 @@ alwaysApply: false
    - Naming conventions
    - Code organization within files
    - Commenting standards
-   - MUST adhere to @3-cursor-rules-format.mdc
 
 8. **Documentation**: 
    - Code comments
@@ -100,6 +98,13 @@ alwaysApply: false
     - Log rotation
     - Logging granularity
 
+13. **Developer Experience**: 
+    - IDE setup
+    - Linting configuration
+    - Development workflow
+    - Tooling recommendations
+    - Development environment
+
 ## 3. Additional Technical Aspects (P1)
 
 1. **Framework Patterns**: 
@@ -115,14 +120,6 @@ alwaysApply: false
    - Database interaction patterns
    - Authentication integration
    - System boundaries
-
-3. **Developer Experience**: 
-   - IDE setup
-   - Linting configuration
-   - Development workflow
-   - Tooling recommendations
-   - Development environment
-   - REQUIRED to implement according to @2-cursor-rules-workflow.mdc
 
 ## 4. Specialized Technical Aspects (P2)
 
@@ -169,32 +166,3 @@ alwaysApply: false
    - Migration strategies
    - Backwards compatibility
    - Technical debt management
-
-## 6. Usage Guidelines (P0)
-
-1. When creating new rule sets:
-   - Start with P0 aspects
-   - MUST cover all required technical aspects
-   - Progressively add P1-P3 aspects as needed
-   - Verify all critical areas are addressed
-
-2. When evaluating existing rule sets:
-   - Check coverage against all required aspects
-   - Identify and prioritize gaps
-   - Create plan to address missing areas
-   - REQUIRED to document coverage analysis results
-
-3. When performing gap analysis:
-   - Compare existing rules against this checklist
-   - Score coverage of each aspect (none/partial/complete)
-   - Create prioritized list of missing areas
-   - MUST create plan to address critical gaps
-
-## 7. Self-Verification (P1)
-
-Ask these questions to verify correct usage of this document:
-1. Have ALL required technical aspects (P0) been addressed?
-2. Are coverage rules specific enough for practical application?
-3. Do rules specify both WHAT and HOW for each technical aspect?
-4. Has coverage been validated with stakeholders?
-5. Is there a plan for addressing lower priority aspects? 
