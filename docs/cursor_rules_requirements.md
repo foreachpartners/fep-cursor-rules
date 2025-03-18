@@ -284,3 +284,55 @@ The following aspects are explicitly defined as low-priority in our rules:
 - Avoid speculative generalization
 - Minimize abstractions not immediately needed
 - Focus on maintainability of current codebase
+
+## File Size and Structure Requirements
+
+To ensure optimal performance with LLMs like Claude 3.7 Sonnet while allowing sufficient context space for code, documentation, and search results, the following size constraints should be observed:
+
+### Size Constraints
+
+- **Master Rules Document**: 150-250 lines (approximately 5-7K tokens)
+- **Specialized Rule Files**: 300-500 lines (approximately 10-15K tokens)
+- **Total Rules in Context**: Not to exceed 40K tokens (approximately 20% of context window)
+- **Example Code Snippets**: Limit to 5-10 lines per example
+- **Rule Modules**: Aim for logical modules of 200-400 lines each
+
+### Structure Optimization
+
+1. **Hierarchical Organization**
+   - Prioritize rules by frequency of application
+   - Place critical rules at the beginning of documents
+   - Use clear section headers for navigation
+   - Implement reference links between related rules
+
+2. **Format Efficiency**
+   - Use bulleted lists instead of lengthy paragraphs
+   - Employ tables for compact representation of related rules
+   - Apply consistent formatting throughout all rule files
+   - Use headings and subheadings for clear visual hierarchy
+
+3. **Context Optimization**
+   - Minimize redundancy across rule files
+   - Use cross-references instead of duplicating content
+   - Provide minimal but sufficient context in examples
+   - Highlight key code patterns rather than complete implementations
+
+### Modular Loading Strategy
+
+1. **File Pattern Matching**
+   - Leverage glob patterns to automatically include relevant rules
+   - Configure rules to match specific file extensions or directories
+   - Ensure rules are loaded only when needed based on active files
+
+2. **Depth on Demand**
+   - Include essential rules in every context
+   - Load detailed rules only when specific topics are addressed
+   - Use semantic descriptions for intelligent rule application
+   - Implement priority levels for rule application
+
+3. **Context Sharing**
+   - Consider context allocation between rules and other content:
+     - Source code: ~50% of context
+     - Search results and documentation: ~30% of context
+     - Conversation history: ~5% of context
+     - Rules: ~15-20% of context
