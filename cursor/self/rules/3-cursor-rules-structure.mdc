@@ -1,6 +1,6 @@
 ---
 description: "Comprehensive guidelines for rule content and document structure. Apply when defining content for Primary and Secondary Rule Files, organizing rule documents, or establishing relationships between rule files. These guidelines ensure consistent structure and proper organization across all rule documents."
-globs: ""
+globs: 
 alwaysApply: false
 ---
 
@@ -9,163 +9,136 @@ alwaysApply: false
 ## 1. Rule Document Types (P0)
 
 1. **Primary Rule File**: Core document for the tech stack containing foundational principles
-   - MUST be named `1-techstack-rules-guide.mdc`
-   - CRITICAL: Contains priority levels, core principles, and navigation guide
-   - Serves as entry point for all rule consultations
+   - Serves as the main entry point for all rule consultations
+   - Acts as a navigator to other rules in the set
+   - Contains priority levels, core principles, and navigation guidance
+   - CRITICAL: Always consult this file first to understand which rules to apply
    - REQUIRED to be concise and optimized for context window efficiency
 
 2. **Secondary Rule Files**: Specialized documents focusing on specific aspects
    - Address particular technical areas or concerns
-   - MUST follow consistent naming conventions
+   - MUST be referenced by the Primary Rule File
    - REQUIRED to reference related rules without duplication
    - Optimize for specific guidance rather than general principles
 
-## 2. Directory Organization (P0)
+## 2. File Organization and Naming (P0)
 
-1. All rules for a technology stack MUST be placed in a flat directory structure:
-   ```
-   techstackname/rules/
-   ├── 1-techstack-rules-guide.mdc      # Primary rule file
-   ├── 2-techstack-rules-coverage.mdc   # Technical aspects
-   ├── 3-techstack-rules-structure.mdc  # Structure & content guidelines
-   ├── 4-techstack-rules-format.mdc     # Formatting requirements
-   ├── 5-techstack-rules-testing.mdc    # Testing guidelines
-   ├── 6-techstack-rules-workflow.mdc   # Development workflow
-   ├── 7-techstack-rules-analysis.mdc   # Analysis framework
-   └── N-techstack-specific-rule.mdc    # Additional rules as needed
-   ```
+Example structure for Python/Django rules (not exhaustive, can be extended with additional files as needed):
 
-2. CRITICAL requirements:
-   - NEVER create nested subdirectories within the rules folder
-   - ALL rule files MUST use the `.mdc` extension
-   - ALWAYS use a consistent prefix for all files (e.g., `typescript-`, `python-`, `react-`)
-   - REQUIRED to follow numerical ordering (1-N) for easier navigation
-
-## 3. File Naming (P0)
-
-1. Use kebab-case for all rule filenames
-2. MUST include numerical prefix for ordering (e.g., `1-`, `2-`, `3-`)
-3. MUST follow the pattern: `N-techstackname-area-rule.mdc`
-4. Examples:
-   - `1-python-rules-guide.mdc`
-   - `2-python-rules-coverage.mdc`
-   - `7-python-error-handling.mdc`
-   - `8-python-testing-practices.mdc`
-
-## 4. Required Sections for Primary Rule File (P0)
-
-Each Primary Rule File must include:
-
-1. YAML frontmatter with `description` field
-2. H1 heading with rule name
-3. Priority levels table
-4. Core principles section (P0)
-5. Success criteria section
-6. Rule navigation guide
-7. Examples of when to use specific rule files
-
-## 5. Required Sections for Secondary Rule Files (P0)
-
-Each Secondary Rule File must include:
-
-1. YAML frontmatter with `description` field
-2. H1 heading with rule name
-3. Purpose of the document
-4. Main guidelines organized by priority
-5. Implementation details
-6. Examples (good and bad)
-7. References to related rules
-
-## 6. Recommended Sections (P1)
-
-Consider including in all rule files:
-
-1. Common pitfalls
-2. Best practices
-3. Compatibility notes
-4. Self-verification mechanism
-
-## 7. Section Ordering (P1)
-
-1. YAML frontmatter
-2. H1 title
-3. Priority levels (only in Primary Rule File)
-4. Introduction/overview
-5. Main guidelines
-6. Examples
-7. Best practices
-8. Common issues
-9. References
-
-## 8. Rule Dependencies (P2)
-
-1. MUST clearly document dependencies between rules
-2. ALWAYS use `@` prefix to reference other rules
-3. REQUIRED to include explicit references when one rule builds on another
-
-Example:
-
-```markdown
-This rule STRICTLY builds upon concepts introduced in @1-python-rules-guide.mdc.
+```
+python-django/rules/
+├── 1-python-django-rules-guide.mdc      # Primary rule file (always starts with 1)
+├── 2-python-django-style-guide.mdc      # Style guide
+├── 3-python-django-testing.mdc          # Testing guidelines
+└── N-python-django-area-rule.mdc        # Additional specialized rules
 ```
 
-## 9. Context Budget Requirements (P0)
+File naming must follow the pattern: `N-techstack-area-rule.mdc` using kebab-case with numerical prefix. The Primary Rule File ALWAYS starts with `1-`.
 
-1. Ensure rules occupy ≤20% of total context window
-2. Prioritize critical information at the beginning of documents
-3. Remove redundant information that increases token usage
-4. Break large rule sets into smaller, focused documents
-5. Use concise language optimized for token efficiency
+## 3. Primary Rule File Structure (P0)
 
-## 10. Self-Verification Mechanisms (P1)
+A Primary Rule File (based on Python/Django example) should include:
 
-Each rule document should include:
-
-1. **Self-assessment questions** to verify rule application
-2. **Validation checklist** for rule compliance
-3. **Testing methods** specific to the rule
-
-Example:
+### 3.1. Priority Levels
 
 ```markdown
-## Self-Verification
+## 1. Priority Levels
 
-To verify this rule is being followed, check:
-
-- [ ] Is the directory structure following the prescribed pattern?
-- [ ] Are all file names using kebab-case with numerical prefixes?
-- [ ] Do all rules have the required sections?
-- [ ] Are cross-references properly linked?
+1. **P0** - Must implement (critical)
+2. **P1** - Should implement (high importance)
+3. **P2** - Recommended (medium importance)
 ```
 
-## 11. Success Criteria (P2)
+### 3.2. Core Principles
 
-Define measurable outcomes for rule effectiveness:
-
-1. **Consistency**: Uniformity across rule documents
-2. **Discoverability**: Ease of finding relevant rules
-3. **Maintenance**: Effort required to update rules
-4. **Comprehension**: Developer understanding of rules
-5. **Implementation**: Rate of successful application
-
-## 12. Language (P0)
-
-1. Write all rules in English only
-2. Use consistent terminology across all documents
-3. Be precise with technical terms
-4. Define specialized terms when first used 
-
-## 13. Consistency and Non-Duplication (P0)
-
-1. CRITICAL: Each concept MUST be defined in exactly one place
-2. ALWAYS reference existing rules rather than duplicating content
-3. When concepts overlap between rules, MUST designate one authoritative source
-4. NEVER include redundant information that already exists in other rules
-5. When similar topics appear in multiple rules, reference the canonical definition
-6. REQUIRED to validate consistency between related rules before publishing
-
-Example of correct cross-reference:
+Example of Core Principles section (customize for your specific tech stack):
 
 ```markdown
-For formatting code examples, STRICTLY follow the standards in @4-python-rules-format.mdc rather than duplicating those guidelines here.
-``` 
+## 2. Core Principles (P0)
+
+1. Write DRY (Don't Repeat Yourself) code
+2. Place the most important and frequently used rules first
+3. NEVER duplicate content across rule files to preserve context
+4. All rule documents MUST use English language only
+```
+
+### 3.3. Rule Navigation Section
+
+```markdown
+## 3. Rule Navigation Guide (P0)
+
+When addressing specific needs, MUST consult these rules:
+
+### 3.1. Code Styling
+
+1. ALWAYS begin with @1-python-django-rules-guide.mdc
+2. MUST follow @2-python-django-style-guide.mdc for code formatting
+
+### 3.2. Creating Tests
+
+1. REQUIRED to implement @3-python-django-testing.mdc
+2. CRITICAL to follow test naming conventions in @2-python-django-style-guide.mdc
+```
+
+Primary Rule File acts as a central guide directing developers to the appropriate Secondary Rule Files based on their specific needs.
+
+## 4. Secondary Rule File Structure (P0)
+
+Example of a Secondary Rule File (Python/Django Style Guide):
+
+### 4.1. Purpose Statement
+
+```markdown
+## 1. Purpose (P0)
+
+These style guidelines ensure consistent code formatting across all Python/Django projects. Apply when writing new code or refactoring existing code to maintain readability and maintainability.
+```
+
+### 4.2. Main Guidelines
+
+```markdown
+## 2. Indentation and Line Length (P0)
+
+1. Use 4 spaces for indentation (NEVER tabs)
+2. Maximum line length is 88 characters
+3. CRITICAL: Configure tools like Black and flake8 to enforce these standards
+4. REQUIRED: Break long lines over multiple lines using parentheses
+
+## 3. Naming Conventions (P0)
+
+1. CRITICAL: Use snake_case for variables, functions, and methods
+2. Use PascalCase for class names
+3. Use UPPER_SNAKE_CASE for constants
+4. REQUIRED: Use descriptive variable names that reveal intent
+```
+
+### 4.3. Examples
+
+```markdown
+## 4. Good Examples (P1)
+
+```python
+def calculate_total_price(items, tax_rate=0.07):
+    """Calculate the total price including tax.
+    
+    Args:
+        items: List of items with 'price' attribute
+        tax_rate: Tax rate as a decimal (default: 0.07)
+        
+    Returns:
+        Total price including tax
+    """
+    subtotal = sum(item.price for item in items)
+    return subtotal * (1 + tax_rate)
+```
+
+## 5. Bad Examples (P1)
+
+```python
+def calc(i, t=.07):
+    # Calculate total with tax
+    return sum([x.price for x in i]) * (1 + t)
+```
+```
+
+Secondary Rule Files should be focused on their specific domains while referencing the Primary Rule File and other related Secondary Rules when needed. 
