@@ -33,13 +33,14 @@ alwaysApply: true
    - Context Budget: Rules ≤20% of context window
 5. Use valid Markdown syntax checked with markdownlint
 6. Apply consistent hierarchical heading structure (H1→H2→H3→H4)
-7. Prefer concise lists over long text paragraphs
+7. Prefer concise lists over long text paragraphs - always use numbered lists
 8. Write all rules in English only (no Cyrillic or other non-Latin scripts)
 9. YAML frontmatter MUST include:
-   - `description` field without quotation marks
-   - Empty `globs:` field without value
-   - `alwaysApply` set to `true` for Primary Rules, `false` for Secondary Rules
+   1. `description` field without quotation marks
+   2. Empty `globs:` field without value
+   3. `alwaysApply` set to `true` for Primary Rules, `false` for Secondary Rules unless explicitly instructed otherwise by the user
    ```yaml
+   # Example YAML frontmatter:
    ---
    description: Core guidelines for developing Python/Django rules.
    globs:
@@ -85,11 +86,11 @@ alwaysApply: true
 
 1. When validation checks fail, identify specific issues from error reports
 2. Address each issue individually in order of priority:
-   - YAML frontmatter errors (critical)
-   - Line count/size constraint violations
-   - Heading structure and numbering problems
-   - Cross-reference formatting issues
-   - Language compliance issues
+   1. YAML frontmatter errors (critical)
+   2. Line count/size constraint violations
+   3. Heading structure and numbering problems
+   4. Cross-reference formatting issues
+   5. Language compliance issues
 
 3. Rerun validation tools after making corrections
 4. Continue correction-validation cycle until all checks pass
