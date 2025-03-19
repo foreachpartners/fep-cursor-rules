@@ -40,23 +40,42 @@ alwaysApply: true
 
 ## 4. YAML Frontmatter (P0)
 
-All rule files must begin with a YAML frontmatter block:
+All rule files must begin with a YAML frontmatter block with CRITICAL formatting requirements:
 
-```yaml
----
-description: "Brief rule description"
-globs: ""
-alwaysApply: false
----
-```
+1. **Formal YAML Frontmatter Requirements**:
+   - CRITICAL: The `globs:` field MUST remain empty without any value or quotation marks
+   - CRITICAL: The `description` field MUST NOT have quotation marks
+   - CRITICAL: Primary Rule Files MUST set `alwaysApply: true`
+   - CRITICAL: Secondary Rule Files MUST set `alwaysApply: false` unless explicitly instructed otherwise
+   - CRITICAL: Description must state when to apply the rule in clear terms
+
+2. **Examples of correct YAML frontmatter**:
+   - Primary Rule File:
+     ```yaml
+     ---
+     description: Core guidelines for developing all Python/Django rules. Apply this guide when creating or modifying any Python/Django rule document.
+     globs:
+     alwaysApply: true
+     ---
+     ```
+   - Secondary Rule File:
+     ```yaml
+     ---
+     description: Comprehensive guidelines for Python/Django code style. Apply when writing new code or refactoring existing code.
+     globs:
+     alwaysApply: false
+     ---
+     ```
+
+3. **Formatting violations will cause rule application to fail**
 
 ### 4.1. Frontmatter Fields
 
-| Field | Description | Required |
-|-------|-------------|----------|
-| `description` | Brief rule description | Yes |
-| `globs` | File glob patterns (empty string recommended) | Yes |
-| `alwaysApply` | Flag indicating whether to always apply the rule | No (default `false`) |
+| Field | Description | Required | Format Rules |
+|-------|-------------|----------|--------------|
+| `description` | Brief rule description stating when to apply | Yes | Must NOT have quotation marks |
+| `globs` | File glob patterns | Yes | Must remain empty without value or quotation marks |
+| `alwaysApply` | Flag for rule application | Yes | `true` for Primary Rules, typically `false` for Secondary Rules |
 
 ## 5. Document Structure (P0)
 

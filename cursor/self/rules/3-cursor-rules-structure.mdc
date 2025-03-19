@@ -45,13 +45,11 @@ Primary Rule File must have the following YAML frontmatter:
 
 ```yaml
 ---
-description: Core guidelines for developing all Python/Django rules. Apply this guide when creating or modifying any Python/Django rule document. This is the foundational reference that should be consulted first before developing specific rule files.
+description: Core guidelines for developing all Python/Django rules. Apply this guide when creating or modifying any Python/Django rule document.
 globs:
 alwaysApply: true
 ---
 ```
-
-Note that `alwaysApply: true` is critical for Primary Rule Files. IMPORTANT: The `globs:` field must remain empty without any value or quotation marks to ensure proper rule application. Also, the `description` field must NOT have quotation marks to ensure correct rule processing.
 
 ### 3.2. Priority Levels
 
@@ -106,13 +104,11 @@ Secondary Rule Files must have the following YAML frontmatter:
 
 ```yaml
 ---
-description: Comprehensive guidelines for Python/Django code style. Apply when writing new code, refactoring existing code, or reviewing code contributions to ensure consistent formatting and readability.
+description: Comprehensive guidelines for Python/Django code style. Apply when writing new code, refactoring existing code, or reviewing code contributions.
 globs:
 alwaysApply: false
 ---
 ```
-
-Note that `alwaysApply` is typically `false` for Secondary Rule Files. CRITICAL: Always leave `globs:` without any value or quotation marks to ensure rules apply correctly. The `description` field must also be provided without quotation marks for proper rule application.
 
 ### 4.2. Purpose Statement
 
