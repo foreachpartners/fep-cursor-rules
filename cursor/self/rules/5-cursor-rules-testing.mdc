@@ -1,0 +1,150 @@
+---
+description: "Testing and verification methods for rules and code quality. Apply when validating rule effectiveness, creating tests, establishing quality metrics, or implementing verification mechanisms. These standards ensure rules produce consistent, measurable improvements and can be objectively evaluated."
+globs: ""
+alwaysApply: false
+---
+
+# Testing Cursor Rules
+
+## 1. Key Testing Principles (P0)
+
+- **Reproducibility** - Tests must produce consistent results
+- **Clarity** - Test results should be easy to understand
+- **Coverage** - Tests should cover all aspects of the rule
+- **Objectivity** - Tests should measure objective criteria
+- **Traceability** - Test failures should be traceable to specific issues
+
+## 2. Rule Debugging Tools (P0)
+
+1. **Rule Markers** - CRITICAL: Only apply markers after explicit user authorization
+   - Use comment markers to indicate rule application points
+   - Format: `<!-- @rule-id: explanation -->`
+   - Apply markers only when debugging rule effectiveness
+   - NEVER include markers in production code
+
+2. **Application Tracing** - Track rule application during development
+   - Log points where rules are applied
+   - Record decision paths for rule application
+   - Compare expected vs. actual outcomes
+
+3. **Rule Simulation** - Test rule application on sample code
+   - Apply rules to controlled test cases
+   - Verify outcomes match expectations
+   - Adjust rules based on simulation results
+
+## 3. Test Types (P0)
+
+### 3.1. Format Validation Tests
+
+- Verify YAML frontmatter structure
+- Check markdown syntax validity
+- Confirm heading structure follows guidelines
+- Validate link references
+
+### 3.2. Applicability Tests
+
+- Verify that glob patterns correctly match intended files
+- Ensure rule exclusions work as expected
+- Test edge cases for glob pattern matching
+
+### 3.3. Rule Effectiveness Tests
+
+- Measure how well the rule addresses its intended purpose
+- Track improvement in code quality metrics
+- Gather user feedback on rule clarity and usefulness
+
+## 4. Testing Methods (P1)
+
+### 4.1. Manual Testing
+
+1. Follow checklist of requirements
+2. Review for clarity and completeness
+3. Verify that examples reflect best practices
+4. Check for consistent terminology
+
+### 4.2. Automated Testing
+
+- Run markdownlint for style checking
+- Validate YAML with schema checks
+- Test glob patterns against sample codebases
+
+## 5. Rule Marker Protocol (P0)
+
+1. CRITICAL: Rule markers must ONLY be used when explicitly authorized by the user
+2. Standard marker format for different rule types:
+   ```
+   <!-- @cursor-rule-applied: rule-id -->
+   <!-- @cursor-rule-violated: rule-id -->
+   <!-- @cursor-rule-exception: rule-id, reason -->
+   ```
+3. Markers are temporary debugging tools, not permanent documentation
+4. When authorized, include markers at key decision points in code
+5. Remove all markers after debugging is complete
+
+## 6. Self-Verification (P1)
+
+Include self-verification sections in each rule:
+
+```markdown
+## Self-Verification
+
+To verify this rule is being followed, check:
+- [ ] Are all methods properly documented?
+- [ ] Is error handling consistent?
+- [ ] Do variable names follow conventions?
+```
+
+## 7. Rule Development Workflow (P1)
+
+1. Draft rules based on established patterns
+2. Apply to small sample codebase
+3. Add debugging markers at key points
+4. Verify expected outcomes
+5. Refine rules based on testing
+6. Remove debugging markers
+7. Document verification process
+
+## 8. Metrics (P2)
+
+Establish objective measurements:
+
+- **Compliance Rate**: % of code following rule
+- **Error Reduction**: Decrease in related bugs
+- **User Feedback**: Survey results from users
+- **Application Time**: Time needed to apply rule
+- **Consistency**: Variation in rule application
+
+## 9. Debug Mode Guidelines (P0)
+
+1. CRITICAL: Debug mode must be explicitly enabled by user
+2. When in debug mode:
+   - Add verbose comments explaining rule application
+   - Mark points where rules are applied or violated
+   - Include decision rationale in comments
+   - Track rule conflicts
+3. Debug artifacts must be removed from production code
+4. Developer tools for debugging include:
+   - Rule coverage visualization
+   - Application point highlighting
+   - Conflict detection
+
+## 10. Verification Checklist (P1)
+
+For each rule, verify:
+
+1. Is the rule clear and unambiguous?
+2. Are examples provided for key points?
+3. Is the priority level appropriate?
+4. Are related rules properly cross-referenced?
+5. Does the rule contain measurable criteria?
+6. Are verification mechanisms included?
+
+## 11. Reporting (P2)
+
+Document testing results:
+
+- Summary of compliance metrics
+- Issues encountered during testing
+- Recommendations for improvement
+- Success stories and positive outcomes
+- Areas needing additional guidance 

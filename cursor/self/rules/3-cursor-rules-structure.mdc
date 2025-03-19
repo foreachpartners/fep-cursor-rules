@@ -1,22 +1,37 @@
 ---
-description: "Organization and structural guidelines for rule files and directories. Apply these when creating new rules, organizing rule directories, managing rule dependencies, or structuring documentation. These standards establish consistent file hierarchies, naming conventions, and relationship management between rules."
+description: "Comprehensive guidelines for rule content and document structure. Apply when defining content for Primary and Secondary Rule Files, organizing rule documents, or establishing relationships between rule files. These guidelines ensure consistent structure and proper organization across all rule documents."
 globs: ""
 alwaysApply: false
 ---
 
-# Cursor Rules Structure
+# Cursor Rules Content and Structure
 
-## 1. Directory Organization (P0)
+## 1. Rule Document Types (P0)
+
+1. **Primary Rule File**: Core document for the tech stack containing foundational principles
+   - MUST be named `1-techstack-rules-guide.mdc`
+   - CRITICAL: Contains priority levels, core principles, and navigation guide
+   - Serves as entry point for all rule consultations
+   - REQUIRED to be concise and optimized for context window efficiency
+
+2. **Secondary Rule Files**: Specialized documents focusing on specific aspects
+   - Address particular technical areas or concerns
+   - MUST follow consistent naming conventions
+   - REQUIRED to reference related rules without duplication
+   - Optimize for specific guidance rather than general principles
+
+## 2. Directory Organization (P0)
 
 1. All rules for a technology stack MUST be placed in a flat directory structure:
    ```
    techstackname/rules/
    ├── 1-techstack-rules-guide.mdc      # Primary rule file
-   ├── 2-techstack-rules-workflow.mdc   # Development workflow
-   ├── 3-techstack-rules-coverage.mdc   # Technical aspects
-   ├── 4-techstack-rules-testing.mdc    # Testing guidelines
-   ├── 5-techstack-rules-structure.mdc  # Structure guidelines
-   ├── 6-techstack-rules-format.mdc     # Formatting requirements
+   ├── 2-techstack-rules-coverage.mdc   # Technical aspects
+   ├── 3-techstack-rules-structure.mdc  # Structure & content guidelines
+   ├── 4-techstack-rules-format.mdc     # Formatting requirements
+   ├── 5-techstack-rules-testing.mdc    # Testing guidelines
+   ├── 6-techstack-rules-workflow.mdc   # Development workflow
+   ├── 7-techstack-rules-analysis.mdc   # Analysis framework
    └── N-techstack-specific-rule.mdc    # Additional rules as needed
    ```
 
@@ -26,37 +41,51 @@ alwaysApply: false
    - ALWAYS use a consistent prefix for all files (e.g., `typescript-`, `python-`, `react-`)
    - REQUIRED to follow numerical ordering (1-N) for easier navigation
 
-## 2. File Naming (P0)
+## 3. File Naming (P0)
 
 1. Use kebab-case for all rule filenames
 2. MUST include numerical prefix for ordering (e.g., `1-`, `2-`, `3-`)
 3. MUST follow the pattern: `N-techstackname-area-rule.mdc`
 4. Examples:
    - `1-python-rules-guide.mdc`
-   - `2-python-rules-workflow.mdc`
+   - `2-python-rules-coverage.mdc`
    - `7-python-error-handling.mdc`
    - `8-python-testing-practices.mdc`
 
-## 3. Required Sections (P0)
+## 4. Required Sections for Primary Rule File (P0)
 
-Each rule document must include:
+Each Primary Rule File must include:
 
 1. YAML frontmatter with `description` field
 2. H1 heading with rule name
-3. Priority levels table (only in Primary Rule File)
-4. Basic concept description
-5. Examples (good and bad)
-6. Implementation details
+3. Priority levels table
+4. Core principles section (P0)
+5. Success criteria section
+6. Rule navigation guide
+7. Examples of when to use specific rule files
 
-## 4. Recommended Sections (P1)
+## 5. Required Sections for Secondary Rule Files (P0)
 
-Consider including:
+Each Secondary Rule File must include:
+
+1. YAML frontmatter with `description` field
+2. H1 heading with rule name
+3. Purpose of the document
+4. Main guidelines organized by priority
+5. Implementation details
+6. Examples (good and bad)
+7. References to related rules
+
+## 6. Recommended Sections (P1)
+
+Consider including in all rule files:
 
 1. Common pitfalls
 2. Best practices
 3. Compatibility notes
+4. Self-verification mechanism
 
-## 5. Section Ordering (P1)
+## 7. Section Ordering (P1)
 
 1. YAML frontmatter
 2. H1 title
@@ -68,7 +97,7 @@ Consider including:
 8. Common issues
 9. References
 
-## 7. Rule Dependencies (P2)
+## 8. Rule Dependencies (P2)
 
 1. MUST clearly document dependencies between rules
 2. ALWAYS use `@` prefix to reference other rules
@@ -79,14 +108,6 @@ Example:
 ```markdown
 This rule STRICTLY builds upon concepts introduced in @1-python-rules-guide.mdc.
 ```
-
-## 8. Versioning (P1)
-
-1. Track major changes for breaking changes
-2. Track minor changes for additions
-3. Track patch changes for corrections and clarifications
-4. Keep a changelog for significant updates
-5. Maintain consistent versioning across related rules
 
 ## 9. Context Budget Requirements (P0)
 
@@ -146,5 +167,5 @@ Define measurable outcomes for rule effectiveness:
 Example of correct cross-reference:
 
 ```markdown
-For formatting code examples, STRICTLY follow the standards in @6-python-rules-format.mdc rather than duplicating those guidelines here.
+For formatting code examples, STRICTLY follow the standards in @4-python-rules-format.mdc rather than duplicating those guidelines here.
 ``` 

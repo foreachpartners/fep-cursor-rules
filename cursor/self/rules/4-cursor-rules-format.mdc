@@ -1,0 +1,181 @@
+---
+description: "Technical formatting requirements and validation criteria for rule files. Apply when creating or validating rule files to ensure they meet technical specifications, language requirements, and formatting standards. These requirements ensure consistency, readability, and technical validity across all rule documents."
+globs: ""
+alwaysApply: false
+---
+
+# Cursor Rules Technical Format
+
+## 1. Basic Rule Formatting Requirements (P0)
+
+1. Use valid Markdown syntax checked with markdownlint
+2. Include complete YAML frontmatter with required fields
+3. Apply consistent hierarchical heading structure (H1→H2→H3→H4)
+4. Prefer concise lists over long text paragraphs 
+5. Write all rules in English only (no exceptions)
+6. MUST follow all detailed formatting requirements in this document
+7. REQUIRED to apply these rules to ALL Cursor rule documents
+
+## 2. File Size and Format Constraints (P0)
+
+1. CRITICAL: Maximum file size must not exceed 500 lines
+2. REQUIRED: Use `.mdc` file extension for all rules
+3. REQUIRED: Content must be exclusively in English (no Cyrillic or other non-Latin scripts)
+4. Validate Markdown syntax with markdownlint
+5. Size constraints by rule type:
+   - Primary Rule File: 150-250 lines (~5-7K tokens)
+   - Secondary Rule File: 300-500 lines (~10-15K tokens)
+   - Context Budget: Rules ≤20% of context window
+   - Examples: 5-10 lines per code snippet
+
+## 3. Technical Validation Checks (P0)
+
+1. CRITICAL: Run markdown linter to verify syntax and formatting
+2. Check for required YAML frontmatter fields
+3. Verify absence of non-English characters
+4. Validate heading structure and hierarchical organization
+5. Check for verbose instructions or overly wordy examples
+6. Ensure cross-references use proper `@` notation
+7. Verify code examples are within size limits
+
+## 4. YAML Frontmatter (P0)
+
+All rule files must begin with a YAML frontmatter block:
+
+```yaml
+---
+description: "Brief rule description"
+globs: ""
+alwaysApply: false
+---
+```
+
+### 4.1. Frontmatter Fields
+
+| Field | Description | Required |
+|-------|-------------|----------|
+| `description` | Brief rule description | Yes |
+| `globs` | File glob patterns (empty string recommended) | Yes |
+| `alwaysApply` | Flag indicating whether to always apply the rule | No (default `false`) |
+
+## 5. Document Structure (P0)
+
+1. YAML frontmatter
+2. H1 heading with rule name
+3. Priority levels block (only in Primary Rule File)
+4. Main content with H2-H4 headings
+5. Examples (code, counter-examples)
+6. References to related rules using `@` prefix
+
+## 6. Headings (P0)
+
+- **H1** - only for rule name (one per document)
+- **H2** - for main sections
+- **H3** - for subsections
+- **H4** - for subsection details
+
+## 7. Code Examples (P1)
+
+1. REQUIRED: Keep examples concise (5-10 lines)
+2. Include both good and bad examples
+3. Focus on demonstrating key concepts
+4. Use consistent syntax highlighting
+5. Avoid overly complex examples
+
+Example format:
+
+```markdown
+## Good Example
+
+​```python
+def calculate_sum(a: int, b: int) -> int:
+    """Calculate the sum of two numbers.
+    
+    Args:
+        a: First number
+        b: Second number
+        
+    Returns:
+        Sum of the two numbers
+    """
+    return a + b
+​```
+
+## Bad Example
+
+​```python
+def calc(a, b):
+    # Add numbers
+    return a + b
+​```
+```
+
+## 8. Conciseness Verification (P0)
+
+1. CRITICAL: Avoid verbose explanations
+2. Instructions must be direct and clear
+3. Remove redundant phrases and repetition
+4. Use bullet points for clarity
+5. REQUIRED: Check for wordy passages and simplify
+
+## 9. Language Requirements (P0)
+
+1. CRITICAL: All content must be in English only
+2. No Cyrillic or other non-Latin characters
+3. Use consistent terminology across all documents
+4. Be precise with technical terms
+5. Define specialized terms when first used
+
+## 10. Self-Verification Mechanisms (P1)
+
+Rule documents should include self-verification mechanisms:
+
+- **Checklist**: Include a checklist of required elements
+- **Validation Questions**: Add questions that verify correct application
+- **Testing Guidance**: Provide guidance on how to test the rule
+
+Example of verification section:
+
+```markdown
+## Verification
+
+Check your implementation against these criteria:
+- [ ] Does the code follow the pattern described above?
+- [ ] Are naming conventions consistent?
+- [ ] Have you included appropriate documentation?
+```
+
+## 11. Technical Format Verification Process (P0)
+
+1. Run markdown linter to verify syntax
+2. Check file size against maximum limit
+3. Verify all required sections are present
+4. Validate cross-references between files
+5. Check for non-English characters
+6. Scan for verbosity in instructions or examples
+7. Ensure proper heading hierarchy
+
+## 12. Avoid (P0)
+
+- Long text paragraphs without structure
+- Redundant repetition of information
+- Code examples longer than 10 lines
+- Complex nested lists deeper than 2 levels
+- HTML markup within Markdown
+- Non-Latin characters
+
+## 13. Cross-References (P1)
+
+For links to other rules, ALWAYS use the `@` prefix and emphasize the mandatory nature:
+
+```markdown
+MUST follow @1-cursor-rules-guide.mdc for core principles.
+```
+
+Or direct link to another technology-specific rule with strong directives:
+
+```markdown
+REQUIRED to implement @javascript/react-components.mdc for component guidelines.
+```
+
+NEVER use relative paths (./file.mdc) for linking between rules. 

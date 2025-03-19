@@ -29,6 +29,7 @@ alwaysApply: true
 5. Optimize for use within limited context windows
 6. CRITICAL: Maintain strict consistency between all rules documents
 7. NEVER duplicate content across rule files to preserve context
+8. CRITICAL: All rule documents and their content MUST use English language only
 
 ## 4. Success Criteria and Metrics (P1)
 
@@ -47,29 +48,31 @@ When you are addressing specific needs, MUST consult these rules:
 ### 5.1. Starting New Rule Development
 
 1. ALWAYS begin with @1-cursor-rules-guide.mdc for foundational principles
-2. MUST follow process in @2-cursor-rules-workflow.mdc to structure your work
-3. REQUIRED to check @3-cursor-rules-coverage.mdc for technical aspects to address
+2. MUST follow process in @6-cursor-rules-workflow.mdc to structure your work
+3. REQUIRED to check @2-cursor-rules-coverage.mdc for technical aspects to address
 
 ### 5.2. Creating Rule Documents
 
-1. MUST follow formatting standards in @6-cursor-rules-format.mdc
-2. CRITICAL to structure documents according to @5-cursor-rules-structure.mdc
-3. REQUIRED to include self-verification as specified in @4-cursor-rules-testing.mdc section 6
+1. MUST follow formatting standards in @4-cursor-rules-format.mdc
+2. CRITICAL to structure documents according to @3-cursor-rules-structure.mdc
+3. REQUIRED to include self-verification as specified in @5-cursor-rules-testing.mdc section 6
 
 ### 5.3. Reviewing Existing Rules
 
-1. MUST verify consistency using @4-cursor-rules-testing.mdc section 14
-2. REQUIRED to ensure complete coverage per @3-cursor-rules-coverage.mdc
-3. CRITICAL to check for redundancy and duplication per @5-cursor-rules-structure.mdc section 9
+1. MUST verify consistency using @5-cursor-rules-testing.mdc section 14
+2. REQUIRED to ensure complete coverage per @2-cursor-rules-coverage.mdc
+3. CRITICAL to check for redundancy and duplication per @3-cursor-rules-structure.mdc section 9
+4. CRITICAL to follow analysis procedures in @7-cursor-rules-analysis.mdc
 
 ### 5.4. Updating Rules
 
-1. MUST follow @2-cursor-rules-workflow.mdc section 7 for maintenance
-2. REQUIRED to confirm updated rules meet all testing criteria in @4-cursor-rules-testing.mdc
+1. MUST follow @6-cursor-rules-workflow.mdc section 7 for maintenance
+2. REQUIRED to confirm updated rules meet all testing criteria in @5-cursor-rules-testing.mdc
 3. CRITICAL to preserve internal and cross-rule consistency
 
 ### 5.5. Validating Rule Effectiveness
 
-1. MUST implement metrics from @4-cursor-rules-testing.mdc section 8
+1. MUST implement metrics from @5-cursor-rules-testing.mdc section 8
 2. REQUIRED to compare against success criteria in section 4 of this document
-3. CRITICAL to document validation results as specified in @4-cursor-rules-testing.mdc section 11
+3. CRITICAL to document validation results as specified in @5-cursor-rules-testing.mdc section 11
+4. REQUIRED to follow the analysis framework in @7-cursor-rules-analysis.mdc

@@ -1,0 +1,67 @@
+---
+description: "Guidelines for analyzing Cursor rules effectiveness, detecting deficiencies, and implementing improvements. Apply when evaluating existing rules, identifying areas for enhancement, or planning systematic improvements to rule quality. These approaches ensure continuous optimization of rules through structured analysis and feedback."
+globs: ""
+alwaysApply: false
+---
+
+# Cursor Rules Analysis Framework
+
+## 1. Analysis Cycle (P0)
+
+1. REQUIRED: Conduct full rules evaluation quarterly
+2. CRITICAL: Run targeted analysis after significant codebase changes
+3. Analyze rule usage metrics monthly
+4. Document all findings with concrete examples
+
+## 2. Evaluation Methodology (P0)
+
+1. CRITICAL: Measure rule effectiveness through code quality metrics
+2. Collect direct feedback from developers using rules
+3. Track frequency of rule application in code reviews
+4. Compare actual code with rule-guided examples
+5. REQUIRED: Identify areas where rules conflict with practical implementation
+
+## 3. Deficiency Detection (P0)
+
+1. CRITICAL: Review code samples where rules were incorrectly applied
+2. Document repeated rule misinterpretations
+3. Identify missing guidance in common development scenarios
+4. Analyze code review comments that reference rule limitations
+5. REQUIRED: Catalog detected inconsistencies between rule documents
+
+## 4. Improvement Process (P1)
+
+1. CRITICAL: Prioritize rule changes based on impact assessment
+2. Create concrete examples demonstrating before/after improvement
+3. Test rule modifications with practical code samples
+4. REQUIRED: Validate changes against existing rules to prevent conflicts
+5. Document rationale for each modification
+
+## 5. Implementation Tools (P1)
+
+1. Use standard deviation measurements for rule effectiveness
+2. Apply A/B testing for rule variations when possible
+3. REQUIRED: Implement static analysis where appropriate
+4. Track rule application success across different code complexity levels
+
+## 6. Iteration Protocol (P1)
+
+1. CRITICAL: Make incremental changes instead of complete rewrites
+2. Validate each change through practical application
+3. Allow two-week stabilization after rule modifications
+4. REQUIRED: Document unintended consequences of rule changes
+
+## 7. Success Metrics (P0)
+
+1. CRITICAL: Decreased frequency of rule-related issues
+2. Positive feedback trends from developers
+3. Reduced need for rule clarifications
+4. Consistency in rule interpretation across development teams
+5. REQUIRED: Measurable improvement in code quality metrics
+
+## 8. Continuous Improvement (P2)
+
+1. Establish feedback channels for immediate rule issues
+2. Create regression tests for rule modifications
+3. REQUIRED: Maintain historical record of rule changes
+4. Review effectiveness trends quarterly 

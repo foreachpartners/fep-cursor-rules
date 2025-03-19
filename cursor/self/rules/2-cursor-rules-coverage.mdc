@@ -49,7 +49,7 @@ alwaysApply: false
    - Mock/stub usage patterns
    - Test organization
    - Coverage expectations
-   - STRICTLY follow @4-cursor-rules-testing.mdc
+   - STRICTLY follow @5-cursor-rules-testing.mdc
 
 6. **Dependency Management**: 
    - Package manager configuration
@@ -63,7 +63,7 @@ alwaysApply: false
    - Naming conventions
    - Code organization within files
    - Commenting standards
-   - MUST adhere to @6-cursor-rules-format.mdc
+   - MUST adhere to @4-cursor-rules-format.mdc
 
 8. **Documentation**: 
    - Code comments
@@ -106,7 +106,7 @@ alwaysApply: false
     - Development workflow
     - Tooling recommendations
     - Development environment
-    - REQUIRED to implement according to @2-cursor-rules-workflow.mdc
+    - REQUIRED to implement according to @6-cursor-rules-workflow.mdc
 
 ## 3. Additional Technical Aspects (P1)
 
@@ -168,4 +168,4 @@ alwaysApply: false
    - Deprecation policies
    - Migration strategies
    - Backwards compatibility
-   - Technical debt management
+   - Technical debt management 
