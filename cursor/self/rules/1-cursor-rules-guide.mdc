@@ -16,8 +16,9 @@ alwaysApply: true
 ## 2. Glossary
 
 1. **Primary Rule File** - The main file in a rule set (always named 1-techstack-rules-guide.mdc)
-2. **Technical Aspect** - A specific area of software development covered by rules (e.g., Error Handling)
-3. **Secondary Rule File** - Any rule document beyond the Primary Rule File, focusing on specific aspects
+2. **Secondary Rule File** - Any rule document beyond the Primary Rule File, focusing on specific aspects
+3. **Technical Aspect** - A specific area of software development covered by rules (e.g., Error Handling)
+
 
 ## 3. Core Principles (P0)
 
