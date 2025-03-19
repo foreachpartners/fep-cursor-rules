@@ -1,6 +1,6 @@
 ---
-description: "Comprehensive list of technical aspects that must be covered by rules. Apply when creating new rules from scratch, reviewing existing rule sets, or performing gap analysis to ensure complete coverage."
-globs: ""
+description: Comprehensive list of technical aspects that must be covered by rules. Apply when creating new rules from scratch, reviewing existing rule sets, or performing gap analysis to ensure complete coverage.
+globs:
 alwaysApply: false
 ---
 

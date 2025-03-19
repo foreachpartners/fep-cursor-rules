@@ -1,6 +1,6 @@
 ---
-description: "Guidelines for analyzing Cursor rules effectiveness, detecting deficiencies, and implementing improvements. Apply when evaluating existing rules, identifying areas for enhancement, or planning systematic improvements to rule quality. These approaches ensure continuous optimization of rules through structured analysis and feedback."
-globs: ""
+description: Guidelines for analyzing Cursor rules effectiveness, detecting deficiencies, and implementing improvements. Apply when evaluating existing rules, identifying areas for enhancement, or planning systematic improvements to rule quality. These approaches ensure continuous optimization of rules through structured analysis and feedback.
+globs:
 alwaysApply: false
 ---
 

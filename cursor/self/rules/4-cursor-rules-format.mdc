@@ -1,7 +1,7 @@
 ---
-description: "Technical formatting requirements and validation criteria for rule files. Apply when creating or validating rule files to ensure they meet technical specifications, language requirements, and formatting standards. These requirements ensure consistency, readability, and technical validity across all rule documents."
-globs: ""
-alwaysApply: false
+description: Technical formatting requirements and validation criteria for rule files. Apply when creating or validating rule files to ensure they meet technical specifications, language requirements, and formatting standards. These requirements ensure consistency, readability, and technical validity across all rule documents.
+globs:
+alwaysApply: true
 ---
 
 # Cursor Rules Technical Format

@@ -1,6 +1,6 @@
 ---
-description: "Development process guidelines for Cursor rules. Apply when planning, implementing, or managing the workflow for rule creation or modification. This guide outlines structured steps and process management to ensure efficient rule development."
-globs: ""
+description: Development process guidelines for Cursor rules. Apply when planning, implementing, or managing the workflow for rule creation or modification. This guide outlines structured steps and process management to ensure efficient rule development.
+globs:
 alwaysApply: false
 ---
 

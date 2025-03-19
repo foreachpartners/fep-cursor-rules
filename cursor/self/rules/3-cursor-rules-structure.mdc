@@ -1,5 +1,5 @@
 ---
-description: "Comprehensive guidelines for rule content and document structure. Apply when defining content for Primary and Secondary Rule Files, organizing rule documents, or establishing relationships between rule files. These guidelines ensure consistent structure and proper organization across all rule documents."
+description: Comprehensive guidelines for rule content and document structure. Apply when defining content for Primary and Secondary Rule Files, organizing rule documents, or establishing relationships between rule files. These guidelines ensure consistent structure and proper organization across all rule documents.
 globs: 
 alwaysApply: false
 ---
@@ -23,7 +23,7 @@ alwaysApply: false
 
 ## 2. File Organization and Naming (P0)
 
-Example structure for Python/Django rules (not exhaustive, can be extended with additional files as needed):
+Example structure for Python/Django rules (this is just an illustrative example; the same principles apply to any tech stack):
 
 ```
 python-django/rules/
@@ -37,9 +37,23 @@ File naming must follow the pattern: `N-techstack-area-rule.mdc` using kebab-cas
 
 ## 3. Primary Rule File Structure (P0)
 
-A Primary Rule File (based on Python/Django example) should include:
+A Primary Rule File (using Python/Django as an illustrative example) should include:
 
-### 3.1. Priority Levels
+### 3.1. YAML Frontmatter
+
+Primary Rule File must have the following YAML frontmatter:
+
+```yaml
+---
+description: Core guidelines for developing all Python/Django rules. Apply this guide when creating or modifying any Python/Django rule document. This is the foundational reference that should be consulted first before developing specific rule files.
+globs:
+alwaysApply: true
+---
+```
+
+Note that `alwaysApply: true` is critical for Primary Rule Files. IMPORTANT: The `globs:` field must remain empty without any value or quotation marks to ensure proper rule application. Also, the `description` field must NOT have quotation marks to ensure correct rule processing.
+
+### 3.2. Priority Levels
 
 ```markdown
 ## 1. Priority Levels
@@ -49,7 +63,7 @@ A Primary Rule File (based on Python/Django example) should include:
 3. **P2** - Recommended (medium importance)
 ```
 
-### 3.2. Core Principles
+### 3.3. Core Principles
 
 Example of Core Principles section (customize for your specific tech stack):
 
@@ -62,7 +76,7 @@ Example of Core Principles section (customize for your specific tech stack):
 4. All rule documents MUST use English language only
 ```
 
-### 3.3. Rule Navigation Section
+### 3.4. Rule Navigation Section
 
 ```markdown
 ## 3. Rule Navigation Guide (P0)
@@ -84,9 +98,23 @@ Primary Rule File acts as a central guide directing developers to the appropriat
 
 ## 4. Secondary Rule File Structure (P0)
 
-Example of a Secondary Rule File (Python/Django Style Guide):
+Example of a Secondary Rule File (Python/Django Style Guide used as an example):
 
-### 4.1. Purpose Statement
+### 4.1. YAML Frontmatter
+
+Secondary Rule Files must have the following YAML frontmatter:
+
+```yaml
+---
+description: Comprehensive guidelines for Python/Django code style. Apply when writing new code, refactoring existing code, or reviewing code contributions to ensure consistent formatting and readability.
+globs:
+alwaysApply: false
+---
+```
+
+Note that `alwaysApply` is typically `false` for Secondary Rule Files. CRITICAL: Always leave `globs:` without any value or quotation marks to ensure rules apply correctly. The `description` field must also be provided without quotation marks for proper rule application.
+
+### 4.2. Purpose Statement
 
 ```markdown
 ## 1. Purpose (P0)
@@ -94,7 +122,7 @@ Example of a Secondary Rule File (Python/Django Style Guide):
 These style guidelines ensure consistent code formatting across all Python/Django projects. Apply when writing new code or refactoring existing code to maintain readability and maintainability.
 ```
 
-### 4.2. Main Guidelines
+### 4.3. Main Guidelines
 
 ```markdown
 ## 2. Indentation and Line Length (P0)
@@ -112,7 +140,7 @@ These style guidelines ensure consistent code formatting across all Python/Djang
 4. REQUIRED: Use descriptive variable names that reveal intent
 ```
 
-### 4.3. Examples
+### 4.4. Examples
 
 ```markdown
 ## 4. Good Examples (P1)

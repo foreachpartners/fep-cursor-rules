@@ -1,6 +1,6 @@
 ---
-description: "Core guidelines for developing all Cursor rules. Apply this guide when creating or modifying any Cursor rule document. This is the foundational reference that should be consulted first before developing specific rule files."
-globs: ""
+description: Core guidelines for developing all Cursor rules. Apply this guide when creating or modifying any Cursor rule document. This is the foundational reference that should be consulted first before developing specific rule files.
+globs:
 alwaysApply: true
 ---
 

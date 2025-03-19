@@ -1,6 +1,6 @@
 ---
-description: "Testing and verification methods for rules and code quality. Apply when validating rule effectiveness, creating tests, establishing quality metrics, or implementing verification mechanisms. These standards ensure rules produce consistent, measurable improvements and can be objectively evaluated."
-globs: ""
+description: Testing and verification methods for rules and code quality. Apply when validating rule effectiveness, creating tests, establishing quality metrics, or implementing verification mechanisms. These standards ensure rules produce consistent, measurable improvements and can be objectively evaluated.
+globs:
 alwaysApply: false
 ---
 
