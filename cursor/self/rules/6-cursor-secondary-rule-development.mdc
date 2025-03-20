@@ -1,0 +1,160 @@
+---
+description: Procedure for developing new Secondary rule files for specific frameworks. Apply when creating new Secondary rule files focusing on one or more technical aspects from the coverage document.
+globs:
+alwaysApply: false
+---
+
+# Cursor Secondary Rule Development Procedure
+
+## 1. Preparation Phase (P0)
+
+1. FIRST consult and follow @1-cursor-rules-guide.mdc for foundational principles 
+2. REQUIRED to review @2-cursor-rules-coverage.mdc to understand available technical aspects
+3. MUST understand @3-cursor-rules-structure.mdc for proper rule organization
+4. CRITICAL to review @4-cursor-rules-format.mdc for technical formatting requirements
+5. ESSENTIAL to follow workflow described in @7-cursor-rules-workflow.mdc
+
+## 2. Aspect Identification (P0)
+
+1. CRITICAL: Confirm with user the specific technical aspects to address
+   - Example: "I'll be developing rules for Code Style and Error Handling aspects. Is this correct?"
+   - Discuss scope of each aspect to ensure shared understanding
+   - Clarify how aspects relate to each other within the rule file
+2. REQUIRED: Ensure the selected aspects (1-3) are related enough for a cohesive rule file
+3. Confirm aspect selection with user before proceeding
+
+## 3. User Preference Collection (P0)
+
+1. CRITICAL: For each selected aspect, ask targeted questions to determine user preferences
+
+   Example general questions:
+   ```
+   For Code Style aspect:
+   - How do you handle indentation (spaces vs tabs, size)?
+   - What line length limit do you prefer?
+   - Do you follow any existing style guide (PEP 8, Airbnb, Google)?
+   ```
+
+   Example aspect-specific questions:
+   ```
+   For Error Handling aspect:
+   - Do you prefer exceptions or return codes for errors?
+   - How do you structure error messages?
+   - Do you use custom error classes or standard exceptions?
+   
+   For Testing aspect:
+   - Which testing framework do you use?
+   - What naming conventions do you follow for test files/functions?
+   - Do you have specific test coverage requirements?
+   ```
+
+2. REQUIRED: Ask follow-up questions to clarify ambiguous or incomplete responses
+3. MUST document all preferences in a structured format for reference
+4. ESSENTIAL: Note contradictions or potential issues in stated preferences
+
+## 4. Requirement Validation (P0)
+
+1. CRITICAL: Present summarized requirements back to user for confirmation
+
+   Example requirement structure:
+   ```
+   Python Style Guide Requirements:
+     - Indentation: 4 spaces, no tabs
+     - Line Length: 88 characters maximum
+     - Naming:
+       - snake_case for functions and variables
+       - PascalCase for classes
+       - UPPER_SNAKE_CASE for constants
+     - Imports: 
+       - Grouped by standard, third-party, local
+       - Alphabetized within groups
+   ```
+
+2. REQUIRED: Highlight any requirements that:
+   - Conflict with best practices
+   - May cause implementation issues
+   - Seem ambiguous or need clarification
+3. ESSENTIAL: Make recommendations for any gaps or improvements
+4. MUST get explicit user approval before proceeding to implementation
+
+## 5. Rule File Creation (P0)
+
+1. CRITICAL: Follow @3-cursor-rules-structure.mdc section 4 for complete Secondary Rule File structure requirements
+2. File naming MUST follow pattern specified in @3-cursor-rules-structure.mdc section 2
+3. REQUIRED: Include embedded examples for all major guidelines as shown below:
+
+   Example rule with embedded example:
+   ```markdown
+   ## 2. Indentation and Formatting (P0)
+
+   1. CRITICAL: Use 4 spaces for indentation (NEVER tabs)
+      ```python
+      # GOOD
+      def good_function():
+          value = 1
+          if value > 0:
+              return True
+      
+      # BAD
+      def bad_function():
+        value = 1
+       if value > 0:
+          return True
+      ```
+   ```
+
+## 6. Technical Validation (P0)
+
+1. CRITICAL: Apply all validation requirements from @4-cursor-rules-format.mdc section 3
+2. REQUIRED: Follow the validation process in @5-cursor-rules-testing.mdc for completeness
+3. ESSENTIAL: Use the analysis methods from @8-cursor-rules-analysis.mdc section 2 to evaluate effectiveness
+
+   Example validation summary:
+   ```
+   Technical validation completed:
+   - YAML frontmatter verified ✓
+   - Heading structure follows H1→H2→H3 pattern ✓
+   - Rule numbering is consecutive within sections ✓
+   - All cross-references use proper @ notation ✓
+   - File contains 275 lines (within 300-500 line target) ✓
+   ```
+
+## 7. User Confirmation (P0)
+
+1. CRITICAL: Present completed rule file to user for review
+2. REQUIRED: Explain how the rule file addresses each aspect and requirement
+3. ESSENTIAL: Note any modifications made to original requirements and why
+4. MUST obtain explicit confirmation that the rule file is complete and correct
+5. Implement any requested changes before finalizing
+
+   Example confirmation approach:
+   ```
+   I've completed the Python Style Guide rule file which covers:
+   
+   1. Code Structure requirements as specified
+   2. Naming conventions following your PEP 8 preference
+   3. Import organization rules with your custom sorting
+   
+   One modification: I've set 88 character line length instead of 79 to align with Black formatter. Is this acceptable?
+   ```
+
+## 8. Self-Verification (P1)
+
+When completing rule development, verify:
+1. Does the rule file completely address all selected aspects?
+2. Are all user requirements accurately reflected?
+3. Is the file properly formatted according to technical standards?
+4. Are there clear, actionable examples for each major guideline?
+5. Does the rule file integrate properly with existing rules?
+6. Is there a clear plan for maintaining and updating these rules?
+
+   Example self-verification:
+   ```
+   Self-verification checklist:
+   - All three aspects (Code Style, Error Handling, Testing) addressed ✓
+   - User requirements incorporated (24/24 items) ✓
+   - Technical formatting standards met ✓
+   - Examples provided for all P0 and P1 guidelines ✓
+   - Cross-references to related rules included ✓
+   - Maintenance plan documented in section 4.2 ✓
+   ``` 

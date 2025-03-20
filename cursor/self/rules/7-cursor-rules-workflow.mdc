@@ -1,5 +1,5 @@
 ---
-description: Development process guidelines for Cursor rules. Apply when planning, implementing, or managing the workflow for rule creation or modification. This guide outlines structured steps and process management to ensure efficient rule development.
+description: Development process guidelines for Cursor rules. Apply when planning, implementing, or managing the workflow for rule creation or modification.
 globs:
 alwaysApply: false
 ---
@@ -14,7 +14,7 @@ alwaysApply: false
 4. REQUIRED to organize according to @3-cursor-rules-structure.mdc
 5. STRICTLY implement test methods from @5-cursor-rules-testing.mdc
 6. MUST ensure complete coverage by referring to @2-cursor-rules-coverage.mdc
-7. REQUIRED to leverage analysis framework from @7-cursor-rules-analysis.mdc
+7. REQUIRED to leverage analysis framework from @8-cursor-rules-analysis.mdc
 
 ## 2. Development Workflow (P1)
 
