@@ -1,67 +1,65 @@
 ---
-description: Guidelines for analyzing Cursor rules effectiveness, detecting deficiencies, and implementing improvements. Apply when evaluating existing rules, identifying areas for enhancement, or planning systematic improvements to rule quality. These approaches ensure continuous optimization of rules through structured analysis and feedback.
+description: Guidelines for analyzing Cursor rules effectiveness, detecting deficiencies, and implementing improvements. Apply when evaluating existing rules, identifying areas for enhancement, or planning systematic improvements to rule quality.
 globs:
 alwaysApply: false
 ---
 
 # Cursor Rules Analysis Framework
 
-## 1. Analysis Cycle (P0)
+## 1. Rules Analysis Process Overview (P0)
 
-1. REQUIRED: Conduct full rules evaluation quarterly
-2. CRITICAL: Run targeted analysis after significant codebase changes
-3. Analyze rule usage metrics monthly
-4. Document all findings with concrete examples
+1. CRITICAL: Follow this structured process when analyzing rule files for a technology stack
+2. REQUIRED to verify compliance with @1-cursor-rules-guide.mdc, @3-cursor-rules-structure.mdc, and @4-cursor-rules-format.mdc
+3. MUST produce actionable findings and improvement plans
+4. ESSENTIAL to maintain consistent standards across all rule files
 
-## 2. Evaluation Methodology (P0)
+## 2. Compliance Analysis (P0)
 
-1. CRITICAL: Measure rule effectiveness through code quality metrics
-2. Collect direct feedback from developers using rules
-3. Track frequency of rule application in code reviews
-4. Compare actual code with rule-guided examples
-5. REQUIRED: Identify areas where rules conflict with practical implementation
+1. CRITICAL: Identify all rule files for the target technology stack in the specified directory
+2. REQUIRED to check each file against these compliance criteria:
+   - Foundational principles from @1-cursor-rules-guide.mdc
+   - Structural requirements from @3-cursor-rules-structure.mdc
+   - Formatting standards from @4-cursor-rules-format.mdc
+3. MUST analyze each file individually and then evaluate cross-file consistency
+4. ESSENTIAL to document all instances of non-compliance with specific references
 
-## 3. Deficiency Detection (P0)
+## 3. Findings Documentation (P0)
 
-1. CRITICAL: Review code samples where rules were incorrectly applied
-2. Document repeated rule misinterpretations
-3. Identify missing guidance in common development scenarios
-4. Analyze code review comments that reference rule limitations
-5. REQUIRED: Catalog detected inconsistencies between rule documents
+1. CRITICAL: Group findings by severity using priority levels from @1-cursor-rules-guide.mdc:
+   - P0 (Critical): Must address - affects ruleset usability
+   - P1 (High): Should address - impacts clarity or effectiveness
+   - P2 (Medium): Recommended improvements
+   - P3 (Low): Minor enhancements
+2. REQUIRED to provide specific references to relevant standards for each finding
+3. MUST include clear explanations for why each item is non-compliant
+4. ESSENTIAL to document cross-file consistency issues separately
 
-## 4. Improvement Process (P1)
+## 4. Action Plan Development (P0)
 
-1. CRITICAL: Prioritize rule changes based on impact assessment
-2. Create concrete examples demonstrating before/after improvement
-3. Test rule modifications with practical code samples
-4. REQUIRED: Validate changes against existing rules to prevent conflicts
-5. Document rationale for each modification
+1. CRITICAL: Create a prioritized plan to address all findings
+2. REQUIRED to specify exact changes needed for each file
+3. MUST estimate effort required for each correction
+4. ESSENTIAL to propose a logical sequence for implementing changes
 
-## 5. Implementation Tools (P1)
+## 5. User Confirmation (P0)
 
-1. Use standard deviation measurements for rule effectiveness
-2. Apply A/B testing for rule variations when possible
-3. REQUIRED: Implement static analysis where appropriate
-4. Track rule application success across different code complexity levels
+1. CRITICAL: Present the complete findings and action plan to user
+2. REQUIRED to explain the impact of each issue and proposed solution
+3. MUST obtain explicit user approval before proceeding with changes
+4. ESSENTIAL to clarify any questions and adjust the plan based on feedback
 
-## 6. Iteration Protocol (P1)
+## 6. Plan Implementation (P0)
 
-1. CRITICAL: Make incremental changes instead of complete rewrites
-2. Validate each change through practical application
-3. Allow two-week stabilization after rule modifications
-4. REQUIRED: Document unintended consequences of rule changes
+1. CRITICAL: Implement approved changes following the prioritized sequence
+2. REQUIRED to address one file at a time, starting with the Primary rule file
+3. MUST validate each change against original findings to ensure compliance
+4. ESSENTIAL to maintain cross-file consistency throughout implementation
+5. REQUIRED to document all changes made for future reference
 
-## 7. Success Metrics (P0)
+## 7. Post-Implementation Analysis (P0)
 
-1. CRITICAL: Decreased frequency of rule-related issues
-2. Positive feedback trends from developers
-3. Reduced need for rule clarifications
-4. Consistency in rule interpretation across development teams
-5. REQUIRED: Measurable improvement in code quality metrics
-
-## 8. Continuous Improvement (P2)
-
-1. Establish feedback channels for immediate rule issues
-2. Create regression tests for rule modifications
-3. REQUIRED: Maintain historical record of rule changes
-4. Review effectiveness trends quarterly 
+1. CRITICAL: Verify that all identified issues have been properly addressed
+2. REQUIRED to perform a complete reanalysis using criteria from section 2
+3. MUST confirm that no new issues were introduced during implementation
+4. ESSENTIAL to document the final state of compliance for all files
+5. REQUIRED to report results to user for final approval
