@@ -9,7 +9,7 @@ alwaysApply: false
 ## 1. Rules Analysis Process Overview (P0)
 
 1. CRITICAL: Follow this structured process when analyzing rule files for a technology stack
-2. REQUIRED to verify compliance with @1-cursor-rules-guide.mdc, @3-cursor-rules-structure.mdc, and @4-cursor-rules-format.mdc
+2. REQUIRED to verify compliance with @1-cursor-rules-guide.mdc section 3, @3-cursor-rules-structure.mdc sections 1-4, and @4-cursor-rules-format.mdc section 2
 3. MUST produce actionable findings and improvement plans
 4. ESSENTIAL to maintain consistent standards across all rule files
 
@@ -17,15 +17,15 @@ alwaysApply: false
 
 1. CRITICAL: Identify all rule files for the target technology stack in the specified directory
 2. REQUIRED to check each file against these compliance criteria:
-   - Foundational principles from @1-cursor-rules-guide.mdc
-   - Structural requirements from @3-cursor-rules-structure.mdc
-   - Formatting standards from @4-cursor-rules-format.mdc
+   - Foundational principles from @1-cursor-rules-guide.mdc section 3
+   - Structural requirements from @3-cursor-rules-structure.mdc sections 2-4
+   - Formatting standards from @4-cursor-rules-format.mdc section 2
 3. MUST analyze each file individually and then evaluate cross-file consistency
 4. ESSENTIAL to document all instances of non-compliance with specific references
 
 ## 3. Findings Documentation (P0)
 
-1. CRITICAL: Group findings by severity using priority levels from @1-cursor-rules-guide.mdc:
+1. CRITICAL: Group findings by severity using priority levels from @1-cursor-rules-guide.mdc section 1:
    - P0 (Critical): Must address - affects ruleset usability
    - P1 (High): Should address - impacts clarity or effectiveness
    - P2 (Medium): Recommended improvements

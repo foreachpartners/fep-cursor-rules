@@ -41,7 +41,7 @@ A Primary Rule File (using Python/Django as an illustrative example) should incl
 
 ### 3.1. YAML Frontmatter
 
-Primary Rule File must have the following YAML frontmatter:
+Primary Rule File must have YAML frontmatter that complies with requirements in @4-cursor-rules-format.mdc section 2, point 9. Example frontmatter:
 
 ```yaml
 ---
@@ -100,7 +100,7 @@ Example of a Secondary Rule File (Python/Django Style Guide used as an example):
 
 ### 4.1. YAML Frontmatter
 
-Secondary Rule Files must have the following YAML frontmatter:
+Secondary Rule Files must have YAML frontmatter that complies with requirements in @4-cursor-rules-format.mdc section 2, point 9. Example frontmatter:
 
 ```yaml
 ---

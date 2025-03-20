@@ -28,8 +28,8 @@ alwaysApply: true
 2. Use `.mdc` file extension for all rule files
 3. Content must not exceed 500 lines per file 
 4. File structure by rule type:
-   - Primary Rule File: 150-250 lines (~5-7K tokens)
-   - Secondary Rule File: 300-500 lines (~10-15K tokens)
+   - Primary Rule File: 50-250 lines (~2-7K tokens)
+   - Secondary Rule File: 100-500 lines (~3-15K tokens)
    - Context Budget: Rules ≤20% of context window
 5. Use valid Markdown syntax checked with markdownlint
 6. Apply consistent hierarchical heading structure (H1→H2→H3→H4)
