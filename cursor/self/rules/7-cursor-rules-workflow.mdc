@@ -6,71 +6,63 @@ alwaysApply: false
 
 # Cursor Rules Development Workflow
 
-## 1. Development Process Overview (P0)
+## 1. Primary File Creation (P0)
 
-1. FIRST consult and strictly follow @1-cursor-rules-guide.mdc
-2. ALWAYS follow the structured workflow described in this document
-3. MUST apply formatting standards from @4-cursor-rules-format.mdc
-4. REQUIRED to organize according to @3-cursor-rules-structure.mdc
-5. STRICTLY implement test methods from @5-cursor-rules-testing.mdc
-6. MUST ensure complete coverage by referring to @2-cursor-rules-coverage.mdc
-7. REQUIRED to leverage analysis framework from @8-cursor-rules-analysis.mdc
+1. CRITICAL: Create the Primary rule file following format `1-[techstack]-rules-guide.mdc`
+2. MUST include all required sections as specified in @3-cursor-rules-structure.mdc section 3
+3. REQUIRED to establish core principles specifically relevant to the technology stack
+4. ESSENTIAL to define priority levels aligned with @1-cursor-rules-guide.mdc
+5. REQUIRED to validate Primary file compliance with @4-cursor-rules-format.mdc
 
-## 2. Development Workflow (P1)
+## 2. Secondary Files Planning (P0)
 
-1. Assess user preferences and priorities
-2. Collect input on all technical aspects
-3. Prioritize based on project needs
-4. Implement in priority order
-5. Validate with LLM testing
+1. CRITICAL: Review @2-cursor-rules-coverage.mdc to identify all technical aspects requiring coverage
+2. REQUIRED to collaborate with user on a comprehensive set of Secondary rule files ensuring:
+   - Complete coverage of all relevant aspects from @2-cursor-rules-coverage.mdc
+   - Logical grouping of related aspects in individual files
+   - Clear file naming following the pattern `N-[techstack]-area-rule.mdc`
+3. ESSENTIAL to discuss with user which aspects have highest priority
+4. MUST document the agreed file structure before implementation
 
-## 3. Planning Phase (P1)
+## 3. Secondary Rules Approval (P0)
 
-1. Identify the problem or need the rule addresses
-2. Research existing best practices in the domain
-3. Define the scope and boundaries of the rule
-4. Set measurable success criteria
-5. Create a development timeline
+1. CRITICAL: Present the complete proposed Secondary rules set to user
+2. REQUIRED to explain coverage of all technical aspects from @2-cursor-rules-coverage.mdc
+3. ESSENTIAL to clarify relationships between files and cross-references
+4. MUST obtain explicit user approval of the complete Secondary rules structure
+5. REQUIRED to document final approved structure before proceeding
 
-## 4. Implementation Phase (P0)
+## 4. Secondary File Development (P0)
 
-1. Draft initial rule document
-2. Review against formatting standards
-3. CRITICAL: Check for duplicate content across rule files
-4. REQUIRED: Verify consistency with existing rules
-5. Gather feedback from team members
-6. Refine and clarify based on feedback
-7. Test with sample code or documents
+1. CRITICAL: For each Secondary file, follow process in @6-cursor-secondary-rule-development.mdc
+2. REQUIRED to develop Secondary files in approved order
+3. ESSENTIAL to maintain consistent cross-references between all rule files
+4. MUST obtain user approval after each Secondary file completion before proceeding to next
 
-## 5. Testing Phase (P1)
+## 5. Coverage Verification (P0)
 
-1. Apply rule to real-world examples
-2. Verify rule clarity and usefulness
-3. Test with different LLMs and contexts
-4. Document edge cases and limitations
-5. Make final adjustments based on testing
+1. CRITICAL: After all Secondary files are complete, verify full coverage of aspects from @2-cursor-rules-coverage.mdc
+2. REQUIRED to create a coverage matrix mapping each aspect to specific rule files and sections
+3. ESSENTIAL to identify and address any coverage gaps with user input
+4. MUST update rule files as needed to ensure complete aspect coverage
+5. REQUIRED to get user confirmation that all necessary aspects are adequately covered
+6. CRITICAL: Update Primary file with a complete rule navigation section referencing all created Secondary files
 
-## 6. Deployment Phase (P2)
+## 6. Rules Consistency Verification (P0)
 
-1. Add rule to appropriate directory
-2. Update any related rule references
-3. Document in central index or guide
-4. Announce to team members
-5. Collect initial usage feedback
+1. CRITICAL: Verify internal consistency within each rule file
+2. REQUIRED to ensure cross-file consistency across all rule files
+3. ESSENTIAL to validate compliance with:
+   - @1-cursor-rules-guide.mdc for foundational principles
+   - @3-cursor-rules-structure.mdc for structural requirements
+   - @4-cursor-rules-format.mdc for formatting standards
+4. MUST verify all cross-references are accurate and functional
+5. REQUIRED to resolve any conflicts or inconsistencies between rules
 
-## 7. Maintenance Phase (P2)
+## 7. Completion Confirmation (P0)
 
-1. Schedule regular reviews
-2. Track application metrics
-3. Gather ongoing user feedback
-4. Update for new technologies or practices
-5. Archive or replace outdated rules
-
-## 8. Self-Verification (P1)
-
-When developing rules, ask:
-1. Does the workflow process match the project needs?
-2. Have all stakeholders been consulted?
-3. Is the priority order correct?
-4. Are tests sufficient to validate the rule?
-5. Is there a clear path for updates and maintenance? 
+1. CRITICAL: Present the complete rule set to user for final review
+2. REQUIRED to summarize coverage and highlight key aspects addressed
+3. ESSENTIAL to document any limitations or areas for future enhancement
+4. MUST get explicit user approval of the complete rule set
+5. REQUIRED to finalize all files and confirm successful completion of the development process
