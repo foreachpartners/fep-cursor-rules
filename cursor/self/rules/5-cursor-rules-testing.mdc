@@ -1,5 +1,5 @@
 ---
-description:
+description: 
 globs: 
 alwaysApply: false
 ---
@@ -8,7 +8,11 @@ alwaysApply: false
 
 ## 1. Purpose (P0)
 
-This document provides a comprehensive framework for testing and debugging Cursor rules. It enables systematic verification of rule functionality and provides detailed debugging capabilities to ensure correct rule application. Apply this framework during rule development, modification, or when troubleshooting rule interactions.
+1. This document defines the testing and debugging approach for Cursor rules
+2. When applying rules, the agent MUST report this by wrapping messages with debug markers
+3. Debugging can be enabled by adding debug instructions to rule files
+4. Debugging can be disabled by removing debug instructions from rule files
+5. CRITICAL: Debug mode is intended for development use only
 
 ## 2. Debug Mode Configuration (P0)
 
@@ -19,70 +23,71 @@ This document provides a comprehensive framework for testing and debugging Curso
 3. Debug mode MUST NOT affect rule functionality, only add informational output
 4. CRITICAL: Debug mode MUST be disabled by default for production use
 
-## 3. Debug Mode Markers (P0)
+## 3. Debug Markers and Information Format (P0)
 
-1. All debug mode output MUST be wrapped in designated markers:
+1. All debug mode output MUST be wrapped in designated markers using one-line format:
    ```
-   <cursor:debug>
-   Debug information content goes here
-   </cursor:debug>
+   [dbg]Debug information content goes here[/dbg]
    ```
 
-2. Debug markers MUST be designed to:
-   - Be easily identifiable in text
-   - Allow for automatic removal via script
-   - Minimize context window consumption
-   - Follow consistent formatting throughout all outputs
-
-## 4. Required Debug Information (P0)
-
-1. When in debug mode, MUST report:
-   - File name of the rule document being applied
-   - Section number and title within the rule document
-   - Rule identifier (if applicable)
-   - Specific rule text being applied
-
-2. Debug output format MUST follow this pattern:
+2. At the beginning of each high-priority rule file, MUST add an instruction to output the file name:
    ```
-   <cursor:debug>
-   Applied: [filename.mdc] - Section [number].[number]: [section title]
-   Rule: [specific rule text or identifier]
-   </cursor:debug>
+   [dbg]Applied Rule File: [filename.mdc][/dbg]
    ```
 
-3. Format MUST be consistent across all rule files to enable reliable parsing
+3. When applying any rule, MUST output the rule identifier in the following format:
+   ```
+   [dbg]Rule [Section.Number]: [Short rule description][/dbg]
+   ```
 
-## 5. Debug Mode Activation (P0)
+4. Examples of rule identification:
+   ```
+   [dbg]Rule 2.1: Code indentation[/dbg]
+   [dbg]Rule 3.4: Error handling[/dbg]
+   ```
+
+5. Identifiers MUST be attached to each rule when applying instructions from @5-cursor-rules-testing.mdc using the [dbg] tag
+
+6. Example of required instructions to include in rule files for debugging:
+   ```markdown
+   # Instructions for outputting debug information
+   
+   1. When applying any rule from this file, MUST output debug information in this format:
+      [dbg]Applied Rule File: [current-filename.mdc][/dbg]
+   
+   2. Before applying each specific rule, MUST output:
+      [dbg]Rule [Section.Number]: [Rule title][/dbg]
+   
+   3. CRITICAL: All debug outputs MUST be wrapped in [dbg][/dbg] tags
+   
+   4. REQUIRED: Debug output MUST be added before each rule application
+   ```
+
+## 4. Debug Mode Activation (P0)
 
 1. Debug mode MUST be activated by including this exact instruction in user query:
    ```
-   Enable cursor rules debug mode
+   Add debug information to cursor rules files
    ```
 
 2. Debug mode MUST be deactivated by including this exact instruction in user query:
    ```
-   Disable cursor rules debug mode
+   Remove debug information from cursor rules files
    ```
 
 3. Debug mode status MUST persist across conversation unless explicitly changed
 4. CRITICAL: Status changes MUST be acknowledged with clear confirmation messages
 
-## 6. Debug Mode Removal Tool (P0)
+## 5. Debug Mode Removal Tool (P0)
 
 1. The following one-line `sed` command MUST be used to remove all debug markers from all files in a directory:
    ```bash
-   find /path/to/rules/directory -type f -exec sed -i '/<cursor:debug>/,/<\/cursor:debug>/d' {} \;
+   find /path/to/rules/directory -type f -exec sed -i '/\[dbg\]/,/\[\/dbg\]/d' {} \;
    ```
 
-## 7. Debug Mode Implementation (P1)
+## 6. Debug Mode Implementation (P1)
 
 1. Each rule file MUST check for debug mode status before processing rules
 2. When debug mode is active, rule files MUST wrap all rule applications in debug markers
 3. Implementation MUST NOT affect rule functionality, only add informational output
 4. CRITICAL: Debug code MUST NOT introduce behavior changes in rule application
-
-## 8. Testing Framework Integration (P1)
-
-1. Debug mode MUST integrate with rule testing frameworks
-2. Debug output MUST provide sufficient detail for rule verification
-3. Debug mode MUST support testing of rule interactions and dependencies
