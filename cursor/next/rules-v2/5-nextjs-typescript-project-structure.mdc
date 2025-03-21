@@ -1,0 +1,260 @@
+---
+description: "Recommended project structure and file organization for Next.js applications with TypeScript using App Router"
+globs:
+alwaysApply: false
+---
+
+# Next.js TypeScript Project Structure
+
+This document outlines the recommended project structure and file organization for Next.js applications using TypeScript and the App Router architecture. For TypeScript usage guidelines, see @6-nextjs-typescript-usage.mdc. For component development, refer to @2-nextjs-typescript-components.mdc. For API service layer organization, see @3-nextjs-typescript-api-service-layer.mdc.
+
+## 1. Directory Structure (P0)
+
+The following structure is recommended for Next.js TypeScript applications:
+
+```
+my-next-app/
+├── .eslintrc.js           # ESLint configuration
+├── .prettierrc            # Prettier configuration
+├── .npmrc                 # npm/pnpm configuration
+├── next.config.js         # Next.js configuration
+├── package.json           # Project dependencies and scripts
+├── tsconfig.json          # TypeScript configuration
+├── public/                # Static assets (images, fonts, etc.)
+│   ├── images/
+│   └── fonts/
+├── src/                   # Source code directory
+│   ├── app/               # App Router structure
+│   │   ├── [locale]/      # (Optional) Locale-specific routes
+│   │   ├── api/           # API Routes
+│   │   ├── globals.css    # Global styles
+│   │   ├── layout.tsx     # Root layout
+│   │   └── page.tsx       # Home page
+│   ├── components/        # UI Components
+│   │   ├── ui/            # shadcn/ui components
+│   │   ├── atoms/         # Basic building blocks
+│   │   ├── molecules/     # Combinations of atoms
+│   │   ├── organisms/     # Complex UI sections
+│   │   └── templates/     # Page layout templates
+│   ├── hooks/             # Custom React hooks
+│   │   ├── use-auth.ts
+│   │   └── index.ts
+│   ├── lib/               # Utility functions and shared code
+│   │   ├── utils.ts
+│   │   ├── constants.ts
+│   │   └── types.ts
+│   ├── services/          # API service layer
+│   │   ├── api-client.ts  # Base API client
+│   │   ├── endpoints.ts   # API endpoints constants
+│   │   └── mock/          # Mock data for development
+│   ├── store/             # State management
+│   │   ├── auth-store.ts
+│   │   └── index.ts
+│   ├── styles/            # Component-specific styles
+│   │   └── tailwind/      # Tailwind custom configurations
+│   └── tests/             # Test utils and mocks
+│       ├── __mocks__/     # Test mocks
+│       └── utils/         # Test utilities
+```
+
+## 2. App Router Organization (P0)
+
+The App Router follows a file-system based approach to routing:
+
+### 2.1 Route Structure (P0)
+
+Use a clear, hierarchical folder structure that directly maps to your URL paths:
+
+```
+app/
+  ├── layout.tsx           # Root layout
+  ├── page.tsx             # Home page (URL: /)
+  ├── auth/                # Authentication routes
+  │   ├── login/           # URL: /auth/login
+  │   │   └── page.tsx
+  │   ├── register/        # URL: /auth/register
+  │   │   └── page.tsx
+  │   └── layout.tsx       # Shared layout for auth routes
+  └── dashboard/           # Dashboard routes
+      ├── page.tsx         # URL: /dashboard
+      ├── settings/        # URL: /dashboard/settings
+      │   └── page.tsx
+      └── layout.tsx       # Shared layout for dashboard routes
+```
+
+### 2.2 Important Rules (P0)
+
+1. **No special characters in folder names** except `@` for parallel routes
+2. Use descriptive, feature-based folder names in kebab-case
+3. Create logical hierarchies that match your application's information architecture
+4. Use shared layouts at appropriate levels of the hierarchy
+
+### 2.3 Special Files (P0)
+
+Next.js App Router uses several special files with specific purposes:
+
+| File             | Purpose                                                  |
+|------------------|----------------------------------------------------------|
+| `page.tsx`       | UI for a route segment, makes the route publicly accessible |
+| `layout.tsx`     | Shared UI for a segment and its children                 |
+| `loading.tsx`    | Loading UI for a segment and its children                |
+| `error.tsx`      | Error UI for a segment and its children                  |
+| `not-found.tsx`  | Not found UI for a segment and its children              |
+| `route.ts`       | Server-side API endpoint                                 |
+| `middleware.ts`  | Request middleware (at the app level)                    |
+
+## 3. File and Folder Naming Conventions (P1)
+
+### 3.1 Routes and Pages (P0)
+
+- Use kebab-case for route folders: `user-profile/`, `product-details/`
+- Use PascalCase for page components: `page.tsx`, `layout.tsx`
+- Use descriptive, feature-based names for routes
+
+### 3.2 Components (P0)
+
+- Use PascalCase for component files: `Button.tsx`, `UserProfile.tsx`
+- Use PascalCase for component folders: `Button/`, `UserProfile/`
+- Group related components in feature folders
+
+### 3.3 Utilities and Helpers (P1)
+
+- Use camelCase for utility files: `formatDate.ts`, `useLocalStorage.ts`
+- Use descriptive, action-based names for utilities
+
+### 3.4 Constants and Types (P0)
+
+- Use PascalCase for type files: `UserTypes.ts`, `ApiTypes.ts`
+- Use UPPER_SNAKE_CASE for constant values: `API_ENDPOINTS`, `DEFAULT_LOCALE`
+- Use camelCase for constant files: `apiEndpoints.ts`, `routeConstants.ts`
+
+### 3.5 Test Files (P1)
+
+- Append `.test.ts` or `.test.tsx` to test files: `Button.test.tsx`
+- Place test files next to the files they test or in a dedicated test directory
+
+## 4. Component Organization (P1)
+
+### 4.1 Atomic Design (P1)
+
+Organize UI components following the Atomic Design methodology:
+
+```
+components/
+├── ui/                # shadcn/ui base components
+├── atoms/             # Basic building blocks
+│   ├── Button/
+│   │   ├── Button.tsx
+│   │   ├── Button.test.tsx
+│   │   └── index.ts
+│   └── Icon/
+├── molecules/         # Combinations of atoms
+│   ├── SearchInput/
+│   └── NotificationCard/
+├── organisms/         # Complex UI sections
+│   ├── Header/
+│   └── Sidebar/
+└── templates/         # Page layout templates
+    └── DashboardTemplate/
+```
+
+### 4.2 Component Structure (P1)
+
+For larger components, use a folder structure with index files:
+
+```
+components/atoms/Button/
+├── Button.tsx      # Main implementation
+├── Button.test.tsx # Tests
+└── index.ts        # Re-export file
+```
+
+For simpler components, a single file may be sufficient.
+
+### 4.3 Component Re-exports (P2)
+
+Use barrel exports to simplify imports:
+
+```typescript
+// components/atoms/index.ts
+export * from './Button';
+export * from './Icon';
+
+// components/index.ts
+export * from './atoms';
+export * from './molecules';
+export * from './organisms';
+export * from './templates';
+```
+
+## 5. Path Aliases (P1)
+
+Configure path aliases in `tsconfig.json` to avoid complex relative imports:
+
+```json
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@/components/*": ["./src/components/*"],
+      "@/lib/*": ["./src/lib/*"],
+      "@/hooks/*": ["./src/hooks/*"],
+      "@/services/*": ["./src/services/*"],
+      "@/store/*": ["./src/store/*"],
+      "@/styles/*": ["./src/styles/*"]
+    }
+  }
+}
+```
+
+This allows you to use clean imports throughout your application:
+
+```typescript
+// Instead of
+import { Button } from '../../../components/atoms/Button';
+
+// You can use
+import { Button } from '@/components/atoms/Button';
+```
+
+## 6. Example Project Setup (P2)
+
+### 6.1 Minimal Project Setup
+
+For a new Next.js TypeScript project, run:
+
+```bash
+pnpm create next-app my-app --typescript --eslint --tailwind --app --src-dir --import-alias="@/*"
+
+cd my-app
+
+# Configure pnpm
+echo "engine-strict=true\npackage-manager=pnpm" > .npmrc
+
+# Initialize shadcn/ui (optional)
+pnpm dlx shadcn@canary init
+```
+
+### 6.2 Folder Creation Script
+
+Setup the complete folder structure with:
+
+```bash
+mkdir -p src/{components/{ui,atoms,molecules,organisms,templates},hooks,lib,services/mock,store,styles/tailwind,tests/{__mocks__,utils}}
+```
+
+### 6.3 Initial Files
+
+Create basic index files for component re-exports:
+
+```bash
+for dir in src/components/{atoms,molecules,organisms,templates}; do
+  echo 'export {};' > "$dir/index.ts"
+done
+
+echo 'export * from "./atoms";
+export * from "./molecules";
+export * from "./organisms";
+export * from "./templates";' > src/components/index.ts
+``` 
