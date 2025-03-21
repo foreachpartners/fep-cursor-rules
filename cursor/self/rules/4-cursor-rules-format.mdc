@@ -39,6 +39,7 @@ alwaysApply: true
    1. `description` field without quotation marks
    2. Empty `globs:` field without value
    3. `alwaysApply` set to `true` for Primary Rules, `false` for Secondary Rules unless explicitly instructed otherwise by the user
+   4. DO NOT use `related` field in frontmatter to avoid context pollution
    ```yaml
    # Example YAML frontmatter:
    ---
