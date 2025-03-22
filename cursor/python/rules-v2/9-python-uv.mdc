@@ -1,0 +1,122 @@
+---
+description: Dependency management with uv in Python projects
+globs:
+alwaysApply: false
+---
+
+# Python Dependency Management with UV
+
+CRITICAL: Apply these rules when installing packages, adding dependencies, or configuring build tools in Python projects. REQUIRED to use when setting up new Python projects or managing existing dependency specifications. MUST follow when running tests, scripts, or development workflows.
+
+This document provides rules and recommendations for managing dependencies in Python projects using uv, a high-performance package manager written in Rust.
+
+---
+
+## 1. Core Principles (P0)
+
+1. **Explicit Dependency Declaration** - All dependencies must be specified in `pyproject.toml`
+2. **Version Locking** - Use lock files (`uv.lock`) to ensure build reproducibility 
+3. **Separation of Concerns** - Clearly separate main and development dependencies
+4. **Minimal Version Specification** - Specify only the minimum required version with `>=` operator
+
+## 2. Project Initialization (P0)
+
+Use uv to initialize new Python projects:
+
+```bash
+# Initialize a new project with pyproject.toml
+uv init
+```
+
+The generated `pyproject.toml` will follow PEP 621 standards and serve as the central configuration file for the project.
+
+## 3. Dependency Management Operations (P0)
+
+### 3.1 Adding Dependencies
+
+Add production dependencies:
+
+```bash
+# Add main dependencies with minimum version
+uv add requests>=2.28.0
+uv add "fastapi>=0.95.0" "sqlalchemy>=2.0.0"
+```
+
+Add development dependencies:
+
+```bash
+# Add development/testing dependencies
+uv add --dev pytest>=7.0.0 black>=23.0.0 mypy>=1.0.0
+```
+
+### 3.2 Removing Dependencies
+
+Remove production dependencies:
+
+```bash
+# Remove main dependencies
+uv remove requests
+```
+
+Remove development dependencies:
+
+```bash
+# Remove development dependencies
+uv remove --dev black
+```
+
+### 3.3 Installing Dependencies
+
+Synchronize dependencies based on pyproject.toml:
+
+```bash
+# Install all dependencies from pyproject.toml
+uv sync
+```
+
+## 4. Running Development Tools (P1)
+
+### 4.1 Running Tests
+
+Use uv to run tests with pytest:
+
+```bash
+# Run all tests
+uv run pytest
+
+# Run specific test file
+uv run pytest tests/test_services.py
+
+# Run tests with coverage
+uv run pytest --cov=my_project tests/
+```
+
+### 4.2 Code Formatting and Linting
+
+Run code quality tools:
+
+```bash
+# Format code with black
+uv run black src/ tests/
+
+# Sort imports with isort
+uv run isort src/ tests/
+
+# Type checking with mypy
+uv run mypy src/
+
+# Run flake8 linting
+uv run flake8 src/ tests/
+```
+
+### 4.3 Running Applications
+
+Execute Python scripts through uv:
+
+```bash
+# Run a Python script
+uv run python src/main.py
+
+# Run with environment variables
+UV_INSTALL_MISSING_MODULES=1 uv run python src/main.py
+```
