@@ -1,0 +1,307 @@
+---
+description: Documentation rules for Python projects
+globs:
+alwaysApply: false
+---
+
+# Python Documentation Rules
+
+A set of rules and recommendations for documenting code in Python projects. Quality documentation ensures code understanding, simplifies maintenance, and facilitates evolution.
+
+---
+
+## 1. Core Principles (P0)
+
+1. **Currency** - Documentation must always correspond to the current code
+2. **Completeness** - Documentation should cover all public APIs
+3. **Clarity** - Documentation must be clear and unambiguous
+4. **English Language** - All documentation must be written in English
+
+## 2. Docstrings (P0)
+
+### 2.1. General Requirements
+
+- All modules, classes, functions, and methods must have docstrings
+- Docstrings must be written in English
+- Docstrings must be updated with any code changes
+- Docstring format must comply with [PEP 257](https://www.python.org/dev/peps/pep-0257)
+
+### 2.2. Docstring Format
+
+Use Google format for docstrings:
+
+```python
+def calculate_total(items: list[float], tax_rate: float) -> float:
+    """
+    Calculate total price including tax.
+    
+    Args:
+        items: List of item prices
+        tax_rate: Tax rate as a decimal (e.g., 0.1 for 10%)
+        
+    Returns:
+        Total price including tax
+        
+    Raises:
+        ValueError: If tax_rate is negative
+    """
+    if tax_rate < 0:
+        raise ValueError("Tax rate cannot be negative")
+    subtotal = sum(items)
+    return subtotal * (1 + tax_rate)
+```
+
+### 2.3. Module Docstrings
+
+Module docstrings should contain:
+
+- Brief description of the module's purpose
+- List of main classes and functions (optional)
+- Usage examples (optional)
+
+```python
+"""
+Utility functions for data processing.
+
+This module provides functions for loading, transforming, and saving data
+in various formats.
+
+Examples:
+    >>> from myproject.utils import data_utils
+    >>> data = data_utils.load_csv("data.csv")
+    >>> processed_data = data_utils.transform(data)
+    >>> data_utils.save_json(processed_data, "output.json")
+"""
+```
+
+### 2.4. Class Docstrings
+
+Class docstrings should contain:
+
+- Description of the class's purpose
+- Description of main attributes
+- Usage examples (optional)
+
+```python
+class DataProcessor:
+    """
+    Process and transform data from various sources.
+    
+    This class provides methods to load, transform, and save data
+    in different formats.
+    
+    Attributes:
+        input_format: Format of the input data
+        output_format: Format of the output data
+        
+    Examples:
+        >>> processor = DataProcessor("csv", "json")
+        >>> processor.load("data.csv")
+        >>> processor.transform()
+        >>> processor.save("output.json")
+    """
+```
+
+### 2.5. Function and Method Docstrings
+
+Function and method docstrings should contain:
+
+- Brief description of purpose
+- Description of parameters (Args)
+- Description of return value (Returns)
+- Description of exceptions (Raises) if the function can raise them
+- Usage examples (Examples) if not obvious
+
+## 3. Code Comments (P1)
+
+### 3.1. When to Use Comments
+
+Comments should only be used in the following cases:
+
+- When code behavior is not obvious
+- To explain complex algorithms
+- For temporary code marking (TODO, FIXME)
+- To explain the reasons for certain decisions
+
+### 3.2. Comment Format
+
+- Comments must be written in English
+- Comments should be brief and informative
+- Comments should explain "why", not "what" the code does
+- Comments should start with a capital letter and end with a period
+
+```python
+# Bad: This function calculates the total
+def calculate_total(items, tax_rate):
+    ...
+
+# Good: Apply tax rate after summing items to avoid rounding errors
+def calculate_total(items, tax_rate):
+    ...
+```
+
+### 3.3. Special Comments
+
+To mark code requiring attention, use the following formats:
+
+- `TODO: Description of necessary changes`
+- `FIXME: Description of a problem that needs fixing`
+- `NOTE: Important information about the code`
+
+```python
+# TODO: Implement caching to improve performance
+def expensive_calculation(data):
+    ...
+
+# FIXME: This function fails with large inputs
+def process_data(data):
+    ...
+```
+
+## 4. Project Documentation (P1)
+
+### 4.1. README.md
+
+Every project must have a README.md file in the repository root, containing:
+
+- Project name and brief description
+- Installation and setup instructions
+- Basic usage examples
+- Links to detailed documentation
+- License information
+
+```markdown
+# Project Name
+
+Brief description of what the project does.
+
+## Installation
+
+```bash
+pip install my_project
+```
+
+## Usage
+
+```python
+from my_project import main
+
+result = main.process("example")
+print(result)
+```
+
+## Documentation
+
+For full documentation, see [docs/](docs/).
+
+## License
+
+MIT
+```
+
+### 4.2. Documentation Structure
+
+Detailed documentation should be located in the `/docs` directory at the project root:
+
+```plaintext
+my_project/
+├── docs/
+│   ├── api/              # API documentation
+│   ├── guides/           # User guides
+│   ├── development/      # Developer guides
+│   └── index.md          # Documentation home page
+├── README.md             # General project description
+└── ...
+```
+
+### 4.3. Documentation Updates
+
+Documentation must be updated with any significant code changes:
+
+- When adding new functions or classes
+- When changing existing API
+- When fixing bugs that affect behavior
+- When changing installation or setup process
+
+## 5. Documentation Examples (P2)
+
+### 5.1. Module Documentation Example
+
+```python
+"""
+Database connection and ORM models.
+
+This module provides database connection utilities and ORM models
+for interacting with the application database.
+
+Classes:
+    User: Model representing a user in the system
+    Post: Model representing a post created by a user
+    
+Functions:
+    get_connection: Get a database connection
+    close_connection: Close a database connection
+"""
+
+import sqlite3
+from typing import Optional
+
+def get_connection(db_path: str) -> sqlite3.Connection:
+    """
+    Get a connection to the SQLite database.
+    
+    Args:
+        db_path: Path to the SQLite database file
+        
+    Returns:
+        SQLite connection object
+        
+    Raises:
+        sqlite3.Error: If connection cannot be established
+    """
+    return sqlite3.connect(db_path)
+```
+
+### 5.2. Class Documentation Example
+
+```python
+class User:
+    """
+    User model representing a system user.
+    
+    This class provides methods for user authentication, profile management,
+    and permission checking.
+    
+    Attributes:
+        username: Unique username for the user
+        email: Email address of the user
+        is_active: Whether the user account is active
+        
+    Examples:
+        >>> user = User("john_doe", "john@example.com")
+        >>> user.set_password("secure_password")
+        >>> user.is_active = True
+        >>> user.save()
+    """
+    
+    def __init__(self, username: str, email: str) -> None:
+        """
+        Initialize a new User instance.
+        
+        Args:
+            username: Unique username for the user
+            email: Email address of the user
+        """
+        self.username = username
+        self.email = email
+        self.is_active = False
+```
+
+## 6. Integration with Other Components (P2)
+
+- **Code Style**: Documentation should comply with style rules described in @2-python-code-style.mdc
+- **Project Structure**: Documentation should comply with project structure described in @5-python-project-layout.mdc
+- **Testing**: Examples in documentation should be tested as described in @8-python-testing.mdc
+- **Logging**: Logging setup should be documented according to @7-python-logging.mdc
+- **Error Handling**: All possible exceptions should be documented according to @6-python-error-handling.mdc
+- **Architecture**: Architectural decisions should be documented according to @4-python-architecture.mdc 

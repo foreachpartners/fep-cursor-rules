@@ -1,0 +1,299 @@
+---
+description: Development and management of unit tests in Python projects
+globs: 
+alwaysApply: false
+---
+
+# Python Testing Rules
+
+CRITICAL: Apply these rules when developing unit tests, integration tests, or any automated test code. REQUIRED to use when implementing Test-Driven Development (TDD) workflow. MUST follow when configuring test runners and coverage tools.
+
+Rules and best practices for developing, organizing, and running unit tests in Python projects. This approach is based on Test-Driven Development (TDD) principles and ensures high code quality.
+
+---
+
+## Core TDD Principles
+
+1. **Red-Green-Refactor** - the main development cycle:
+   - **Red**: First write a failing test
+   - **Green**: Write minimal code to pass the test
+   - **Refactor**: Improve the code while maintaining functionality
+
+2. **Tests Before Code**: Always write tests before implementing functionality
+3. **Short Iterations**: Development should proceed in small steps
+4. **Complete Coverage**: All code changes should be covered by tests
+
+## Test Structure and Organization
+
+Tests should be placed in a separate `tests/` directory at the project root, mirroring the structure of the main code:
+
+```plaintext
+my_project/
+├── src/
+│   └── my_project/
+│       └── core/
+│           └── utils.py
+├── tests/
+│   └── core/
+│       └── test_utils.py
+```
+
+- Each test file should correspond to the module being tested
+- Test file names should start with the prefix `test_`
+
+## Technical Aspects of Writing Tests
+
+Use `pytest` as the primary testing tool.
+
+### Example Test Structure with pytest
+
+```python
+import pytest
+from my_project.core.utils import some_function
+
+@pytest.fixture
+def input_data():
+    return "test"
+
+def test_some_function_returns_uppercase(input_data):
+    assert some_function(input_data) == "TEST"
+```
+
+### Best Practices
+
+1. **Clear Test Names**:
+   ```python
+   def test_some_function_returns_uppercase():
+       assert some_function("test") == "TEST"
+   ```
+
+2. **One Test - One Behavior**:
+   - Avoid complex tests that check multiple things at once
+
+3. **Test Isolation**:
+   - Use fixtures for isolation:
+   ```python
+   @pytest.fixture
+   def prepared_data():
+       return "test"
+   ```
+
+4. **Mocking External Dependencies**:
+   - Use mocks only for external services:
+   ```python
+   from unittest.mock import patch
+
+   def test_external_api_call():
+       with patch("requests.get") as mocked_get:
+           mocked_get.return_value.json.return_value = {"status": "ok"}
+           result = call_api()
+           assert result == expected_result
+   ```
+
+5. **Testing Edge Cases**:
+   - Always check exceptions and boundary conditions
+
+6. **Using Fixtures**:
+   ```python
+   @pytest.fixture
+   def setup_data():
+       return {'key': 'value'}
+
+   def test_using_fixture(setup_data):
+       assert setup_data['key'] == 'value'
+   ```
+
+7. **Parameterized Tests**:
+   ```python
+   @pytest.mark.parametrize("input_data, expected", [
+       ("test", "TEST"),
+       ("hello", "HELLO")
+   ])
+   def test_some_function(input_value, expected):
+       assert some_function(input_value) == expected
+   ```
+
+## Asynchronous Tests
+
+Use `pytest-asyncio` for testing asynchronous code. To avoid adding the `@pytest.mark.asyncio` decorator to all async tests, add the following configuration to the `pytest.ini` file:
+
+```ini
+[pytest]
+asyncio_mode = auto
+```
+
+Then you can write asynchronous tests without the decorator:
+
+```python
+async def test_async_function():
+    result = await some_async_function()
+    assert result == expected_result
+```
+
+## Running Tests and Coverage
+
+Use `pytest` and `pytest-cov`:
+
+```bash
+# Install dev dependencies
+pip install pytest pytest-cov pytest-asyncio
+
+# Run all tests
+pytest
+
+# Run with coverage
+pytest --cov=my_project --cov-report=term-missing
+```
+
+## Configuring Test Runs in VSCode
+
+Configuration for running tests from VSCode:
+
+```json
+{
+    "python.testing.pytestEnabled": true,
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestArgs": ["tests"]
+}
+```
+
+## TDD Workflow
+
+1. **Write a Test**
+   - Define the required behavior
+   - Write a test that checks this behavior
+   - Verify that the test fails (Red)
+
+2. **Implement Functionality**
+   - Write minimal code to pass the test
+   - Run the test and verify it passes (Green)
+
+3. **Refactor**
+   - Improve the code while maintaining its functionality
+   - Verify that all tests still pass
+
+4. **Repeat**
+   - Repeat the cycle for each new feature
+
+## Technical Recommendations
+
+1. **Run Tests After Each Change**
+   - Tests should be run after each change to the codebase
+   - Tasks should only be considered complete when all tests pass
+
+2. **Maintain High Code Coverage**
+   - Aim for coverage of at least 80%
+   - Use `pytest-cov` for coverage analysis
+
+3. **Limited Use of Mocks**
+   - Mocks should only be used for external dependencies
+   - Excessive use of mocks makes tests brittle
+
+4. **Regular Test Refactoring**
+   - Tests also require maintenance and refactoring
+   - Eliminate duplication in tests using fixtures
+
+## Examples
+
+### Example 1: Starting Development of a New Feature
+
+Let's implement a function to filter a list of products by category:
+
+1. First, write a test for this functionality:
+   ```python
+   # tests/services/test_products.py
+   import pytest
+   from my_project.services.products import filter_products_by_category
+   
+   def test_filter_products_by_category():
+       # Arrange
+       products = [
+           {"id": 1, "name": "Apple", "category": "Fruit"},
+           {"id": 2, "name": "Carrot", "category": "Vegetable"},
+           {"id": 3, "name": "Banana", "category": "Fruit"}
+       ]
+       
+       # Act
+       filtered = filter_products_by_category(products, "Fruit")
+       
+       # Assert
+       assert len(filtered) == 2
+       assert all(p["category"] == "Fruit" for p in filtered)
+   ```
+   
+2. Now implement minimal functionality to pass the test:
+   ```python
+   # src/my_project/services/products.py
+   def filter_products_by_category(products: list[dict], category: str) -> list[dict]:
+       return [p for p in products if p["category"] == category]
+   ```
+   
+3. Run the tests to ensure they pass:
+   ```bash
+   pytest tests/services/test_products.py -v
+   ```
+
+### Example 2: Refactoring Existing Code
+
+Let's improve a data processing function that is running slowly:
+
+1. First, ensure we have tests for this function:
+   ```python
+   # tests/services/test_data_processor.py
+   import pytest
+   from my_project.services.data_processor import process_data
+   
+   def test_process_data_returns_correct_result():
+       # Arrange
+       input_data = [1, 2, 3, 4, 5]
+       expected = {"sum": 15, "avg": 3.0}
+       
+       # Act
+       result = process_data(input_data)
+       
+       # Assert
+       assert result == expected
+   ```
+   
+2. Now we can safely refactor the function:
+   ```python
+   # Before refactoring
+   def process_data(data: list[int]) -> dict:
+       result = {}
+       total = 0
+       for item in data:
+           total += item
+       result["sum"] = total
+       result["avg"] = total / len(data) if data else 0
+       return result
+   
+   # After refactoring
+   def process_data(data: list[int]) -> dict:
+       if not data:
+           return {"sum": 0, "avg": 0}
+       total = sum(data)
+       return {
+           "sum": total,
+           "avg": total / len(data)
+       }
+   ```
+   
+3. Run the tests to ensure functionality is preserved:
+   ```bash
+   pytest tests/services/test_data_processor.py -v
+   ```
+
+## Integration with Other Components
+
+- **Code Style**: Tests must follow the code style rules described in 1-python-code-style.mdc
+- **Documentation**: Tests should be documented according to 3-python-documentation.mdc
+- **Project Structure**: Tests should integrate with the project structure described in 2-python-project-layout.mdc
+- **Error Handling**: Tests should check for proper error handling as described in 6-python-error-handling.mdc
+- **Architecture**: Tests should be aligned with the architectural principles in 5-python-architecture.mdc
+
+## Benefits of TDD
+
+- Early detection and fixing of errors
+- Better architecture and code design
+- Improved maintainability and scalability
+- Faster development in the long term 

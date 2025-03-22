@@ -1,0 +1,374 @@
+---
+description: Code style rules for Python projects
+globs:
+alwaysApply: false
+---
+
+# Python Code Style Rules
+
+A set of rules and recommendations for code style in Python projects. These rules ensure readability, maintainability, and consistency across the codebase.
+
+---
+
+## 1. Core Principles (P0)
+
+1. **Readability First** - Code must be easy to read and understand
+2. **Consistency** - Style must be consistent throughout the project
+3. **Strong Typing** - Use type annotations to improve code understanding
+4. **Minimalism** - Code should be concise without unnecessary complexity
+
+## 2. PEP Standards Compliance (P0)
+
+### 2.1. PEP 8 - Style Guide
+
+Code must strictly adhere to [PEP 8](https://www.python.org/dev/peps/pep-0008):
+
+- Indentation: 4 spaces (NEVER tabs)
+- Maximum line length: 88 characters
+- Blank lines: 2 between top-level classes and functions, 1 between methods
+- Imports: group by standard library, third-party packages, and local modules
+
+```python
+# GOOD
+def good_function():
+    value = 1
+    if value > 0:
+        return True
+
+# BAD
+def bad_function():
+  value = 1
+ if value > 0:
+    return True
+```
+
+### 2.2. PEP 257 - Docstring Conventions
+
+All modules, classes, and functions must have docstrings according to [PEP 257](https://www.python.org/dev/peps/pep-0257):
+
+- Single-line docstrings: one line describing the purpose
+- Multi-line docstrings: brief description, blank line, detailed description
+
+```python
+# GOOD - Single-line docstring
+def add(a, b):
+    """Add two numbers and return the result."""
+    return a + b
+
+# GOOD - Multi-line docstring
+def calculate_statistics(data):
+    """Calculate statistical measures from the given data.
+    
+    Computes mean, median, and standard deviation.
+    
+    Args:
+        data: A list of numeric values
+        
+    Returns:
+        A dictionary with the calculated statistics
+    """
+    # Implementation...
+```
+
+## 3. Naming Conventions (P0)
+
+Use the following naming conventions:
+
+- **Modules and packages**: `lowercase` or `lowercase_with_underscores`
+- **Classes**: `PascalCase`
+- **Functions and methods**: `snake_case`
+- **Variables**: `snake_case`
+- **Constants**: `UPPER_CASE_WITH_UNDERSCORES`
+- **Private attributes and methods**: start with a single underscore `_private_method`
+- **"Magic" methods**: double underscore on both sides `__init__`
+
+```python
+# GOOD
+class UserProfile:
+    DEFAULT_AVATAR = "default.png"
+    
+    def __init__(self, user_id):
+        self.user_id = user_id
+        self._cache = {}
+    
+    def get_settings(self):
+        """Return user settings."""
+        pass
+    
+    def _fetch_data(self):
+        """Private method to fetch user data."""
+        pass
+
+# BAD
+class userprofile:
+    defaultAvatar = "default.png"
+    
+    def __init__(self, userId):
+        self.userId = userId
+        self.Cache = {}
+```
+
+## 4. Type Annotations (P0)
+
+Use type annotations according to [PEP 484](https://www.python.org/dev/peps/pep-0484):
+
+```python
+def calculate_total(items: list[float], tax_rate: float) -> float:
+    """
+    Calculate total price including tax.
+    
+    Args:
+        items: List of item prices
+        tax_rate: Tax rate as a decimal (e.g., 0.1 for 10%)
+        
+    Returns:
+        Total price including tax
+    """
+    subtotal = sum(items)
+    return subtotal * (1 + tax_rate)
+```
+
+### 4.1. Type Annotation Guidelines
+
+- Use type annotations for all functions and methods
+- Use the `typing` module for complex types
+- Use `Optional[T]` for parameters that can be `None`
+- Use `Union[T1, T2]` for parameters that can have different types
+- Use `TypeVar` and generics for polymorphic functions
+
+```python
+from typing import Optional, Union, List, Dict, TypeVar, Generic
+
+T = TypeVar('T')
+
+def find_item(items: List[T], key: Union[str, int]) -> Optional[T]:
+    """Find an item by key or return None if not found."""
+    # Implementation...
+```
+
+## 5. Constants and Enumerations (P0)
+
+### 5.1. String Literals Prohibition
+
+String literals should not be used in code as identifiers, keys, or other values that can be typed. Instead, use constants, enumerations (`Enum`), and other strongly-typed mechanisms:
+
+```python
+# BAD: Using string literals
+if "status" in response and response["status"] == "success":
+    process_success(response["data"])
+elif "status" in response and response["status"] == "error":
+    handle_error(response["error_message"])
+
+# GOOD: Using enumerations
+class ResponseKey(str, Enum):
+    STATUS = "status"
+    DATA = "data"
+    ERROR_MESSAGE = "error_message"
+
+class StatusValue(str, Enum):
+    SUCCESS = "success"
+    ERROR = "error"
+
+if ResponseKey.STATUS in response and response[ResponseKey.STATUS] == StatusValue.SUCCESS:
+    process_success(response[ResponseKey.DATA])
+elif ResponseKey.STATUS in response and response[ResponseKey.STATUS] == StatusValue.ERROR:
+    handle_error(response[ResponseKey.ERROR_MESSAGE])
+```
+
+### 5.2. Benefits of Using Constants and Enumerations
+
+1. **Type safety** - errors are detected at compile time, not runtime
+2. **IDE auto-completion** - the IDE can suggest available values
+3. **Centralized management** - all constants are defined in one place
+4. **Protection against typos** - typos in string literals are not detected by the compiler
+5. **Refactoring** - changing a constant's value automatically applies to all usage locations
+
+### 5.3. Guidelines for Using Constants and Enumerations
+
+- Define all constants in a `constants.py` module or in appropriate modules
+- Use `Enum` for related constants
+- Inherit string enumerations from `str, Enum` to preserve string representation
+- Use `IntEnum` for numeric enumerations
+- Use `auto()` for automatic numbering in enumerations where values are not important
+
+## 6. Code Organization (P1)
+
+### 6.1. Imports
+
+Imports should be organized in the following order:
+
+1. Python standard library
+2. Third-party libraries
+3. Local project modules
+
+Within each group, imports should be sorted alphabetically:
+
+```python
+# Standard library
+import os
+import sys
+from datetime import datetime
+
+# Third-party libraries
+import numpy as np
+import pandas as pd
+from django.db import models
+
+# Local modules
+from myproject.core import utils
+from myproject.models import User
+```
+
+Regularly check and remove unused imports:
+- All imported modules and objects must be used in the code
+- Unused imports must be removed
+- Use flake8 for automatic checking of unused imports (error code F401)
+- Never leave commented-out unused imports
+
+### 6.2. File Structure
+
+Files should be organized in the following order:
+
+1. Shebang (if necessary)
+2. Module docstring
+3. Imports (in the correct order)
+4. Constants
+5. Class definitions
+6. Function definitions
+7. Code to execute on import (minimize)
+8. `if __name__ == "__main__"` block (if necessary)
+
+## 7. Code Formatting (P1)
+
+### 7.1. Indentation and Spacing
+
+- Use 4 spaces for indentation
+- Do not use tabs
+- Do not leave trailing whitespace
+- Surround operators with spaces: `x = 1 + 2`
+- Do not use spaces inside parentheses: `func(arg1, arg2)`
+- Use spaces after commas: `func(arg1, arg2)`
+
+### 7.2. Line Length
+
+- Maximum line length: 88 characters
+- For long lines, use line breaks with indentation:
+
+```python
+def long_function_name(
+    arg1: str,
+    arg2: int,
+    arg3: float,
+) -> bool:
+    return True
+```
+
+### 7.3. Comments
+
+- Comments must be in English only
+- Use comments only when code behavior is not obvious
+- Comments should explain "why", not "what" the code does
+- Outdated comments must be removed
+
+## 8. Code Writing Recommendations (P1)
+
+### 8.1. Functions and Methods
+
+- Functions should be short and perform one task
+- Maximum function length: 50 lines
+- Avoid too many arguments (no more than 5)
+- Use named arguments to improve readability
+
+```python
+# GOOD
+def create_user(username: str, email: str, role: str = "user") -> User:
+    """Create a new user with the given attributes."""
+    # Implementation...
+
+# BAD
+def create(u, e, r="user", a=None, p=None, v=False):
+    """Too many arguments with unclear names."""
+    # Implementation...
+```
+
+### 8.2. Classes
+
+- Classes should follow the Single Responsibility Principle
+- Class methods should be logically related
+- Use properties (`@property`) instead of getters/setters
+- Use class and static methods appropriately
+
+```python
+# GOOD
+class User:
+    def __init__(self, username: str, email: str):
+        self._username = username
+        self._email = email
+    
+    @property
+    def username(self) -> str:
+        return self._username
+    
+    @classmethod
+    def from_dict(cls, data: dict) -> "User":
+        return cls(data["username"], data["email"])
+```
+
+### 8.3. Variables
+
+- Use descriptive variable names
+- Avoid single-letter names (except for loop counters)
+- Avoid abbreviations, except for well-established ones
+- Do not use "magic numbers", extract them into constants
+
+```python
+# GOOD
+MAX_ATTEMPTS = 3
+remaining_attempts = MAX_ATTEMPTS
+
+# BAD
+x = 3  # What does 3 represent?
+rem = x
+```
+
+## 9. Integration with Other Components (P2)
+
+- **Project Structure**: Code style should comply with the project structure described in @5-python-project-layout.mdc
+- **Testing**: Tests should follow the same style rules as the main code, according to @8-python-testing.mdc
+- **Dependency Management**: When adding new dependencies, use `uv` as described in @9-python-uv.mdc
+- **IDE Configuration**: For formatting automation, use VSCode settings described in @10-python-vscode-config.mdc
+- **Documentation**: Code style should comply with documentation rules described in @3-python-documentation.mdc
+- **String Literals**: Follow the recommendations for avoiding string literals in @11-python-string-literals.mdc
+
+## 10. Style Checking Tools (P1)
+
+For automatic code checking and formatting, use:
+
+- **black** - for code formatting
+- **isort** - for sorting imports
+- **flake8** - for style checking, including detecting unused imports (F401)
+- **mypy** - for type checking
+
+Example configuration in `pyproject.toml`:
+
+```toml
+[tool.black]
+line-length = 88
+target-version = ['py39']
+
+[tool.isort]
+profile = "black"
+line_length = 88
+
+[tool.flake8]
+max-line-length = 88
+extend-ignore = "E203"
+per-file-ignores = "__init__.py:F401"
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+``` 

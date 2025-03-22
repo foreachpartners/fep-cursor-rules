@@ -1,0 +1,329 @@
+---
+description: Architecture and code organization rules for Python projects
+globs: 
+alwaysApply: false
+---
+
+# Python Architecture and Code Organization Rules
+
+CRITICAL: Apply these rules when designing the architecture of Python applications. REQUIRED to use when organizing code into modules and defining component boundaries. MUST follow when implementing dependency injection, services, and repositories.
+
+This document provides rules and recommendations for architecture and code organization in Python projects. Proper architecture ensures modularity, code reuse, and simplified project maintenance.
+
+> **Note**: These rules focus on fundamental code organization principles rather than high-level architectural patterns (MVC, MVVM, Clean Architecture, etc.).
+
+---
+
+## Core Principles
+
+1. **KISS (Keep It Simple, Stupid)** - Simplicity should be a key goal in design; avoid unnecessary complexity
+2. **Modularity** - Code should be divided into logical modules with clear boundaries
+3. **Reusability** - Components should be designed for reuse
+4. **Separation of Concerns** - Each component should have a single responsibility
+5. **Abstraction** - Implementation details should be hidden behind abstractions
+
+## Code Organization
+
+### Modular Structure
+
+Code should be organized into modules with clear boundaries and minimal dependencies:
+
+```plaintext
+my_project/
+├── src/
+│   └── my_project/
+│       ├── core/           # Core components and utilities
+│       │   ├── __init__.py
+│       │   ├── config.py   # Application configuration
+│       │   └── utils.py    # Common utilities
+│       ├── domain/         # Business logic and models
+│       │   ├── __init__.py
+│       │   ├── models.py   # Data models
+│       │   └── services.py # Business logic
+│       ├── adapters/       # Adapters for external systems
+│       │   ├── __init__.py
+│       │   ├── database.py # Database operations
+│       │   └── api.py      # External APIs
+│       ├── interfaces/     # User interfaces
+│       │   ├── __init__.py
+│       │   ├── cli.py      # Command-line interface
+│       │   └── web.py      # Web interface
+│       └── __init__.py
+└── ...
+```
+
+### Dependencies Between Modules
+
+Dependencies between modules should flow from outer layers to inner layers:
+
+- `interfaces` → `domain` → `core`
+- `adapters` → `domain` → `core`
+
+Inner layers should not depend on outer layers:
+
+```python
+# Correct: core does not depend on domain
+# core/utils.py
+def format_date(date):
+    """Format date to ISO format."""
+    return date.isoformat()
+
+# domain/models.py
+from my_project.core.utils import format_date
+
+class User:
+    def __init__(self, name, created_at):
+        self.name = name
+        self.created_at = created_at
+    
+    def to_dict(self):
+        return {
+            "name": self.name,
+            "created_at": format_date(self.created_at)
+        }
+
+# Incorrect: core depends on domain
+# core/utils.py
+from my_project.domain.models import User  # Incorrect dependency!
+
+def get_user_name(user):
+    return user.name
+```
+
+## Design Principles
+
+### Single Responsibility Principle (SRP)
+
+Each class or module should have only one reason to change:
+
+```python
+# Bad: class with multiple responsibilities
+class User:
+    def __init__(self, name, email):
+        self.name = name
+        self.email = email
+    
+    def save_to_database(self):
+        # Save user to database
+        pass
+    
+    def send_welcome_email(self):
+        # Send welcome email
+        pass
+
+# Good: separation of responsibilities
+class User:
+    def __init__(self, name, email):
+        self.name = name
+        self.email = email
+
+class UserRepository:
+    def save(self, user):
+        # Save user to database
+        pass
+
+class EmailService:
+    def send_welcome_email(self, user):
+        # Send welcome email
+        pass
+```
+
+### Open/Closed Principle (OCP)
+
+Classes should be open for extension but closed for modification:
+
+```python
+# Bad: violating OCP
+class ReportGenerator:
+    def generate(self, data, format):
+        if format == "pdf":
+            # Generate PDF
+            pass
+        elif format == "csv":
+            # Generate CSV
+            pass
+        # Adding a new format requires modifying this class
+
+# Good: following OCP
+class ReportGenerator:
+    def __init__(self, formatter):
+        self.formatter = formatter
+    
+    def generate(self, data):
+        return self.formatter.format(data)
+
+class PdfFormatter:
+    def format(self, data):
+        # Generate PDF
+        pass
+
+class CsvFormatter:
+    def format(self, data):
+        # Generate CSV
+        pass
+
+# Adding a new format without changing existing code
+class JsonFormatter:
+    def format(self, data):
+        # Generate JSON
+        pass
+```
+
+### Dependency Inversion Principle (DIP)
+
+High-level modules should not depend on low-level modules. Both should depend on abstractions:
+
+```python
+# Bad: direct dependency on concrete implementation
+class UserService:
+    def __init__(self):
+        self.repository = PostgreSQLUserRepository()  # Hard dependency
+    
+    def get_user(self, user_id):
+        return self.repository.get(user_id)
+
+# Good: dependency on abstraction
+class UserService:
+    def __init__(self, repository):  # Dependency injection
+        self.repository = repository
+    
+    def get_user(self, user_id):
+        return self.repository.get(user_id)
+
+# Usage
+service = UserService(PostgreSQLUserRepository())
+# or
+service = UserService(MongoDBUserRepository())
+```
+
+## Working with Databases
+
+### Repository Pattern
+
+Use the Repository pattern to abstract data access:
+
+```python
+class UserRepository:
+    def get(self, user_id):
+        """Get user by ID."""
+        pass
+    
+    def save(self, user):
+        """Save user to database."""
+        pass
+    
+    def delete(self, user_id):
+        """Delete user by ID."""
+        pass
+
+class SQLAlchemyUserRepository(UserRepository):
+    def __init__(self, session):
+        self.session = session
+    
+    def get(self, user_id):
+        return self.session.query(User).get(user_id)
+    
+    def save(self, user):
+        self.session.add(user)
+        self.session.commit()
+        return user
+    
+    def delete(self, user_id):
+        user = self.get(user_id)
+        if user:
+            self.session.delete(user)
+            self.session.commit()
+        return user
+```
+
+## Asynchronous Programming
+
+Use asynchronous programming for I/O operations:
+
+```python
+import asyncio
+import aiohttp
+
+async def fetch_data(url):
+    """Fetch data from URL asynchronously."""
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url) as response:
+            return await response.json()
+
+async def fetch_all(urls):
+    """Fetch data from multiple URLs in parallel."""
+    tasks = [fetch_data(url) for url in urls]
+    return await asyncio.gather(*tasks)
+
+# Usage
+urls = ["https://api.example.com/data/1", "https://api.example.com/data/2"]
+results = asyncio.run(fetch_all(urls))
+```
+
+## Testability
+
+### Dependency Injection
+
+Use dependency injection to improve testability:
+
+```python
+# Hard to test
+class UserService:
+    def __init__(self):
+        self.repository = PostgreSQLUserRepository()  # Hard dependency
+        self.email_service = SmtpEmailService()  # Hard dependency
+    
+    def register_user(self, name, email):
+        user = User(name=name, email=email)
+        self.repository.save(user)
+        self.email_service.send_welcome_email(user)
+        return user
+
+# Easy to test
+class UserService:
+    def __init__(self, repository, email_service):  # Dependency injection
+        self.repository = repository
+        self.email_service = email_service
+    
+    def register_user(self, name, email):
+        user = User(name=name, email=email)
+        self.repository.save(user)
+        self.email_service.send_welcome_email(user)
+        return user
+
+# Testing with mocks
+def test_register_user():
+    repository_mock = Mock()
+    email_service_mock = Mock()
+    service = UserService(repository_mock, email_service_mock)
+    
+    user = service.register_user("John", "john@example.com")
+    
+    repository_mock.save.assert_called_once()
+    email_service_mock.send_welcome_email.assert_called_once_with(user)
+```
+
+### Factories
+
+Use factories for creating complex objects:
+
+```python
+class UserServiceFactory:
+    @staticmethod
+    def create():
+        repository = SQLAlchemyUserRepository(Session())
+        email_service = SmtpEmailService(config.SMTP_SERVER)
+        return UserService(repository, email_service)
+
+# Usage
+service = UserServiceFactory.create()
+```
+
+## Integration with Other Components
+
+- **Code Style**: Architecture must follow the code style rules described in 1-python-code-style.mdc.
+- **Documentation**: Architectural decisions should be documented according to 3-python-documentation.mdc.
+- **Project Structure**: Architecture should align with the project structure described in 2-python-project-layout.mdc.
+- **Error Handling**: Architecture should incorporate error handling rules described in 6-python-error-handling.mdc.
+- **Logging**: Architecture should integrate with logging as described in 7-python-logging.mdc.
+- **Testing**: Architectural components should be testable according to 4-python-testing.mdc. 

@@ -1,0 +1,443 @@
+---
+description: Type safety and string literals management in Python projects
+globs:
+alwaysApply: false
+---
+
+# Python Type Safety and String Literals
+
+CRITICAL: Apply these rules when working with string literals in Python code. REQUIRED to use when designing data structures, API contracts, and inter-module communication protocols. MUST follow when implementing type annotations and enum definitions.
+
+This document provides rules and recommendations for managing type safety and string literals in Python projects. Following these rules ensures code reliability, maintainability, and IDE support.
+
+---
+
+## 1. Core Principles (P0)
+
+1. **Avoid Raw String Literals** - Never use raw string literals as identifiers, keys, or values
+2. **Static Type Safety** - Prefer statically typed code over dynamic typing
+3. **Self-Documentation** - Type annotations and enums serve as code documentation
+4. **API Contracts** - Type annotations define clear contracts between components
+
+## 2. String Literals Prohibition (P0)
+
+### 2.1 Why String Literals Are Dangerous
+
+String literals in code create several problems:
+
+1. **No Type Safety** - Typos aren't caught by the type checker
+2. **No IDE Support** - No autocompletion for string values
+3. **Duplication** - Same literals scattered throughout the code
+4. **Unclear Meaning** - Hard to understand what a string represents
+5. **Difficult Refactoring** - Hard to find and replace all instances
+
+### 2.2 Alternatives to String Literals
+
+Always replace string literals with one of the following:
+
+1. **Enumerations** - For related string values
+2. **Constants** - For individual values
+3. **TypedDict** - For structured data with string keys
+4. **Dataclasses** - For complex structured data
+
+### 2.3 Practical Examples
+
+#### Bad: Using String Literals
+
+```python
+# Using string literals for status values
+if response["status"] == "success":
+    process_success(response["data"])
+elif response["status"] == "error":
+    handle_error(response["error_message"])
+
+# Using string literals for field names
+user_data = {
+    "first_name": "John",
+    "last_name": "Doe",
+    "email": "john.doe@example.com"
+}
+```
+
+#### Good: Using Enums and Constants
+
+```python
+from enum import Enum, auto
+
+class ResponseStatus(str, Enum):
+    SUCCESS = "success"
+    ERROR = "error"
+    PENDING = "pending"
+
+class ResponseField(str, Enum):
+    STATUS = "status"
+    DATA = "data"
+    ERROR_MESSAGE = "error_message"
+
+# Using enums instead of string literals
+if response[ResponseField.STATUS] == ResponseStatus.SUCCESS:
+    process_success(response[ResponseField.DATA])
+elif response[ResponseField.STATUS] == ResponseStatus.ERROR:
+    handle_error(response[ResponseField.ERROR_MESSAGE])
+
+# Using typed dictionary for user data
+from typing import TypedDict
+
+class UserData(TypedDict):
+    first_name: str
+    last_name: str
+    email: str
+
+user_data: UserData = {
+    "first_name": "John", 
+    "last_name": "Doe",
+    "email": "john.doe@example.com"
+}
+```
+
+## 3. Enumeration Best Practices (P0)
+
+### 3.1 String Enumerations
+
+For string values, use `str, Enum` inheritance for easier serialization:
+
+```python
+from enum import Enum
+
+class Color(str, Enum):
+    RED = "red"
+    GREEN = "green"
+    BLUE = "blue"
+
+# String value is preserved
+assert Color.RED == "red"  # True
+```
+
+### 3.2 Integer Enumerations
+
+For numeric values, use `IntEnum`:
+
+```python
+from enum import IntEnum
+
+class Priority(IntEnum):
+    LOW = 1
+    MEDIUM = 2
+    HIGH = 3
+
+# Integers can be compared
+assert Priority.HIGH > Priority.LOW  # True
+```
+
+### 3.3 Auto-Enumeration
+
+When the specific values don't matter, use `auto()`:
+
+```python
+from enum import Enum, auto
+
+class Status(Enum):
+    PENDING = auto()
+    ACTIVE = auto()
+    INACTIVE = auto()
+```
+
+### 3.4 Enum Documentation
+
+Always document the meaning of each enum value:
+
+```python
+class OrderStatus(str, Enum):
+    """Order processing status codes."""
+    
+    PENDING = "pending"  # Order created but not processed
+    PROCESSING = "processing"  # Order is being processed
+    SHIPPED = "shipped"  # Order has been shipped
+    DELIVERED = "delivered"  # Order has been delivered
+    CANCELLED = "cancelled"  # Order was cancelled
+```
+
+## 4. Constants Management (P1)
+
+### 4.1 Defining Constants
+
+Define constants with UPPER_CASE names and group them logically:
+
+```python
+# Database connection constants
+DB_HOST = "localhost"
+DB_PORT = 5432
+DB_NAME = "app_database"
+
+# Application settings
+MAX_UPLOAD_SIZE = 10 * 1024 * 1024  # 10 MB
+DEFAULT_LANGUAGE = "en-US"
+```
+
+### 4.2 Constants Modules
+
+Group related constants in dedicated modules:
+
+```python
+# constants.py
+"""Application constants and configuration values."""
+
+# API timeouts (in seconds)
+API_CONNECT_TIMEOUT = 3.0
+API_READ_TIMEOUT = 10.0
+
+# Pagination defaults
+DEFAULT_PAGE_SIZE = 50
+MAX_PAGE_SIZE = 200
+```
+
+### 4.3 Constants vs Configuration
+
+- Use constants for values that don't change between environments
+- Use configuration for values that change between environments
+
+## 5. Type Annotations (P0)
+
+### 5.1 Function Annotations
+
+Always annotate function parameters and return types:
+
+```python
+def get_user_by_id(user_id: int) -> Optional[User]:
+    """
+    Get user by ID.
+    
+    Args:
+        user_id: The ID of the user to retrieve
+        
+    Returns:
+        User object if found, None otherwise
+    """
+    return db.query(User).get(user_id)
+```
+
+### 5.2 Variable Annotations
+
+Use type annotations for variables when the type is not obvious:
+
+```python
+# Annotate complex or non-obvious types
+user_ids: List[int] = []
+name_to_id_map: Dict[str, int] = {}
+
+# No need to annotate obvious types
+count = 0  # Clearly an int
+name = "John"  # Clearly a str
+```
+
+### 5.3 TypedDict for Dictionaries
+
+Use `TypedDict` to define the structure of dictionaries:
+
+```python
+from typing import TypedDict, List
+
+class Person(TypedDict):
+    name: str
+    age: int
+    addresses: List[str]
+
+# Usage
+person: Person = {
+    "name": "John",
+    "age": 30,
+    "addresses": ["123 Main St", "456 Elm St"]
+}
+```
+
+### 5.4 Generic Types
+
+Use generics to create reusable type definitions:
+
+```python
+from typing import TypeVar, Generic, List, Optional
+
+T = TypeVar('T')
+
+class Repository(Generic[T]):
+    def __init__(self):
+        self.items: List[T] = []
+    
+    def add(self, item: T) -> None:
+        self.items.append(item)
+    
+    def get(self, index: int) -> Optional[T]:
+        if 0 <= index < len(self.items):
+            return self.items[index]
+        return None
+
+# Usage
+user_repo = Repository[User]()
+product_repo = Repository[Product]()
+```
+
+## 6. Type Safety and IDE Support (P1)
+
+### 6.1 Static Type Checking
+
+Use `mypy` for static type checking:
+
+```bash
+# Install mypy
+pip install mypy
+
+# Run type checking
+mypy src/
+```
+
+Configure `mypy` in `pyproject.toml`:
+
+```toml
+[tool.mypy]
+python_version = "3.10"
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+strict_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_return_any = true
+```
+
+### 6.2 Type Stubs for External Libraries
+
+Use type stubs for external libraries:
+
+```bash
+# Install type stubs for commonly used libraries
+pip install types-requests types-PyYAML
+```
+
+### 6.3 Type Comments for Legacy Code
+
+For Python < 3.6, use type comments:
+
+```python
+# Python 3.5 or earlier
+def process_data(data, timeout=30):
+    # type: (Dict[str, Any], int) -> List[str]
+    """Process the data and return a list of strings."""
+    # ...
+```
+
+## 7. Key Use Cases (P1)
+
+### 7.1 API Response Parsing
+
+Use enums and TypedDict for parsing API responses:
+
+```python
+from enum import Enum
+from typing import TypedDict, List, Optional
+
+class ApiField(str, Enum):
+    """API response field names."""
+    
+    STATUS = "status"
+    DATA = "data"
+    ERRORS = "errors"
+    META = "meta"
+
+class ApiStatus(str, Enum):
+    """API response status values."""
+    
+    SUCCESS = "success"
+    ERROR = "error"
+    PARTIAL = "partial"
+
+class ErrorData(TypedDict):
+    code: str
+    message: str
+
+class ApiResponse(TypedDict):
+    status: str  # Actually ApiStatus
+    data: Optional[dict]
+    errors: Optional[List[ErrorData]]
+    meta: Optional[dict]
+
+def parse_response(response_json: dict) -> ApiResponse:
+    """Parse API response into a typed structure."""
+    return response_json  # TypedDict is structural, not nominal
+
+def is_success(response: ApiResponse) -> bool:
+    """Check if the response is successful."""
+    return response[ApiField.STATUS] == ApiStatus.SUCCESS
+```
+
+### 7.2 Configuration Management
+
+Use enums for configuration keys:
+
+```python
+from enum import Enum
+from typing import Any, Dict
+
+class ConfigKey(str, Enum):
+    """Configuration key names."""
+    
+    DB_HOST = "db_host"
+    DB_PORT = "db_port"
+    API_KEY = "api_key"
+    DEBUG_MODE = "debug_mode"
+
+# Configuration dictionary
+config: Dict[str, Any] = {
+    ConfigKey.DB_HOST: "localhost",
+    ConfigKey.DB_PORT: 5432,
+    ConfigKey.API_KEY: "secret-key",
+    ConfigKey.DEBUG_MODE: True,
+}
+
+# Accessing configuration
+db_host = config[ConfigKey.DB_HOST]
+```
+
+### 7.3 Event Systems
+
+Use enums for event types and payload fields:
+
+```python
+from enum import Enum, auto
+from typing import TypedDict, Optional, Union
+
+class EventType(str, Enum):
+    """Types of system events."""
+    
+    USER_CREATED = "user.created"
+    USER_UPDATED = "user.updated"
+    USER_DELETED = "user.deleted"
+
+class UserEventData(TypedDict):
+    user_id: int
+    username: str
+    email: Optional[str]
+
+class Event(TypedDict):
+    type: str  # Actually EventType
+    timestamp: float
+    data: dict  # Union of different event data types
+
+def dispatch_event(event_type: EventType, data: dict) -> None:
+    """Dispatch an event to the event system."""
+    event: Event = {
+        "type": event_type,
+        "timestamp": time.time(),
+        "data": data,
+    }
+    # Send event to event bus...
+```
+
+## 8. Integration with Other Components (P2)
+
+- **Code Style**: Type annotations and enums must follow style rules described in 1-python-code-style.mdc
+- **Documentation**: Type systems should be documented according to 3-python-documentation.mdc
+- **Architecture**: Type safety should be integrated into application architecture as described in 5-python-architecture.mdc
+- **Error Handling**: Error handling should use typed exceptions as described in 6-python-error-handling.mdc
+- **Testing**: Type safety should be tested according to 4-python-testing.mdc 

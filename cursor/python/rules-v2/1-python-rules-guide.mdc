@@ -1,0 +1,125 @@
+---
+description: Core guidelines for developing Python applications. Apply this guide when creating or modifying any Python code.
+globs:
+alwaysApply: true
+---
+
+# Python Development Rules Guide
+
+A comprehensive set of rules and guidelines for Python development. These rules ensure code quality, maintainability, and consistency across all Python projects.
+
+---
+
+## 1. Priority Levels
+
+1. **P0** - Must implement (critical)
+2. **P1** - Should implement (high importance)
+3. **P2** - Recommended (medium importance)
+4. **P3** - Consider when possible (lower importance)
+
+## 2. Core Principles (P0)
+
+1. **Readability** - Code readability is the highest priority (100/100)
+2. **Testability** - All code must be testable and covered by tests (50/100)
+3. **Modularity** - Code should be organized in logical modules with clear boundaries
+4. **Consistency** - Follow consistent patterns and style throughout the codebase
+5. **Type Safety** - Use type annotations for all functions and methods
+6. **Documentation** - Document all public APIs with clear, concise docstrings
+7. **Error Handling** - Handle errors at the appropriate level with informative messages
+8. **Logging** - Use consistent logging with appropriate levels throughout the application
+9. **Dependency Management** - Explicitly declare and version all dependencies
+10. **English Language** - All code, comments, and documentation MUST use English language only
+11. **KISS Principle** - Keep It Simple, Stupid - avoid unnecessary complexity in architecture and code
+
+## 3. Rule Navigation Guide (P0)
+
+When addressing specific needs, MUST consult these rules:
+
+### 3.1. Code Style and Formatting
+
+1. ALWAYS begin with @1-python-rules-guide.mdc
+2. MUST follow @2-python-code-style.mdc for code formatting and style
+
+### 3.2. Documentation
+
+1. REQUIRED to implement @3-python-documentation.mdc for all modules, classes, and functions
+2. CRITICAL to follow docstring format described in @3-python-documentation.mdc
+
+### 3.3. Software Architecture
+
+1. MUST adhere to architecture principles in @4-python-architecture.mdc
+2. REQUIRED to follow the KISS principle as emphasized in @4-python-architecture.mdc
+
+### 3.4. Project Structure
+
+1. CRITICAL to organize project according to @5-python-project-layout.mdc
+2. REQUIRED to maintain separation of source code, tests, and documentation
+
+### 3.5. Error Handling
+
+1. MUST implement error handling according to @6-python-error-handling.mdc
+2. CRITICAL to use informative error messages as specified in @6-python-error-handling.mdc
+
+### 3.6. Logging
+
+1. REQUIRED to implement logging according to @7-python-logging.mdc
+2. MUST use appropriate logging levels as specified in @7-python-logging.mdc
+
+### 3.7. Testing
+
+1. CRITICAL to follow Test-Driven Development approach from @8-python-testing.mdc
+2. REQUIRED to write tests for all functionality according to @8-python-testing.mdc
+
+### 3.8. Dependency Management
+
+1. MUST use uv for dependency management as specified in @9-python-uv.mdc
+2. REQUIRED to version all dependencies according to @9-python-uv.mdc
+
+### 3.9. IDE Configuration
+
+1. RECOMMENDED to configure IDE according to @10-python-vscode-config.mdc
+2. SHOULD use consistent editor settings to maintain code style
+
+### 3.10. String Literals and Type Safety
+
+1. CRITICAL to follow string literal management in @11-python-string-literals.mdc
+2. MUST avoid raw string literals in favor of typed constants and enums
+
+### 3.11. Configuration Management
+
+1. REQUIRED to implement configuration according to @12-python-configuration.mdc
+2. MUST follow django.conf-like patterns for managing settings
+
+## 4. Development Workflow (P1)
+
+1. **Planning**
+   - Define requirements
+   - Break down into tasks
+
+2. **Test-Driven Development**
+   - **Red**: Write failing tests - see @8-python-testing.mdc
+   - **Green**: Implement minimal functionality to pass tests - see @2-python-code-style.mdc and @4-python-architecture.mdc
+   - **Refactor**: Improve code while maintaining functionality
+   - Document code - see @3-python-documentation.mdc
+   - Implement logging - see @7-python-logging.mdc
+   - Handle errors - see @6-python-error-handling.mdc
+
+3. **Verification**
+   - Run tests - see @8-python-testing.mdc
+   - Check code style - see @2-python-code-style.mdc
+   - Verify type annotations - see @2-python-code-style.mdc and @11-python-string-literals.mdc
+
+4. **Completion**
+   - Update documentation - see @3-python-documentation.mdc
+   - Commit changes
+
+## 5. Aspects NOT to Focus On (P2)
+
+- **Monitoring** - Not covered by these rules
+- **Integration Tests** - Focus on unit tests only
+- **High-Level Architecture** (MVC, MVVM, Clean Architecture)
+- **Microservice vs Monolithic Architecture**
+- **Development Methodologies** (Agile, Scrum, Kanban)
+- **Scalability** - Not a priority
+- **Performance** - Focus on readability and maintainability instead
+- **Security** - Focus on general best practices only 

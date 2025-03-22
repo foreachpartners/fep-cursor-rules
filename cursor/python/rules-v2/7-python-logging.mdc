@@ -1,0 +1,313 @@
+---
+description: Logging rules in Python projects
+globs: 
+alwaysApply: false
+---
+
+# Python Logging Rules
+
+CRITICAL: Apply these rules when implementing logging in Python applications. REQUIRED to use when configuring logging systems or writing log messages. MUST follow when integrating logging with error handling.
+
+A set of rules and recommendations for organizing logging in Python projects. Properly configured logging ensures the ability to track application behavior and simplifies debugging.
+
+---
+
+## Core Principles
+
+1. **Consistency** - Logging should be uniform throughout the project
+2. **Informativeness** - Logs should contain sufficient information to understand the context
+3. **Log Levels** - Using appropriate levels for different types of messages
+4. **Structure** - Logs should have a consistent format to simplify analysis
+
+## Logging Configuration
+
+### Basic Setup
+
+Use the standard `logging` module to configure logging:
+
+```python
+import logging
+
+# Basic logging configuration
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
+
+# Get logger for the module
+logger = logging.getLogger(__name__)
+```
+
+### Project Configuration
+
+For projects, use a logging configuration file:
+
+```python
+# my_project/logging_config.py
+import logging.config
+import os
+
+def setup_logging(
+    default_level=logging.INFO,
+    logs_dir="logs",
+    config_file="logging_config.json"
+):
+    """
+    Setup logging configuration.
+    
+    Args:
+        default_level: Default logging level
+        logs_dir: Directory to store log files
+        config_file: Path to logging configuration file
+    """
+    # Create logs directory if it doesn't exist
+    if not os.path.exists(logs_dir):
+        os.makedirs(logs_dir)
+    
+    # Load configuration from file if it exists
+    if os.path.exists(config_file):
+        import json
+        with open(config_file, "r") as f:
+            config = json.load(f)
+        logging.config.dictConfig(config)
+    else:
+        # Basic configuration
+        logging.basicConfig(
+            level=default_level,
+            format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S",
+            handlers=[
+                logging.FileHandler(os.path.join(logs_dir, "app.log")),
+                logging.StreamHandler()
+            ]
+        )
+```
+
+## Logging Levels
+
+Use appropriate logging levels:
+
+- **DEBUG** - Detailed information for debugging
+- **INFO** - Confirmation of normal operation
+- **WARNING** - Indication of potential issues
+- **ERROR** - Errors that don't prevent the application from working
+- **CRITICAL** - Critical errors leading to application shutdown
+
+```python
+# Examples of using different logging levels
+logger.debug("Detailed information for debugging")
+logger.info("Confirmation that things are working as expected")
+logger.warning("Indication that something unexpected happened")
+logger.error("Error occurred, but application can continue")
+logger.critical("Critical error, application cannot continue")
+```
+
+## Message Formats
+
+### Message Structure
+
+Log messages should be structured and include:
+
+- Timestamp
+- Logger name (usually `__name__`)
+- Logging level
+- Message
+- Additional context (if necessary)
+
+### Message Formatting
+
+Messages should be informative and contain the necessary context:
+
+```python
+# Bad: insufficient information
+logger.info("User logged in")
+
+# Good: contains necessary context
+logger.info("User logged in: user_id=%s, ip=%s", user_id, ip_address)
+```
+
+### Structured Logging
+
+For complex applications, use structured logging:
+
+```python
+# Using extra to add context
+logger.info(
+    "Processing order",
+    extra={
+        "order_id": order.id,
+        "customer_id": order.customer_id,
+        "amount": order.amount
+    }
+)
+```
+
+## Logging in Different Components
+
+### Module Logging
+
+Each module should have its own logger:
+
+```python
+# my_project/module.py
+import logging
+
+# Get logger for the module
+logger = logging.getLogger(__name__)
+
+def process_data(data):
+    logger.debug("Processing data: %s", data)
+    # Data processing
+    result = data.upper()
+    logger.info("Data processed successfully")
+    return result
+```
+
+### Class Logging
+
+Classes can use the module logger or have their own:
+
+```python
+# my_project/services.py
+import logging
+
+logger = logging.getLogger(__name__)
+
+class DataService:
+    def __init__(self, source):
+        self.source = source
+        self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
+        self.logger.info("DataService initialized with source: %s", source)
+    
+    def fetch_data(self):
+        self.logger.debug("Fetching data from %s", self.source)
+        # Data retrieval
+        data = f"Data from {self.source}"
+        self.logger.info("Data fetched successfully")
+        return data
+```
+
+## Contextual Information
+
+### Using Context Managers
+
+Use context managers to add temporary context:
+
+```python
+import logging
+from contextlib import contextmanager
+
+@contextmanager
+def log_context(**kwargs):
+    """
+    Context manager to add temporary context to logs.
+    
+    Args:
+        **kwargs: Context variables to add to logs
+    """
+    old_factory = logging.getLogRecordFactory()
+    
+    def record_factory(*args, **record_kwargs):
+        record = old_factory(*args, **record_kwargs)
+        for key, value in kwargs.items():
+            setattr(record, key, value)
+        return record
+    
+    logging.setLogRecordFactory(record_factory)
+    try:
+        yield
+    finally:
+        logging.setLogRecordFactory(old_factory)
+
+# Usage
+with log_context(request_id="123", user_id="456"):
+    logger.info("Processing request")
+```
+
+## Error and Exception Handling
+
+### Logging Exceptions
+
+When handling exceptions, log complete error information:
+
+```python
+try:
+    result = process_data(data)
+except Exception as e:
+    logger.exception("Error processing data: %s", data)
+    # or
+    logger.error("Error processing data: %s", data, exc_info=True)
+```
+
+### Logging Levels for Errors
+
+Use appropriate logging levels:
+
+- `ERROR` - for errors that don't prevent the application from working
+- `CRITICAL` - for critical errors leading to application shutdown
+
+```python
+try:
+    config = load_config(config_path)
+except FileNotFoundError:
+    logger.error("Config file not found: %s", config_path)
+    config = default_config
+except json.JSONDecodeError as e:
+    logger.critical("Invalid config file: %s", e)
+    raise SystemExit("Cannot start application with invalid configuration")
+```
+
+## Production Configuration
+
+### Log Rotation
+
+Configure log rotation for production environments:
+
+```python
+import logging
+from logging.handlers import RotatingFileHandler
+
+handler = RotatingFileHandler(
+    "app.log",
+    maxBytes=10*1024*1024,  # 10 MB
+    backupCount=5
+)
+handler.setFormatter(logging.Formatter(
+    "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+))
+logger.addHandler(handler)
+```
+
+### Sensitive Information Filtering
+
+Filter sensitive information in logs:
+
+```python
+class SensitiveDataFilter(logging.Filter):
+    def __init__(self, patterns=None):
+        super().__init__()
+        self.patterns = patterns or [
+            (r"password=\S+", "password=*****"),
+            (r"token=\S+", "token=*****"),
+        ]
+    
+    def filter(self, record):
+        if isinstance(record.msg, str):
+            msg = record.msg
+            for pattern, replacement in self.patterns:
+                msg = re.sub(pattern, replacement, msg)
+            record.msg = msg
+        return True
+
+# Add filter to logger
+logger.addFilter(SensitiveDataFilter())
+```
+
+## Integration with Other Components
+
+- **Code Style**: Logging should follow the code style rules described in 1-python-code-style.mdc
+- **Documentation**: Logging configuration should be documented according to 3-python-documentation.mdc
+- **Error Handling**: Logging should be integrated with error handling as described in 6-python-error-handling.mdc
+- **Architecture**: Logging should be integrated into the application architecture as described in 5-python-architecture.mdc
+- **Testing**: Logging should be tested according to 4-python-testing.mdc 

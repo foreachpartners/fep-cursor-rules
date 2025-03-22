@@ -1,0 +1,372 @@
+---
+description: Error handling and exception rules in Python projects
+globs: 
+alwaysApply: false
+---
+
+# Python Error Handling Rules
+
+CRITICAL: Apply these rules when implementing error handling logic in Python code. REQUIRED to use when designing exception hierarchies or creating custom exceptions. MUST follow when raising or catching exceptions.
+
+This document provides rules and recommendations for error handling and exceptions in Python projects. Proper error handling ensures reliability and robustness of applications.
+
+---
+
+## Core Principles
+
+1. **Predictability** - Error handling should be predictable and consistent
+2. **Informativeness** - Error messages should be clear and contain necessary information
+3. **Localization** - Errors should be handled at the appropriate level of abstraction
+4. **Minimalism** - Avoid creating an excessive number of exception types
+
+## Exception Types
+
+### Standard Exceptions
+
+Use standard Python exceptions whenever possible:
+
+- `ValueError` - for errors related to incorrect values
+- `TypeError` - for errors related to incorrect types
+- `KeyError` - for errors related to missing keys
+- `IndexError` - for errors related to out-of-range indices
+- `FileNotFoundError` - for errors related to missing files
+- `PermissionError` - for errors related to insufficient permissions
+- `TimeoutError` - for errors related to operation timeouts
+
+```python
+def divide(a: float, b: float) -> float:
+    """
+    Divide a by b.
+    
+    Args:
+        a: Numerator
+        b: Denominator
+        
+    Returns:
+        Result of division
+        
+    Raises:
+        ValueError: If b is zero
+    """
+    if b == 0:
+        raise ValueError("Division by zero is not allowed")
+    return a / b
+```
+
+### Custom Exceptions
+
+Create custom exceptions only for specific business logic errors:
+
+```python
+class InsufficientFundsError(Exception):
+    """Raised when an account has insufficient funds for a transaction."""
+    
+    def __init__(self, account_id: str, requested: float, available: float):
+        self.account_id = account_id
+        self.requested = requested
+        self.available = available
+        message = (
+            f"Account {account_id} has insufficient funds: "
+            f"requested {requested}, available {available}"
+        )
+        super().__init__(message)
+```
+
+### Exception Hierarchy
+
+For complex applications, create a hierarchy of exceptions:
+
+```python
+class AppError(Exception):
+    """Base exception for all application errors."""
+    pass
+
+class DatabaseError(AppError):
+    """Base exception for database-related errors."""
+    pass
+
+class NetworkError(AppError):
+    """Base exception for network-related errors."""
+    pass
+
+class ValidationError(AppError):
+    """Base exception for validation errors."""
+    pass
+```
+
+## Raising Exceptions
+
+### When to Raise Exceptions
+
+Raise exceptions in the following cases:
+
+- When a function cannot complete its task due to invalid input
+- When an error occurs that the calling code should handle
+- When a violation of invariants or preconditions is detected
+
+### Informative Messages
+
+Error messages should be informative and include:
+
+- Description of the problem
+- Values that caused the error
+- Possible solutions (if applicable)
+
+```python
+# Bad: uninformative message
+raise ValueError("Invalid input")
+
+# Good: informative message
+raise ValueError(f"Age must be between 0 and 120, got {age}")
+```
+
+## Handling Exceptions
+
+### Where to Handle Exceptions
+
+Handle exceptions at the level where:
+
+- There is enough information to make a decision
+- Appropriate actions can be taken
+- A clear error message can be provided to the user
+
+### Try-Except Blocks
+
+Try-except blocks should cover the minimum necessary code:
+
+```python
+# Bad: too broad try block
+try:
+    data = load_data(file_path)
+    processed_data = process_data(data)
+    save_results(processed_data, output_path)
+except Exception as e:
+    logger.error("Error occurred: %s", e)
+
+# Good: separate try blocks for different operations
+try:
+    data = load_data(file_path)
+except FileNotFoundError:
+    logger.error("File not found: %s", file_path)
+    return
+
+try:
+    processed_data = process_data(data)
+except ValueError as e:
+    logger.error("Error processing data: %s", e)
+    return
+
+try:
+    save_results(processed_data, output_path)
+except PermissionError:
+    logger.error("Permission denied when saving to: %s", output_path)
+```
+
+### Catching Specific Exceptions
+
+Catch specific types of exceptions, not the general `Exception`:
+
+```python
+# Bad: catching all exceptions
+try:
+    result = process_data(data)
+except Exception as e:
+    logger.error("Error: %s", e)
+
+# Good: catching specific exceptions
+try:
+    result = process_data(data)
+except ValueError as e:
+    logger.error("Invalid data: %s", e)
+except KeyError as e:
+    logger.error("Missing key: %s", e)
+```
+
+### Re-raising Exceptions
+
+Use exception chaining to preserve error context:
+
+```python
+try:
+    result = api_client.fetch_data()
+except RequestError as e:
+    logger.error("API request failed: %s", e)
+    raise DataFetchError(f"Failed to fetch data: {e}") from e
+```
+
+## Error Handling in Different Contexts
+
+### Libraries and Frameworks
+
+In libraries:
+
+- Raise specific exceptions
+- Document all possible exceptions
+- Don't catch exceptions if they should be handled by the calling code
+
+```python
+def calculate_statistics(data: list[float]) -> dict[str, float]:
+    """
+    Calculate statistics for the given data.
+    
+    Args:
+        data: List of numeric values
+        
+    Returns:
+        Dictionary with statistics (mean, median, etc.)
+        
+    Raises:
+        ValueError: If data is empty
+        TypeError: If data contains non-numeric values
+    """
+    if not data:
+        raise ValueError("Data cannot be empty")
+    
+    if not all(isinstance(x, (int, float)) for x in data):
+        raise TypeError("All values must be numeric")
+    
+    # Calculate statistics
+    return {
+        "mean": sum(data) / len(data),
+        "median": sorted(data)[len(data) // 2],
+        "min": min(data),
+        "max": max(data)
+    }
+```
+
+### Web Applications
+
+In web applications:
+
+- Catch exceptions at the request handler level
+- Return appropriate HTTP error codes
+- Provide clear error messages for users
+
+```python
+# Example for Flask
+@app.route("/api/users/<user_id>")
+def get_user(user_id):
+    try:
+        user = user_service.get_user(user_id)
+        return jsonify(user.to_dict())
+    except UserNotFoundError:
+        return jsonify({"error": "User not found"}), 404
+    except DatabaseError as e:
+        logger.error("Database error: %s", e)
+        return jsonify({"error": "Internal server error"}), 500
+```
+
+## Logging Errors
+
+### Integration with Logging
+
+Error handling should be integrated with logging:
+
+```python
+try:
+    result = process_data(data)
+except ValueError as e:
+    logger.exception("Error processing data")
+    # or
+    logger.error("Error processing data: %s", e, exc_info=True)
+    # Further error handling
+```
+
+### Logging Levels for Errors
+
+Use appropriate logging levels:
+
+- `ERROR` - for errors that don't prevent the application from working
+- `CRITICAL` - for critical errors that lead to application shutdown
+
+```python
+try:
+    config = load_config(config_path)
+except FileNotFoundError:
+    logger.error("Config file not found: %s", config_path)
+    config = default_config
+except json.JSONDecodeError as e:
+    logger.critical("Invalid config file: %s", e)
+    raise SystemExit("Cannot start application with invalid configuration")
+```
+
+## Error Handling in User Interfaces
+
+### User-Friendly Messages
+
+Error messages for users should be:
+
+- Clear and free of technical details
+- Constructive and offering solutions
+- Polite and not blaming the user
+
+```python
+# Bad: technical message
+return "Error: DatabaseError: Connection refused"
+
+# Good: user-friendly message
+return "We're having trouble connecting to our database. Please try again later."
+```
+
+### Separating Technical and User-Facing Errors
+
+Separate technical details from user messages:
+
+```python
+class AppError(Exception):
+    """Base exception for all application errors."""
+    
+    def __init__(self, message: str, user_message: str = None):
+        self.message = message  # Technical message for logs
+        self.user_message = user_message or "An unexpected error occurred"  # Message for users
+        super().__init__(message)
+```
+
+## Exception Context
+
+When passing additional information in exceptions (context), use typed keys instead of string literals:
+
+```python
+# Incorrect: using string literals for context keys
+raise ValidationError(
+    "Invalid user data",
+    context={"user_id": user_id, "field": "email", "reason": "Invalid format"}
+)
+
+# Correct: using enumerations for context keys
+class ContextKey(str, Enum):
+    USER_ID = "user_id"
+    FIELD = "field"
+    REASON = "reason"
+
+raise ValidationError(
+    "Invalid user data",
+    context={
+        ContextKey.USER_ID: user_id,
+        ContextKey.FIELD: "email",
+        ContextKey.REASON: "Invalid format"
+    }
+)
+```
+
+### Benefits of Typed Context
+
+1. **Consistency** - Same keys are used throughout the codebase
+2. **Documentation** - All possible context keys are defined in one place
+3. **Auto-completion** - IDE suggests available keys
+4. **Typo prevention** - Typos in keys are detected at compile time
+
+### Recommendations for Working with Exception Context
+
+- Define all context keys as enumerations in the module with exceptions
+- Group related context keys into separate enumerations
+- Document the meaning and purpose of each context key
+- Use typed dictionaries (`TypedDict`) to define the structure of the context
+
+## Integration with Other Components
+
+- **Code Style**: Error handling must follow the code style rules described in 1-python-code-style.mdc
+- **Documentation**: All possible exceptions must be documented according to 3-python-documentation.mdc
+- **Logging**: Errors should be logged according to the rules described in 7-python-logging.mdc
+- **Architecture**: Error handling should be integrated into the application architecture as described in 5-python-architecture.mdc
+- **Testing**: Error handling should be tested according to 4-python-testing.mdc 
