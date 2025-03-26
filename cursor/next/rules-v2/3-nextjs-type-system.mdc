@@ -1,0 +1,269 @@
+---
+description: Comprehensive guidelines for TypeScript usage in Next.js applications. Apply when implementing type system and working with TypeScript features.
+globs:
+alwaysApply: false
+---
+
+# Next.js TypeScript Guidelines
+
+## 1. TypeScript Configuration (P0)
+
+1. CRITICAL: Base configuration:
+   ```typescript
+   // tsconfig.json
+   {
+     "compilerOptions": {
+       "target": "ES2022",
+       "lib": ["dom", "dom.iterable", "esnext"],
+       "allowJs": false,
+       "skipLibCheck": true,
+       "strict": true,
+       "noEmit": true,
+       "esModuleInterop": true,
+       "module": "esnext",
+       "moduleResolution": "bundler",
+       "resolveJsonModule": true,
+       "isolatedModules": true,
+       "jsx": "preserve",
+       "incremental": true,
+       "plugins": [
+         {
+           "name": "next"
+         }
+       ],
+       "paths": {
+         "@/*": ["./*"]
+       }
+     },
+     "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+     "exclude": ["node_modules"]
+   }
+   ```
+
+2. REQUIRED: Strict type checking:
+   - Enable `strict: true`
+   - No usage of `any` type
+   - No type assertions without validation
+   - No non-null assertions
+
+## 2. Type Definitions (P0)
+
+1. CRITICAL: Component props:
+   ```typescript
+   // types/components.ts
+   interface ButtonProps {
+     variant: 'primary' | 'secondary' | 'ghost'
+     size: 'sm' | 'md' | 'lg'
+     isLoading?: boolean
+     isDisabled?: boolean
+     onClick?: () => void
+     children: React.ReactNode
+   }
+   ```
+
+2. REQUIRED: API types:
+   ```typescript
+   // types/api.ts
+   interface ApiResponse<T> {
+     data: T
+     error: null | {
+       code: string
+       message: string
+     }
+     meta?: {
+       page: number
+       totalPages: number
+     }
+   }
+   
+   interface ApiError {
+     code: string
+     message: string
+     details?: Record<string, unknown>
+   }
+   ```
+
+3. ESSENTIAL: State types:
+   ```typescript
+   // types/store.ts
+   interface UserState {
+     user: User | null
+     isLoading: boolean
+     error: ApiError | null
+     setUser: (user: User) => void
+     logout: () => void
+   }
+   ```
+
+## 3. Type Safety with App Router (P0)
+
+1. CRITICAL: Route segment config:
+   ```typescript
+   // app/api/posts/route.ts
+   import { type NextRequest } from 'next/server'
+   
+   export const dynamic = 'force-dynamic'
+   export const runtime = 'edge'
+   
+   export async function GET(request: NextRequest) {
+     const searchParams = request.nextUrl.searchParams
+     const query = searchParams.get('q')
+     // Implementation
+   }
+   ```
+
+2. REQUIRED: Page params and search params:
+   ```typescript
+   // app/posts/[id]/page.tsx
+   interface PageProps {
+     params: {
+       id: string
+     }
+     searchParams: {
+       view?: 'simple' | 'detailed'
+     }
+   }
+   
+   export default function PostPage({ params, searchParams }: PageProps) {
+     // Implementation
+   }
+   ```
+
+## 4. Generic Patterns (P1)
+
+1. CRITICAL: Type-safe API client:
+   ```typescript
+   // lib/api-client.ts
+   async function fetchApi<TData, TError = ApiError>(
+     endpoint: string,
+     options?: RequestInit
+   ): Promise<ApiResponse<TData>> {
+     const response = await fetch(`/api/${endpoint}`, options)
+     const data = await response.json()
+     return data
+   }
+   ```
+
+2. REQUIRED: Generic components:
+   ```typescript
+   // components/ui/Select.tsx
+   interface SelectProps<T> {
+     options: T[]
+     value: T
+     onChange: (value: T) => void
+     getLabel: (option: T) => string
+     getValue: (option: T) => string | number
+   }
+   
+   export function Select<T>({ options, value, onChange, getLabel, getValue }: SelectProps<T>) {
+     // Implementation
+   }
+   ```
+
+## 5. Type Guards and Assertions (P1)
+
+1. CRITICAL: Type guards:
+   ```typescript
+   // utils/type-guards.ts
+   function isApiError(error: unknown): error is ApiError {
+     return (
+       typeof error === 'object' &&
+       error !== null &&
+       'code' in error &&
+       'message' in error
+     )
+   }
+   
+   function isUser(user: unknown): user is User {
+     return (
+       typeof user === 'object' &&
+       user !== null &&
+       'id' in user &&
+       'email' in user
+     )
+   }
+   ```
+
+2. REQUIRED: Safe type assertions:
+   ```typescript
+   // utils/type-assertions.ts
+   function assertUser(user: unknown): asserts user is User {
+     if (!isUser(user)) {
+       throw new Error('Invalid user data')
+     }
+   }
+   ```
+
+## 6. Utility Types (P1)
+
+1. CRITICAL: Common utility types:
+   ```typescript
+   // types/utils.ts
+   type Nullable<T> = T | null
+   type Optional<T> = T | undefined
+   type AsyncReturnType<T extends (...args: any) => Promise<any>> = 
+     T extends (...args: any) => Promise<infer R> ? R : any
+   ```
+
+2. REQUIRED: Component utility types:
+   ```typescript
+   // types/components.ts
+   type ComponentProps<T extends keyof JSX.IntrinsicElements | React.JSXElementConstructor<any>> =
+     React.ComponentProps<T>
+   
+   type ComponentWithAs<Props = {}, Element extends React.ElementType = 'div'> =
+     Props & { as?: Element } & Omit<ComponentProps<Element>, keyof Props | 'as'>
+   ```
+
+## 7. Type-Safe Constants (P2)
+
+1. CRITICAL: Enum alternatives:
+   ```typescript
+   // constants/index.ts
+   const UserRole = {
+     ADMIN: 'ADMIN',
+     USER: 'USER',
+     GUEST: 'GUEST'
+   } as const
+   
+   type UserRole = typeof UserRole[keyof typeof UserRole]
+   ```
+
+2. REQUIRED: Configuration constants:
+   ```typescript
+   // config/index.ts
+   const Config = {
+     API: {
+       BASE_URL: process.env.NEXT_PUBLIC_API_URL,
+       TIMEOUT: 5000
+     },
+     AUTH: {
+       COOKIE_NAME: 'auth-token',
+       TOKEN_EXPIRY: 7 * 24 * 60 * 60 // 7 days
+     }
+   } as const
+   
+   type Config = typeof Config
+   ```
+
+## 8. Type Testing (P2)
+
+1. REQUIRED: Type testing with ts-expect:
+   ```typescript
+   // types/tests/user.test.ts
+   import { expectType } from 'ts-expect'
+   
+   // Test type inference
+   const user: User = {
+     id: '1',
+     email: 'test@example.com'
+   }
+   
+   expectType<string>(user.id)
+   expectType<string>(user.email)
+   ```
+
+2. RECOMMENDED: Type coverage:
+   - Run type coverage reports
+   - Maintain >95% type coverage
+   - Document type exceptions 
