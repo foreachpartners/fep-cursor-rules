@@ -1,0 +1,163 @@
+---
+description: Core guidelines for developing Next.js applications. Apply this guide when creating or modifying any Next.js application.
+globs:
+alwaysApply: true
+---
+
+# Next.js Development Rules Guide
+
+## 1. Priority Levels
+
+1. **P0** - Must implement (critical)
+2. **P1** - Should implement (high importance)
+3. **P2** - Recommended (medium importance)
+4. **P3** - Consider when possible (lower importance)
+
+## 2. Core Principles (P0)
+
+1. CRITICAL: Use TypeScript for all new code and components
+2. REQUIRED: Follow App Router architecture for new projects
+3. ESSENTIAL: Maintain strict separation between UI and business logic
+4. CRITICAL: Implement proper error boundaries and error handling
+5. REQUIRED: Write tests for critical functionality
+6. ESSENTIAL: Follow component-based architecture with atomic design
+7. CRITICAL: Use proper type safety mechanisms, avoid any type assertions
+8. REQUIRED: Maintain clean and consistent project structure
+
+## 3. Technology Stack (P0)
+
+1. **Framework and Core**:
+   - Next.js 14+ with App Router
+   - React 18+
+   - TypeScript 5+
+   - Node.js 18.17+ (LTS)
+
+2. **State and Data Management**:
+   - TanStack Query for server state
+   - Zustand for client state
+   - Server Actions for mutations
+
+3. **UI and Styling**:
+   - Tailwind CSS v4
+   - shadcn/ui components
+   - CSS Modules for component-specific styles
+
+4. **Testing and Quality**:
+   - Jest
+   - React Testing Library
+   - Playwright for E2E
+   - ESLint + Prettier
+
+5. **Development Tools**:
+   - pnpm for package management
+   - Storybook for component development
+   - next-intl for internationalization
+
+## 4. Rule Navigation Guide (P0)
+
+When addressing specific needs, MUST consult these rules:
+
+### 4.1. Project Setup and Structure
+
+1. CRITICAL: Begin with @2-nextjs-code-structure.mdc for:
+   - Directory organization
+   - File naming conventions
+   - Component architecture
+   - Module boundaries
+
+2. REQUIRED: Follow @3-nextjs-type-system.mdc for:
+   - TypeScript configuration
+   - Type definitions
+   - Type safety practices
+   - Generic patterns
+
+### 4.2. Development and Testing
+
+1. CRITICAL: Implement @4-nextjs-testing.mdc for:
+   - Unit testing approach
+   - Integration testing
+   - E2E testing setup
+   - Test organization
+
+2. REQUIRED: Use @5-nextjs-ui-styling.mdc for:
+   - Component design
+   - Styling patterns
+   - UI architecture
+   - Accessibility requirements
+
+### 4.3. API and Data Layer
+
+1. CRITICAL: Follow @6-nextjs-api-layer.mdc for:
+   - API client implementation
+   - Data fetching patterns
+   - Error handling
+   - State management
+
+2. REQUIRED: Implement @7-nextjs-dev-experience.mdc for:
+   - Development workflow
+   - Code quality tools
+   - Package management
+   - Development environment
+   - Technology stack requirements (@7-nextjs-dev-experience.mdc section 3)
+
+### 4.4. Internationalization
+
+1. REQUIRED: Use @8-nextjs-i18n.mdc for:
+   - Translation management
+   - Locale handling
+   - Date/number formatting
+   - RTL support
+
+## 5. Success Criteria (P1)
+
+1. **Type Safety**:
+   - No TypeScript errors or warnings
+   - No type assertions (as/!)
+   - Complete type coverage
+   - Proper generic usage
+
+2. **Code Quality**:
+   - No ESLint errors
+   - Consistent formatting
+   - Documented components
+   - Clean git history
+
+3. **Performance**:
+   - Passing Core Web Vitals
+   - Optimized bundle size
+   - Efficient data fetching
+   - Proper caching
+
+4. **Testing**:
+   - High test coverage
+   - Meaningful tests
+   - Fast test execution
+   - Stable E2E tests
+
+## 6. Version Control Guidelines (P1)
+
+1. **Commit Messages**:
+   - Use conventional commits
+   - Include ticket references
+   - Clear descriptions
+   - English language only
+
+2. **Branch Strategy**:
+   - Feature branches
+   - Clean git history
+   - Proper rebasing
+   - Protected main branch
+
+## 7. Documentation Requirements (P2)
+
+1. **Code Documentation**:
+   - JSDoc for public APIs
+   - README for each module
+   - Clear examples
+   - Architecture diagrams
+
+2. **Component Documentation**:
+   - Storybook stories
+   - Props documentation
+   - Usage examples
+   - Accessibility notes 

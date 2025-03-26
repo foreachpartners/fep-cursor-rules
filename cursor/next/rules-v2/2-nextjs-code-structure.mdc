@@ -1,0 +1,227 @@
+---
+description: Comprehensive guidelines for Next.js project structure and code organization. Apply when setting up new projects or organizing existing ones.
+globs:
+alwaysApply: false
+---
+
+# Next.js Code Structure Guidelines
+
+## 1. Project Directory Structure (P0)
+
+1. CRITICAL: Root-level organization:
+   ```
+   project-root/
+   ├── app/                 # Next.js App Router
+   ├── components/          # React components
+   ├── lib/                 # Utility functions and shared code
+   ├── styles/             # Global styles and CSS modules
+   ├── public/             # Static assets
+   └── tests/              # Test files
+   ```
+
+2. REQUIRED: App directory structure:
+   ```
+   app/
+   ├── (auth)/             # Auth-related routes (grouped)
+   ├── (dashboard)/        # Dashboard routes (grouped)
+   ├── api/                # API routes
+   ├── layout.tsx          # Root layout
+   └── page.tsx            # Home page
+   ```
+
+3. ESSENTIAL: Components organization:
+   ```
+   components/
+   ├── ui/                 # Basic UI components
+   ├── features/           # Feature-specific components
+   ├── layouts/            # Layout components
+   └── providers/          # Context providers
+   ```
+
+## 2. File Naming Conventions (P0)
+
+1. CRITICAL: Component files:
+   - Use PascalCase for component files
+   - Add `.tsx` extension for TypeScript
+   - Match file name to component name
+   ```typescript
+   // components/features/Dashboard/UserProfile.tsx
+   export function UserProfile() {
+     return <div>User Profile Component</div>
+   }
+   ```
+
+2. REQUIRED: Utility files:
+   - Use camelCase for utility files
+   - Group related utilities
+   - Export named functions
+   ```typescript
+   // lib/utils/formatters.ts
+   export function formatDate(date: Date): string {
+     return date.toLocaleDateString()
+   }
+   ```
+
+3. ESSENTIAL: Test files:
+   - Add `.test.tsx` or `.spec.tsx` suffix
+   - Mirror source file structure
+   ```typescript
+   // tests/components/UserProfile.test.tsx
+   describe('UserProfile', () => {
+     it('renders correctly', () => {
+       // test implementation
+     })
+   })
+   ```
+
+## 3. Component Architecture (P0)
+
+1. CRITICAL: Component organization:
+   ```typescript
+   // components/features/Dashboard/UserProfile/index.tsx
+   import { ProfileHeader } from './ProfileHeader'
+   import { ProfileDetails } from './ProfileDetails'
+   import { ProfileActions } from './ProfileActions'
+   
+   export function UserProfile() {
+     return (
+       <div>
+         <ProfileHeader />
+         <ProfileDetails />
+         <ProfileActions />
+       </div>
+     )
+   }
+   ```
+
+2. REQUIRED: Props interface definition:
+   ```typescript
+   // components/ui/Button/Button.tsx
+   interface ButtonProps {
+     variant: 'primary' | 'secondary'
+     size: 'sm' | 'md' | 'lg'
+     children: React.ReactNode
+     onClick?: () => void
+   }
+   
+   export function Button({ variant, size, children, onClick }: ButtonProps) {
+     return (
+       <button
+         className={`btn-${variant} btn-${size}`}
+         onClick={onClick}
+       >
+         {children}
+       </button>
+     )
+   }
+   ```
+
+## 4. Module Boundaries (P1)
+
+1. CRITICAL: Feature module structure:
+   ```
+   features/Dashboard/
+   ├── api/                # API functions
+   ├── components/         # Dashboard components
+   ├── hooks/             # Custom hooks
+   ├── types/             # TypeScript types
+   └── utils/             # Utility functions
+   ```
+
+2. REQUIRED: Module exports:
+   ```typescript
+   // features/Dashboard/index.ts
+   export * from './components/DashboardLayout'
+   export * from './components/DashboardHeader'
+   export * from './hooks/useDashboardData'
+   export * from './types'
+   ```
+
+## 5. Route Organization (P1)
+
+1. CRITICAL: Route grouping:
+   ```
+   app/
+   ├── (auth)/
+   │   ├── login/
+   │   ├── register/
+   │   └── layout.tsx
+   ├── (dashboard)/
+   │   ├── overview/
+   │   ├── settings/
+   │   └── layout.tsx
+   └── layout.tsx
+   ```
+
+2. REQUIRED: Route components:
+   ```typescript
+   // app/(dashboard)/overview/page.tsx
+   import { DashboardOverview } from '@/components/features/Dashboard'
+   
+   export default function OverviewPage() {
+     return <DashboardOverview />
+   }
+   ```
+
+## 6. Data and API Structure (P1)
+
+1. CRITICAL: API route organization:
+   ```
+   app/api/
+   ├── auth/
+   │   ├── login/
+   │   └── register/
+   ├── users/
+   └── posts/
+   ```
+
+2. REQUIRED: API handlers:
+   ```typescript
+   // app/api/users/route.ts
+   import { NextResponse } from 'next/server'
+   
+   export async function GET() {
+     try {
+       // Implementation
+       return NextResponse.json({ data })
+     } catch (error) {
+       return NextResponse.json(
+         { error: 'Failed to fetch users' },
+         { status: 500 }
+       )
+     }
+   }
+   ```
+
+## 7. Style Organization (P2)
+
+1. CRITICAL: Global styles:
+   ```
+   styles/
+   ├── globals.css        # Global styles
+   ├── variables.css      # CSS variables
+   └── themes/            # Theme files
+   ```
+
+2. REQUIRED: Component styles:
+   ```
+   components/ui/Button/
+   ├── Button.tsx
+   └── Button.module.css
+   ```
+
+## 8. Asset Organization (P2)
+
+1. REQUIRED: Public assets:
+   ```
+   public/
+   ├── images/
+   ├── fonts/
+   ├── icons/
+   └── locales/
+   ```
+
+2. RECOMMENDED: Asset naming:
+   - Use kebab-case for file names
+   - Include dimensions in image names
+   - Group by type and feature 
