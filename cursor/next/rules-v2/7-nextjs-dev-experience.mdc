@@ -1,0 +1,611 @@
+---
+description: Guidelines for Next.js development workflow, tooling, package management, and environment setup. Apply when setting up new projects or configuring development tools.
+globs:
+alwaysApply: false
+---
+
+# Next.js Development Experience Guidelines
+
+## 1. Project Setup (P0)
+
+1. CRITICAL: Initial project creation:
+   ```bash
+   # Create new Next.js project with TypeScript and App Router
+   npx create-next-app@latest my-project --typescript --eslint --tailwind --app --src-dir --import-alias "@/*"
+   ```
+
+2. REQUIRED: Editor configuration:
+   ```json
+   // .vscode/settings.json
+   {
+     "editor.formatOnSave": true,
+     "editor.defaultFormatter": "esbenp.prettier-vscode",
+     "editor.codeActionsOnSave": {
+       "source.fixAll.eslint": true
+     },
+     "typescript.tsdk": "node_modules/typescript/lib",
+     "typescript.enablePromptUseWorkspaceTsdk": true,
+     "[typescript]": {
+       "editor.defaultFormatter": "esbenp.prettier-vscode"
+     },
+     "[typescriptreact]": {
+       "editor.defaultFormatter": "esbenp.prettier-vscode"
+     },
+     "tailwindCSS.includeLanguages": {
+       "typescript": "javascript",
+       "typescriptreact": "javascript"
+     },
+     "tailwindCSS.experimental.classRegex": [
+       ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"],
+       ["cn\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"]
+     ]
+   }
+   ```
+
+## 2. Package Management (P0)
+
+1. CRITICAL: pnpm setup:
+   ```bash
+   # Install pnpm
+   corepack enable
+   corepack prepare pnpm@latest --activate
+   
+   # Project initialization
+   pnpm init
+   ```
+
+2. REQUIRED: Package installation guidelines:
+   ```bash
+   # Add dependencies
+   pnpm add next react react-dom
+   
+   # Add dev dependencies
+   pnpm add -D typescript @types/react @types/node
+   
+   # Add exact version of package
+   pnpm add [package]@[version] --save-exact
+   ```
+
+3. ESSENTIAL: Lock file management:
+   ```bash
+   # Regenerate lock file
+   pnpm install --frozen-lockfile
+   
+   # Update dependencies
+   pnpm update
+   
+   # Update a specific package
+   pnpm update [package]
+   ```
+
+## 3. Technology Stack Configuration (P0)
+
+1. CRITICAL: Core dependencies:
+   ```json
+   // package.json (excerpt)
+   {
+     "dependencies": {
+       "next": "^14.0.0",
+       "react": "^18.2.0",
+       "react-dom": "^18.2.0",
+       "typescript": "^5.2.2",
+       "zod": "^3.22.2",
+       "tailwindcss": "^4.0.0",
+       "clsx": "^2.0.0",
+       "class-variance-authority": "^0.7.0",
+       "tailwind-merge": "^2.0.0",
+       "lucide-react": "^0.284.0",
+       "@tanstack/react-query": "^5.0.0",
+       "zustand": "^4.4.3",
+       "next-intl": "^3.0.0-rc.6"
+     },
+     "devDependencies": {
+       "@types/node": "^20.8.6",
+       "@types/react": "^18.2.28",
+       "@types/react-dom": "^18.2.13",
+       "typescript": "^5.2.2",
+       "eslint": "^8.51.0",
+       "eslint-config-next": "^14.0.0",
+       "prettier": "^3.0.3",
+       "prettier-plugin-tailwindcss": "^0.5.6",
+       "@tanstack/eslint-plugin-query": "^5.0.0",
+       "jest": "^29.7.0",
+       "@testing-library/react": "^14.0.0",
+       "@testing-library/jest-dom": "^6.1.4",
+       "jest-environment-jsdom": "^29.7.0"
+     }
+   }
+   ```
+
+2. REQUIRED: Next.js config:
+   ```typescript
+   // next.config.js
+   /** @type {import('next').NextConfig} */
+   const nextConfig = {
+     reactStrictMode: true,
+     images: {
+       domains: ["images.example.com"],
+       remotePatterns: [
+         {
+           protocol: "https",
+           hostname: "**.example.com",
+         },
+       ],
+     },
+     experimental: {
+       serverActions: true,
+       typedRoutes: true,
+     },
+   }
+   
+   module.exports = nextConfig
+   ```
+
+## 4. Code Quality Tools (P0)
+
+1. CRITICAL: ESLint configuration:
+   ```javascript
+   // .eslintrc.js
+   module.exports = {
+     extends: [
+       "next/core-web-vitals",
+       "plugin:@typescript-eslint/recommended",
+       "plugin:@tanstack/eslint-plugin-query/recommended",
+     ],
+     rules: {
+       "react/no-unescaped-entities": "off",
+       "@typescript-eslint/no-unused-vars": ["warn", { 
+         "argsIgnorePattern": "^_",
+         "varsIgnorePattern": "^_" 
+       }],
+       "@typescript-eslint/no-explicit-any": "error",
+       "@typescript-eslint/no-non-null-assertion": "error",
+       "react-hooks/exhaustive-deps": "warn",
+     },
+   }
+   ```
+
+2. REQUIRED: Prettier configuration:
+   ```json
+   // .prettierrc
+   {
+     "semi": false,
+     "singleQuote": true,
+     "tabWidth": 2,
+     "trailingComma": "es5",
+     "printWidth": 80,
+     "plugins": ["prettier-plugin-tailwindcss"]
+   }
+   ```
+
+3. ESSENTIAL: Git hooks with Husky and lint-staged:
+   ```javascript
+   // Install dependencies
+   // pnpm add -D husky lint-staged
+   
+   // package.json (excerpt)
+   {
+     "scripts": {
+       "prepare": "husky install"
+     },
+     "lint-staged": {
+       "*.{js,jsx,ts,tsx}": [
+         "eslint --fix",
+         "prettier --write"
+       ],
+       "*.{json,md}": [
+         "prettier --write"
+       ]
+     }
+   }
+   
+   // .husky/pre-commit
+   #!/bin/sh
+   . "$(dirname "$0")/_/husky.sh"
+   
+   pnpm lint-staged
+   ```
+
+## 5. Development Workflow (P1)
+
+1. CRITICAL: Script definitions:
+   ```json
+   // package.json (excerpt)
+   {
+     "scripts": {
+       "dev": "next dev",
+       "build": "next build",
+       "start": "next start",
+       "lint": "next lint",
+       "format": "prettier --write .",
+       "typecheck": "tsc --noEmit",
+       "test": "jest",
+       "test:watch": "jest --watch"
+     }
+   }
+   ```
+
+2. REQUIRED: Environment variables:
+   ```
+   # .env.local
+   NEXT_PUBLIC_API_URL=https://api.example.com
+   NEXT_PUBLIC_SITE_URL=https://example.com
+   DATABASE_URL=postgresql://username:password@localhost:5432/dbname
+   
+   # .env.example (for version control, without secrets)
+   NEXT_PUBLIC_API_URL=
+   NEXT_PUBLIC_SITE_URL=
+   DATABASE_URL=
+   ```
+
+3. ESSENTIAL: Environment setup documentation:
+   ```markdown
+   <!-- README.md (excerpt) -->
+   ## Development Setup
+   
+   1. Clone the repository
+   2. Install dependencies with `pnpm install`
+   3. Copy `.env.example` to `.env.local` and fill in the values
+   4. Run the development server with `pnpm dev`
+   
+   ## Available Scripts
+   
+   - `pnpm dev` - Run development server
+   - `pnpm build` - Build for production
+   - `pnpm start` - Start production server
+   - `pnpm lint` - Run ESLint
+   - `pnpm format` - Format code with Prettier
+   - `pnpm typecheck` - Check TypeScript types
+   - `pnpm test` - Run tests
+   ```
+
+## 6. Local Development Features (P1)
+
+1. CRITICAL: Mock API setup:
+   ```typescript
+   // lib/mocks/handlers.ts
+   import { rest } from 'msw'
+   
+   export const handlers = [
+     rest.get('/api/users', (req, res, ctx) => {
+       return res(
+         ctx.status(200),
+         ctx.json({
+           data: [
+             { id: '1', name: 'User 1' },
+             { id: '2', name: 'User 2' },
+           ],
+           error: null,
+         })
+       )
+     }),
+     // More handlers...
+   ]
+   
+   // lib/mocks/browser.ts
+   import { setupWorker } from 'msw'
+   import { handlers } from './handlers'
+   
+   export const worker = setupWorker(...handlers)
+   
+   // pages/_app.tsx or app/layout.tsx (excerpt)
+   if (process.env.NODE_ENV === 'development') {
+     // Dynamic import to avoid including in production bundle
+     import('../lib/mocks/browser').then(({ worker }) => worker.start())
+   }
+   ```
+
+2. REQUIRED: Development utilities:
+   ```typescript
+   // lib/utils/dev-utils.ts
+   export const logDev = (...args: unknown[]) => {
+     if (process.env.NODE_ENV === 'development') {
+       console.log(...args)
+     }
+   }
+   
+   export const warnDev = (...args: unknown[]) => {
+     if (process.env.NODE_ENV === 'development') {
+       console.warn(...args)
+     }
+   }
+   
+   export const measurePerformance = async <T>(
+     name: string,
+     fn: () => Promise<T>
+   ): Promise<T> => {
+     if (process.env.NODE_ENV !== 'development') {
+       return fn()
+     }
+     
+     console.time(`Performance: ${name}`)
+     const result = await fn()
+     console.timeEnd(`Performance: ${name}`)
+     return result
+   }
+   ```
+
+## 7. Debugging (P1)
+
+1. CRITICAL: Debug configuration:
+   ```json
+   // .vscode/launch.json
+   {
+     "version": "0.2.0",
+     "configurations": [
+       {
+         "name": "Next.js: debug server-side",
+         "type": "node-terminal",
+         "request": "launch",
+         "command": "pnpm dev"
+       },
+       {
+         "name": "Next.js: debug client-side",
+         "type": "chrome",
+         "request": "launch",
+         "url": "http://localhost:3000"
+       },
+       {
+         "name": "Next.js: debug full stack",
+         "type": "node-terminal",
+         "request": "launch",
+         "command": "pnpm dev",
+         "serverReadyAction": {
+           "pattern": "started server on .+, url: (https?://.+)",
+           "uriFormat": "%s",
+           "action": "debugWithChrome"
+         }
+       }
+     ]
+   }
+   ```
+
+2. REQUIRED: Error boundaries:
+   ```typescript
+   // components/error-boundary.tsx
+   'use client'
+   
+   import { useState, useEffect } from 'react'
+   
+   interface ErrorBoundaryProps {
+     children: React.ReactNode
+     fallback: React.ReactNode
+   }
+   
+   export function ErrorBoundary({ children, fallback }: ErrorBoundaryProps) {
+     const [hasError, setHasError] = useState(false)
+     
+     useEffect(() => {
+       const errorHandler = (error: ErrorEvent) => {
+         console.error('Uncaught error:', error)
+         setHasError(true)
+       }
+       
+       window.addEventListener('error', errorHandler)
+       
+       return () => {
+         window.removeEventListener('error', errorHandler)
+       }
+     }, [])
+     
+     if (hasError) {
+       return <>{fallback}</>
+     }
+     
+     return <>{children}</>
+   }
+   ```
+
+## 8. Deployment and CI/CD (P2)
+
+1. REQUIRED: Vercel deployment:
+   ```json
+   // vercel.json
+   {
+     "buildCommand": "pnpm build",
+     "devCommand": "pnpm dev",
+     "installCommand": "pnpm install --frozen-lockfile",
+     "framework": "nextjs",
+     "outputDirectory": ".next"
+   }
+   ```
+
+2. RECOMMENDED: GitHub Actions workflow:
+   ```yaml
+   # .github/workflows/ci.yml
+   name: CI
+   
+   on:
+     push:
+       branches: [ main ]
+     pull_request:
+       branches: [ main ]
+   
+   jobs:
+     build:
+       runs-on: ubuntu-latest
+       
+       steps:
+       - uses: actions/checkout@v3
+       
+       - name: Setup Node.js
+         uses: actions/setup-node@v3
+         with:
+           node-version: '18'
+       
+       - name: Setup pnpm
+         uses: pnpm/action-setup@v2
+         with:
+           version: 8
+           run_install: false
+       
+       - name: Get pnpm store directory
+         id: pnpm-cache
+         shell: bash
+         run: |
+           echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+       
+       - name: Setup pnpm cache
+         uses: actions/cache@v3
+         with:
+           path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+           key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+           restore-keys: |
+             ${{ runner.os }}-pnpm-store-
+       
+       - name: Install dependencies
+         run: pnpm install --frozen-lockfile
+       
+       - name: Lint
+         run: pnpm lint
+       
+       - name: Type check
+         run: pnpm typecheck
+       
+       - name: Test
+         run: pnpm test
+       
+       - name: Build
+         run: pnpm build
+   ```
+
+## 9. Performance Monitoring (P2)
+
+1. REQUIRED: Performance measurement:
+   ```typescript
+   // lib/performance.ts
+   'use client'
+   
+   import { useEffect } from 'react'
+   
+   export function reportWebVitals(metric: any) {
+     // Example implementation - replace with actual analytics
+     console.log(metric)
+     
+     // Send to analytics service
+     if (metric.name === 'FCP') {
+       // First Contentful Paint
+     } else if (metric.name === 'LCP') {
+       // Largest Contentful Paint
+     } else if (metric.name === 'CLS') {
+       // Cumulative Layout Shift
+     } else if (metric.name === 'FID') {
+       // First Input Delay
+     } else if (metric.name === 'TTFB') {
+       // Time to First Byte
+     }
+   }
+   
+   export function useWebVitals() {
+     useEffect(() => {
+       // @ts-ignore - type definitions are missing
+       const onPerfEntry = (entry: any) => {
+         if (entry?.name === 'TTFB') {
+           console.log('Time to first byte:', entry.value)
+         }
+         if (entry?.name === 'LCP') {
+           console.log('Largest contentful paint:', entry.value)
+         }
+       }
+   
+       try {
+         if (performance && performance.observer) {
+           performance.observer.takeRecords().forEach(onPerfEntry)
+           performance.observer.disconnect()
+         }
+   
+         if (PerformanceObserver) {
+           const observer = new PerformanceObserver((list) => {
+             list.getEntries().forEach(onPerfEntry)
+           })
+           observer.observe({ type: 'largest-contentful-paint', buffered: true })
+           observer.observe({ type: 'first-input', buffered: true })
+           observer.observe({ type: 'layout-shift', buffered: true })
+         }
+       } catch (e) {
+         console.error('Error setting up performance monitoring:', e)
+       }
+     }, [])
+   }
+   ```
+
+2. RECOMMENDED: Lighthouse CI configuration:
+   ```json
+   // lighthouserc.js
+   module.exports = {
+     ci: {
+       collect: {
+         url: ['http://localhost:3000/'],
+         startServerCommand: 'pnpm start',
+         startServerReadyPattern: 'ready on',
+         numberOfRuns: 3,
+       },
+       upload: {
+         target: 'temporary-public-storage',
+       },
+       assert: {
+         preset: 'lighthouse:recommended',
+         assertions: {
+           'categories:performance': ['warn', { minScore: 0.9 }],
+           'categories:accessibility': ['error', { minScore: 0.9 }],
+           'categories:best-practices': ['warn', { minScore: 0.9 }],
+           'categories:seo': ['warn', { minScore: 0.9 }],
+         },
+       },
+     },
+   }
+   ```
+
+## 10. Documentation (P3)
+
+1. RECOMMENDED: Component documentation:
+   ```typescript
+   // components/ui/button/button.tsx (JSDoc example)
+   /**
+    * Primary UI component for user interaction
+    * 
+    * @example
+    * ```tsx
+    * <Button variant="primary" size="md">
+    *   Click me
+    * </Button>
+    * ```
+    * 
+    * @param props - Button props
+    * @param props.variant - Button style variant
+    * @param props.size - Button size
+    * @param props.isLoading - When true, shows a loading spinner
+    */
+   export function Button({ variant, size, isLoading, children, ...props }: ButtonProps) {
+     // Implementation
+   }
+   ```
+
+2. OPTIONAL: Architecture documentation:
+   ```markdown
+   <!-- docs/architecture.md -->
+   # Application Architecture
+   
+   ## Directory Structure
+   
+   - `app/` - Next.js App Router
+   - `components/` - React components
+   - `lib/` - Utility functions and business logic
+   - `public/` - Static assets
+   
+   ## Data Flow
+   
+   1. Server Components fetch data directly from the database
+   2. Client Components use TanStack Query for data fetching
+   3. Zustand manages client-side state
+   4. Server Actions handle form submissions
+   
+   ## Technology Choices
+   
+   - **Next.js**: Server-side rendering, static site generation, and API routes
+   - **TypeScript**: Type-safe code
+   - **Tailwind CSS**: Utility-first CSS for styling
+   - **TanStack Query**: Data fetching and caching
+   - **Zustand**: Client-side state management
+   - **shadcn/ui**: Component library
+   

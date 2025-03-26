@@ -1,0 +1,499 @@
+---
+description: Comprehensive testing guidelines for Next.js applications. Apply when implementing tests for components, API routes, and integration scenarios.
+globs:
+alwaysApply: false
+---
+
+# Next.js Testing Guidelines
+
+## 1. Testing Framework Setup (P0)
+
+1. CRITICAL: Jest configuration:
+   ```javascript
+   // jest.config.js
+   const nextJest = require('next/jest')
+   
+   const createJestConfig = nextJest({
+     dir: './',
+   })
+   
+   const customJestConfig = {
+     setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+     testEnvironment: 'jest-environment-jsdom',
+     moduleNameMapper: {
+       '^@/(.*)$': '<rootDir>/$1',
+     },
+     collectCoverageFrom: [
+       'app/**/*.{ts,tsx}',
+       'components/**/*.{ts,tsx}',
+       'lib/**/*.{ts,tsx}',
+       '!**/*.d.ts',
+       '!**/node_modules/**',
+     ],
+   }
+   
+   module.exports = createJestConfig(customJestConfig)
+   ```
+
+2. REQUIRED: Jest setup file:
+   ```javascript
+   // jest.setup.js
+   import '@testing-library/jest-dom'
+   
+   // Mock Next.js router
+   jest.mock('next/navigation', () => ({
+     useRouter: () => ({
+       push: jest.fn(),
+       replace: jest.fn(),
+       prefetch: jest.fn(),
+       back: jest.fn(),
+       pathname: '/',
+       query: {},
+     }),
+     useSearchParams: () => new URLSearchParams(),
+     usePathname: () => '/',
+   }))
+   
+   // Reset mocks between tests
+   beforeEach(() => {
+     jest.clearAllMocks()
+   })
+   ```
+
+## 2. Unit Testing Components (P0)
+
+1. CRITICAL: Component testing structure:
+   ```typescript
+   // components/ui/Button/Button.test.tsx
+   import { render, screen, fireEvent } from '@testing-library/react'
+   import { Button } from './Button'
+   
+   describe('Button', () => {
+     it('renders with correct text', () => {
+       render(<Button variant="primary" size="md">Click me</Button>)
+       expect(screen.getByText('Click me')).toBeInTheDocument()
+     })
+     
+     it('calls onClick when clicked', () => {
+       const handleClick = jest.fn()
+       render(
+         <Button variant="primary" size="md" onClick={handleClick}>
+           Click me
+         </Button>
+       )
+       fireEvent.click(screen.getByText('Click me'))
+       expect(handleClick).toHaveBeenCalledTimes(1)
+     })
+     
+     it('applies correct classes based on variant and size', () => {
+       render(<Button variant="secondary" size="sm">Click me</Button>)
+       const button = screen.getByText('Click me')
+       expect(button).toHaveClass('btn-secondary')
+       expect(button).toHaveClass('btn-sm')
+     })
+   })
+   ```
+
+2. REQUIRED: Test providers:
+   ```typescript
+   // test/providers.tsx
+   import { ReactNode } from 'react'
+   import { ThemeProvider } from '@/components/providers/ThemeProvider'
+   
+   interface TestProvidersProps {
+     children: ReactNode
+   }
+   
+   export function TestProviders({ children }: TestProvidersProps) {
+     return (
+       <ThemeProvider defaultTheme="light">
+         {children}
+       </ThemeProvider>
+     )
+   }
+   
+   // Usage in tests
+   // render(<Component />, { wrapper: TestProviders })
+   ```
+
+## 3. Integration Testing (P0)
+
+1. CRITICAL: Form testing:
+   ```typescript
+   // components/forms/LoginForm/LoginForm.test.tsx
+   import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+   import { LoginForm } from './LoginForm'
+   import { mockLogin } from '@/test/mocks/auth'
+   
+   // Mock auth service
+   jest.mock('@/lib/auth', () => ({
+     login: jest.fn(mockLogin),
+   }))
+   
+   describe('LoginForm', () => {
+     it('submits with valid inputs', async () => {
+       render(<LoginForm onSuccess={jest.fn()} />)
+       
+       // Fill the form
+       fireEvent.change(screen.getByLabelText(/email/i), {
+         target: { value: 'user@example.com' },
+       })
+       fireEvent.change(screen.getByLabelText(/password/i), {
+         target: { value: 'password123' },
+       })
+       
+       // Submit the form
+       fireEvent.click(screen.getByRole('button', { name: /log in/i }))
+       
+       // Verify login was called
+       await waitFor(() => {
+         expect(require('@/lib/auth').login).toHaveBeenCalledWith({
+           email: 'user@example.com',
+           password: 'password123',
+         })
+       })
+     })
+     
+     it('shows error with invalid inputs', async () => {
+       render(<LoginForm onSuccess={jest.fn()} />)
+       
+       // Submit without filling
+       fireEvent.click(screen.getByRole('button', { name: /log in/i }))
+       
+       // Verify error messages
+       await waitFor(() => {
+         expect(screen.getByText(/email is required/i)).toBeInTheDocument()
+       })
+     })
+   })
+   ```
+
+2. REQUIRED: API client testing:
+   ```typescript
+   // lib/api-client.test.ts
+   import { fetchApi } from './api-client'
+   
+   // Mock global fetch
+   global.fetch = jest.fn()
+   
+   describe('API Client', () => {
+     beforeEach(() => {
+       jest.resetAllMocks()
+     })
+     
+     it('makes correct API call', async () => {
+       // Setup mock response
+       const mockResponse = {
+         data: { id: '1', name: 'Test' },
+         error: null,
+       }
+       
+       ;(global.fetch as jest.Mock).mockResolvedValueOnce({
+         ok: true,
+         json: async () => mockResponse,
+       })
+       
+       // Call API
+       const result = await fetchApi('users/1')
+       
+       // Verify fetch call
+       expect(global.fetch).toHaveBeenCalledWith('/api/users/1', undefined)
+       expect(result).toEqual(mockResponse)
+     })
+     
+     it('handles errors', async () => {
+       // Setup mock error response
+       const mockError = {
+         error: { code: 'NOT_FOUND', message: 'User not found' },
+         data: null,
+       }
+       
+       ;(global.fetch as jest.Mock).mockResolvedValueOnce({
+         ok: false,
+         json: async () => mockError,
+       })
+       
+       // Call API
+       const result = await fetchApi('users/999')
+       
+       // Verify error handling
+       expect(result).toEqual(mockError)
+     })
+   })
+   ```
+
+## 4. Testing App Router Components (P1)
+
+1. CRITICAL: Testing server components:
+   ```typescript
+   // app/posts/[id]/page.test.tsx
+   import { render } from '@testing-library/react'
+   import PostPage from './page'
+   
+   // Mock data fetching
+   jest.mock('@/lib/data', () => ({
+     getPost: jest.fn(() => ({
+       id: '1',
+       title: 'Test Post',
+       content: 'This is a test post',
+     })),
+   }))
+   
+   describe('PostPage', () => {
+     it('renders post details', () => {
+       const { getByText } = render(
+         <PostPage params={{ id: '1' }} searchParams={{}} />
+       )
+       
+       expect(getByText('Test Post')).toBeInTheDocument()
+       expect(getByText('This is a test post')).toBeInTheDocument()
+     })
+   })
+   ```
+
+2. REQUIRED: Testing layouts:
+   ```typescript
+   // app/dashboard/layout.test.tsx
+   import { render } from '@testing-library/react'
+   import DashboardLayout from './layout'
+   
+   describe('DashboardLayout', () => {
+     it('renders sidebar and children', () => {
+       const { getByText, getByTestId } = render(
+         <DashboardLayout>
+           <div data-testid="dashboard-content">Dashboard Content</div>
+         </DashboardLayout>
+       )
+       
+       expect(getByText('Dashboard')).toBeInTheDocument()
+       expect(getByTestId('dashboard-content')).toBeInTheDocument()
+     })
+   })
+   ```
+
+## 5. API Route Testing (P1)
+
+1. CRITICAL: Testing API handlers:
+   ```typescript
+   // app/api/users/route.test.ts
+   import { GET, POST } from './route'
+   import { NextRequest } from 'next/server'
+   
+   // Mock database
+   jest.mock('@/lib/db', () => ({
+     getUsers: jest.fn(() => [
+       { id: '1', name: 'User 1' },
+       { id: '2', name: 'User 2' },
+     ]),
+     createUser: jest.fn(data => ({ id: '3', ...data })),
+   }))
+   
+   describe('Users API', () => {
+     it('GET returns users list', async () => {
+       const request = new NextRequest('http://localhost:3000/api/users')
+       const response = await GET(request)
+       const data = await response.json()
+       
+       expect(response.status).toBe(200)
+       expect(data).toEqual({
+         data: [
+           { id: '1', name: 'User 1' },
+           { id: '2', name: 'User 2' },
+         ],
+         error: null,
+       })
+     })
+     
+     it('POST creates a new user', async () => {
+       const request = new NextRequest('http://localhost:3000/api/users', {
+         method: 'POST',
+         body: JSON.stringify({ name: 'New User' }),
+       })
+       
+       const response = await POST(request)
+       const data = await response.json()
+       
+       expect(response.status).toBe(201)
+       expect(data).toEqual({
+         data: { id: '3', name: 'New User' },
+         error: null,
+       })
+     })
+   })
+   ```
+
+## 6. Mocking Strategies (P1)
+
+1. CRITICAL: API mocking:
+   ```typescript
+   // test/mocks/api.ts
+   export const mockApi = {
+     users: {
+       list: [
+         { id: '1', name: 'User 1' },
+         { id: '2', name: 'User 2' },
+       ],
+       findById: (id) => mockApi.users.list.find(user => user.id === id),
+       create: (data) => ({ id: Date.now().toString(), ...data }),
+     },
+     posts: {
+       list: [
+         { id: '1', title: 'Post 1', userId: '1' },
+         { id: '2', title: 'Post 2', userId: '2' },
+       ],
+       findById: (id) => mockApi.posts.list.find(post => post.id === id),
+       findByUser: (userId) => mockApi.posts.list.filter(post => post.userId === userId),
+     },
+   }
+   
+   // Usage in tests
+   jest.mock('@/lib/api', () => ({
+     fetchUsers: jest.fn(() => Promise.resolve(mockApi.users.list)),
+     fetchUserById: jest.fn((id) => Promise.resolve(mockApi.users.findById(id))),
+   }))
+   ```
+
+2. REQUIRED: Mock server responses:
+   ```typescript
+   // test/mocks/server.ts
+   import { setupServer } from 'msw/node'
+   import { rest } from 'msw'
+   import { mockApi } from './api'
+   
+   export const server = setupServer(
+     rest.get('/api/users', (req, res, ctx) => {
+       return res(
+         ctx.status(200),
+         ctx.json({
+           data: mockApi.users.list,
+           error: null,
+         })
+       )
+     }),
+     
+     rest.get('/api/users/:id', (req, res, ctx) => {
+       const { id } = req.params
+       const user = mockApi.users.findById(id as string)
+       
+       if (!user) {
+         return res(
+           ctx.status(404),
+           ctx.json({
+             data: null,
+             error: { code: 'NOT_FOUND', message: 'User not found' },
+           })
+         )
+       }
+       
+       return res(
+         ctx.status(200),
+         ctx.json({
+           data: user,
+           error: null,
+         })
+       )
+     })
+   )
+   
+   // Setup and teardown in jest.setup.js
+   beforeAll(() => server.listen())
+   afterEach(() => server.resetHandlers())
+   afterAll(() => server.close())
+   ```
+
+## 7. E2E Testing with Playwright (P2)
+
+1. CRITICAL: Basic Playwright setup:
+   ```typescript
+   // playwright.config.ts
+   import { PlaywrightTestConfig, devices } from '@playwright/test'
+   
+   const config: PlaywrightTestConfig = {
+     testDir: './e2e',
+     timeout: 30 * 1000,
+     forbidOnly: !!process.env.CI,
+     retries: process.env.CI ? 2 : 0,
+     use: {
+       trace: 'on-first-retry',
+       baseURL: process.env.PLAYWRIGHT_TEST_BASE_URL || 'http://localhost:3000',
+     },
+     projects: [
+       {
+         name: 'chromium',
+         use: { ...devices['Desktop Chrome'] },
+       },
+       {
+         name: 'firefox',
+         use: { ...devices['Desktop Firefox'] },
+       },
+       {
+         name: 'webkit',
+         use: { ...devices['Desktop Safari'] },
+       },
+     ],
+   }
+   
+   export default config
+   ```
+
+2. REQUIRED: E2E test example:
+   ```typescript
+   // e2e/login.spec.ts
+   import { test, expect } from '@playwright/test'
+   
+   test.describe('Login flow', () => {
+     test('successful login', async ({ page }) => {
+       await page.goto('/login')
+       
+       // Fill login form
+       await page.fill('input[name="email"]', 'user@example.com')
+       await page.fill('input[name="password"]', 'password123')
+       
+       // Submit form
+       await page.click('button[type="submit"]')
+       
+       // Verify redirect to dashboard
+       await expect(page).toHaveURL('/dashboard')
+       
+       // Verify user is logged in
+       await expect(page.locator('[data-testid="user-menu"]')).toContainText('user@example.com')
+     })
+     
+     test('displays error with invalid credentials', async ({ page }) => {
+       await page.goto('/login')
+       
+       // Fill login form with invalid credentials
+       await page.fill('input[name="email"]', 'user@example.com')
+       await page.fill('input[name="password"]', 'wrongpassword')
+       
+       // Submit form
+       await page.click('button[type="submit"]')
+       
+       // Verify error message
+       await expect(page.locator('[data-testid="login-error"]')).toBeVisible()
+       await expect(page.locator('[data-testid="login-error"]')).toContainText('Invalid credentials')
+     })
+   })
+   ```
+
+## 8. Test Organization (P2)
+
+1. REQUIRED: Test folder structure:
+   ```
+   project-root/
+   ├── __tests__/           # Unit and integration tests
+   │   ├── components/
+   │   ├── lib/
+   │   └── app/
+   ├── e2e/                # E2E tests with Playwright
+   ├── test/               # Test utilities
+   │   ├── mocks/
+   │   ├── fixtures/
+   │   └── helpers/
+   └── jest.setup.js
+   ```
+
+2. RECOMMENDED: Test file naming:
+   - Unit tests: `ComponentName.test.tsx`
+   - Integration tests: `Feature.integration.test.tsx`
+   - E2E tests: `feature.spec.ts` 

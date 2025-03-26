@@ -1,0 +1,303 @@
+---
+description: Guidelines for package management in Next.js applications using pnpm. Apply when setting up project dependencies, managing package versions, and configuring monorepos.
+globs:
+alwaysApply: false
+---
+
+# Next.js Package Management Guidelines
+
+## 1. pnpm Setup and Configuration (P0)
+
+1. CRITICAL: Initial setup:
+   ```bash
+   # Enable corepack (Node.js 16.9.0+)
+   corepack enable
+   corepack prepare pnpm@latest --activate
+   
+   # Initialize a new project
+   pnpm init
+   ```
+
+2. REQUIRED: pnpm configuration:
+   ```yaml
+   # .npmrc
+   strict-peer-dependencies=false
+   node-linker=hoisted
+   shamefully-hoist=true
+   auto-install-peers=true
+   ```
+
+3. ESSENTIAL: Lockfile management:
+   ```bash
+   # Install dependencies with lockfile generation
+   pnpm install
+   
+   # Install dependencies with existing lockfile
+   pnpm install --frozen-lockfile
+   
+   # Update lockfile without installing
+   pnpm install --lockfile-only
+   ```
+
+## 2. Dependency Management (P0)
+
+1. CRITICAL: Adding dependencies:
+   ```bash
+   # Add regular dependencies
+   pnpm add next react react-dom
+   
+   # Add development dependencies
+   pnpm add -D typescript @types/react @types/node eslint
+   
+   # Add exact versions
+   pnpm add package@1.2.3 --save-exact
+   
+   # Add peer dependencies
+   pnpm add -P react react-dom
+   ```
+
+2. REQUIRED: Updating dependencies:
+   ```bash
+   # Update all dependencies to latest versions according to package.json
+   pnpm update
+   
+   # Update specific package
+   pnpm update package-name
+   
+   # Update all packages to latest versions (including breaking changes)
+   pnpm update --latest
+   
+   # Interactive update
+   pnpm update --interactive
+   ```
+
+3. ESSENTIAL: Dependency inspection:
+   ```bash
+   # List installed packages
+   pnpm list
+   
+   # List outdated packages
+   pnpm outdated
+   
+   # Check for security vulnerabilities
+   pnpm audit
+   
+   # Fix security vulnerabilities
+   pnpm audit fix
+   ```
+
+## 3. Workspace and Monorepo Configuration (P1)
+
+1. CRITICAL: Monorepo setup:
+   ```yaml
+   # pnpm-workspace.yaml
+   packages:
+     - 'apps/*'
+     - 'packages/*'
+   ```
+
+2. REQUIRED: Workspace script execution:
+   ```bash
+   # Run script in all workspaces
+   pnpm -r run build
+   
+   # Run script in a specific workspace
+   pnpm --filter app-name run dev
+   
+   # Run script in all workspaces that have changed since the last release
+   pnpm -r --filter="...{HEAD}" run build
+   ```
+
+3. ESSENTIAL: Package references:
+   ```json
+   // packages/ui/package.json
+   {
+     "name": "@myorg/ui",
+     "version": "0.1.0",
+     "main": "./dist/index.js",
+     "types": "./dist/index.d.ts"
+   }
+   
+   // apps/web/package.json
+   {
+     "dependencies": {
+       "@myorg/ui": "workspace:*"
+     }
+   }
+   ```
+
+## 4. Version Locking Strategy (P1)
+
+1. CRITICAL: Version specification:
+   ```json
+   // package.json
+   {
+     "dependencies": {
+       // Exact version (recommended for most dependencies)
+       "next": "14.0.0",
+       
+       // Caret range (accepts minor updates)
+       "react": "^18.2.0",
+       
+       // Tilde range (accepts only patch updates)
+       "eslint-plugin-react": "~7.33.2",
+       
+       // Workspace package reference
+       "@myorg/ui": "workspace:*"
+     }
+   }
+   ```
+
+2. REQUIRED: Peer dependency management:
+   ```json
+   // package.json for shared component library
+   {
+     "name": "@myorg/ui",
+     "version": "0.1.0",
+     "peerDependencies": {
+       "react": "^18.0.0",
+       "react-dom": "^18.0.0",
+       "next": "^14.0.0"
+     },
+     "devDependencies": {
+       "react": "^18.2.0",
+       "react-dom": "^18.2.0",
+       "next": "^14.0.0"
+     }
+   }
+   ```
+
+## 5. CI/CD Integration (P1)
+
+1. CRITICAL: CI setup with pnpm cache:
+   ```yaml
+   # .github/workflows/ci.yml
+   name: CI
+   
+   on:
+     push:
+       branches: [ main ]
+     pull_request:
+       branches: [ main ]
+   
+   jobs:
+     build:
+       runs-on: ubuntu-latest
+       
+       steps:
+       - uses: actions/checkout@v3
+       
+       - name: Setup Node.js
+         uses: actions/setup-node@v3
+         with:
+           node-version: '18'
+       
+       - name: Setup pnpm
+         uses: pnpm/action-setup@v2
+         with:
+           version: 8
+           run_install: false
+       
+       - name: Get pnpm store directory
+         id: pnpm-cache
+         shell: bash
+         run: |
+           echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+       
+       - name: Setup pnpm cache
+         uses: actions/cache@v3
+         with:
+           path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+           key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+           restore-keys: |
+             ${{ runner.os }}-pnpm-store-
+       
+       - name: Install dependencies
+         run: pnpm install --frozen-lockfile
+       
+       - name: Build
+         run: pnpm build
+   ```
+
+2. REQUIRED: Build platform configuration:
+   ```json
+   // vercel.json
+   {
+     "buildCommand": "pnpm run build",
+     "installCommand": "pnpm install --frozen-lockfile",
+     "framework": "nextjs"
+   }
+   ```
+
+## 6. Publishing Packages (P2)
+
+1. REQUIRED: Package preparation:
+   ```json
+   // package.json
+   {
+     "name": "@myorg/ui",
+     "version": "0.1.0",
+     "main": "./dist/index.js",
+     "module": "./dist/index.mjs",
+     "types": "./dist/index.d.ts",
+     "files": [
+       "dist/**"
+     ],
+     "scripts": {
+       "build": "tsup src/index.ts --format esm,cjs --dts",
+       "prepublishOnly": "pnpm run build"
+     }
+   }
+   ```
+
+2. RECOMMENDED: Publishing configuration:
+   ```
+   # .npmrc
+   registry=https://registry.npmjs.org/
+   @myorg:registry=https://npm.pkg.github.com
+   //npm.pkg.github.com/:_authToken=${NPM_TOKEN}
+   ```
+
+## 7. Dependency Patching (P2)
+
+1. REQUIRED: Patching dependencies:
+   ```bash
+   # Create a patch for a package
+   pnpm patch package-name@1.2.3
+   
+   # After making changes, create the patch file
+   pnpm patch-commit /path/to/temp/package-dir
+   ```
+
+2. RECOMMENDED: Patch file management:
+   ```
+   patches/
+   ├── package-name@1.2.3.patch
+   └── other-package@4.5.6.patch
+   ```
+
+## 8. Dependency Quality Control (P3)
+
+1. RECOMMENDED: Package analysis:
+   ```bash
+   # Analyze bundle size
+   pnpm dlx bundlephobia-cli react-component
+   
+   # Check package download statistics
+   pnpm dlx npm-stat react-component
+   
+   # Analyze package dependencies
+   pnpm why package-name
+   ```
+
+2. OPTIONAL: Dependency health checks:
+   ```json
+   // package.json
+   {
+     "scripts": {
+       "deps:check": "pnpm audit && pnpm outdated",
+       "deps:update": "pnpm update --interactive",
+       "deps:clean": "rm -rf node_modules pnpm-lock.yaml && pnpm install"
+     }
+   }
+   ``` 

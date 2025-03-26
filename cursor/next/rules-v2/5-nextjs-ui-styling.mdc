@@ -1,0 +1,732 @@
+---
+description: Comprehensive UI and styling guidelines for Next.js applications. Apply when implementing UI components, layouts, and design systems.
+globs:
+alwaysApply: false
+---
+
+# Next.js UI and Styling Guidelines
+
+## 1. Tailwind CSS Configuration (P0)
+
+1. CRITICAL: Base configuration:
+   ```javascript
+   // tailwind.config.ts
+   import type { Config } from 'tailwindcss'
+   import { fontFamily } from 'tailwindcss/defaultTheme'
+   
+   const config: Config = {
+     darkMode: 'class',
+     content: [
+       './pages/**/*.{js,ts,jsx,tsx,mdx}',
+       './components/**/*.{js,ts,jsx,tsx,mdx}',
+       './app/**/*.{js,ts,jsx,tsx,mdx}',
+     ],
+     theme: {
+       container: {
+         center: true,
+         padding: '2rem',
+         screens: {
+           '2xl': '1400px',
+         },
+       },
+       extend: {
+         colors: {
+           border: 'hsl(var(--border))',
+           input: 'hsl(var(--input))',
+           ring: 'hsl(var(--ring))',
+           background: 'hsl(var(--background))',
+           foreground: 'hsl(var(--foreground))',
+           primary: {
+             DEFAULT: 'hsl(var(--primary))',
+             foreground: 'hsl(var(--primary-foreground))',
+           },
+           secondary: {
+             DEFAULT: 'hsl(var(--secondary))',
+             foreground: 'hsl(var(--secondary-foreground))',
+           },
+           destructive: {
+             DEFAULT: 'hsl(var(--destructive))',
+             foreground: 'hsl(var(--destructive-foreground))',
+           },
+           muted: {
+             DEFAULT: 'hsl(var(--muted))',
+             foreground: 'hsl(var(--muted-foreground))',
+           },
+           accent: {
+             DEFAULT: 'hsl(var(--accent))',
+             foreground: 'hsl(var(--accent-foreground))',
+           },
+           popover: {
+             DEFAULT: 'hsl(var(--popover))',
+             foreground: 'hsl(var(--popover-foreground))',
+           },
+           card: {
+             DEFAULT: 'hsl(var(--card))',
+             foreground: 'hsl(var(--card-foreground))',
+           },
+         },
+         borderRadius: {
+           lg: 'var(--radius)',
+           md: 'calc(var(--radius) - 2px)',
+           sm: 'calc(var(--radius) - 4px)',
+         },
+         fontFamily: {
+           sans: ['var(--font-sans)', ...fontFamily.sans],
+         },
+       },
+     },
+     plugins: [require('tailwindcss-animate')],
+   }
+   
+   export default config
+   ```
+
+2. REQUIRED: Global CSS with variables:
+   ```css
+   /* globals.css */
+   @tailwind base;
+   @tailwind components;
+   @tailwind utilities;
+   
+   @layer base {
+     :root {
+       --background: 0 0% 100%;
+       --foreground: 222.2 84% 4.9%;
+   
+       --muted: 210 40% 96.1%;
+       --muted-foreground: 215.4 16.3% 46.9%;
+   
+       --popover: 0 0% 100%;
+       --popover-foreground: 222.2 84% 4.9%;
+   
+       --card: 0 0% 100%;
+       --card-foreground: 222.2 84% 4.9%;
+   
+       --border: 214.3 31.8% 91.4%;
+       --input: 214.3 31.8% 91.4%;
+   
+       --primary: 222.2 47.4% 11.2%;
+       --primary-foreground: 210 40% 98%;
+   
+       --secondary: 210 40% 96.1%;
+       --secondary-foreground: 222.2 47.4% 11.2%;
+   
+       --accent: 210 40% 96.1%;
+       --accent-foreground: 222.2 47.4% 11.2%;
+   
+       --destructive: 0 84.2% 60.2%;
+       --destructive-foreground: 210 40% 98%;
+   
+       --ring: 215 20.2% 65.1%;
+   
+       --radius: 0.5rem;
+     }
+   
+     .dark {
+       --background: 222.2 84% 4.9%;
+       --foreground: 210 40% 98%;
+   
+       --muted: 217.2 32.6% 17.5%;
+       --muted-foreground: 215 20.2% 65.1%;
+   
+       --popover: 222.2 84% 4.9%;
+       --popover-foreground: 210 40% 98%;
+   
+       --card: 222.2 84% 4.9%;
+       --card-foreground: 210 40% 98%;
+   
+       --border: 217.2 32.6% 17.5%;
+       --input: 217.2 32.6% 17.5%;
+   
+       --primary: 210 40% 98%;
+       --primary-foreground: 222.2 47.4% 11.2%;
+   
+       --secondary: 217.2 32.6% 17.5%;
+       --secondary-foreground: 210 40% 98%;
+   
+       --accent: 217.2 32.6% 17.5%;
+       --accent-foreground: 210 40% 98%;
+   
+       --destructive: 0 62.8% 30.6%;
+       --destructive-foreground: 0 85.7% 97.3%;
+   
+       --ring: 217.2 32.6% 17.5%;
+     }
+   }
+   
+   @layer base {
+     * {
+       @apply border-border;
+     }
+     body {
+       @apply bg-background text-foreground;
+     }
+   }
+   ```
+
+## 2. Component Architecture (P0)
+
+1. CRITICAL: Component structure:
+   ```
+   components/
+   ├── ui/              # Base UI components
+   │   ├── button/
+   │   │   ├── button.tsx
+   │   │   ├── button.test.tsx
+   │   │   └── index.ts
+   │   ├── card/
+   │   └── input/
+   ├── layout/          # Layout components
+   │   ├── header/
+   │   └── sidebar/
+   ├── features/        # Feature-specific components
+   │   ├── dashboard/
+   │   └── user-profile/
+   └── providers/       # Context providers
+       ├── theme-provider.tsx
+       └── auth-provider.tsx
+   ```
+
+2. REQUIRED: Component template:
+   ```typescript
+   // components/ui/button/button.tsx
+   import { forwardRef } from "react"
+   import { cn } from "@/lib/utils"
+   
+   export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+     variant?: "primary" | "secondary" | "outline" | "ghost" | "destructive"
+     size?: "sm" | "md" | "lg" | "icon"
+     isLoading?: boolean
+   }
+   
+   const Button = forwardRef<HTMLButtonElement, ButtonProps>(
+     ({ 
+       className, 
+       variant = "primary", 
+       size = "md", 
+       isLoading = false,
+       disabled,
+       children, 
+       ...props 
+     }, ref) => {
+       return (
+         <button
+           className={cn(
+             "inline-flex items-center justify-center rounded-md font-medium transition-colors",
+             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+             "disabled:opacity-50 disabled:pointer-events-none",
+             {
+               "bg-primary text-primary-foreground hover:bg-primary/90": variant === "primary",
+               "bg-secondary text-secondary-foreground hover:bg-secondary/80": variant === "secondary",
+               "border border-input bg-background hover:bg-accent hover:text-accent-foreground": variant === "outline",
+               "bg-transparent hover:bg-accent hover:text-accent-foreground": variant === "ghost",
+               "bg-destructive text-destructive-foreground hover:bg-destructive/90": variant === "destructive",
+               "h-9 px-3 text-xs": size === "sm",
+               "h-10 px-4 py-2": size === "md",
+               "h-11 px-8 text-lg": size === "lg",
+               "h-10 w-10": size === "icon",
+             },
+             className
+           )}
+           ref={ref}
+           disabled={disabled || isLoading}
+           {...props}
+         >
+           {isLoading ? (
+             <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+           ) : null}
+           {children}
+         </button>
+       )
+     }
+   )
+   Button.displayName = "Button"
+   
+   export { Button }
+   ```
+
+## 3. shadcn/ui Integration (P0)
+
+1. CRITICAL: Component installation:
+   ```bash
+   # CLI command
+   npx shadcn-ui@latest add button
+   ```
+
+2. REQUIRED: Component customization:
+   ```typescript
+   // components/ui/button.tsx
+   import * as React from "react"
+   import { Slot } from "@radix-ui/react-slot"
+   import { cva, type VariantProps } from "class-variance-authority"
+   
+   import { cn } from "@/lib/utils"
+   
+   const buttonVariants = cva(
+     "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+     {
+       variants: {
+         variant: {
+           default: "bg-primary text-primary-foreground hover:bg-primary/90",
+           destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+           outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
+           secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+           ghost: "hover:bg-accent hover:text-accent-foreground",
+           link: "text-primary underline-offset-4 hover:underline",
+           brand: "bg-brand-500 text-white hover:bg-brand-600", // Custom variant
+         },
+         size: {
+           default: "h-10 px-4 py-2",
+           sm: "h-9 rounded-md px-3",
+           lg: "h-11 rounded-md px-8",
+           icon: "h-10 w-10",
+           xl: "h-12 rounded-md px-10 text-lg", // Custom size
+         },
+       },
+       defaultVariants: {
+         variant: "default",
+         size: "default",
+       },
+     }
+   )
+   
+   export interface ButtonProps
+     extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+       VariantProps<typeof buttonVariants> {
+     asChild?: boolean
+     isLoading?: boolean
+   }
+   
+   const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+     ({ className, variant, size, asChild = false, isLoading = false, children, ...props }, ref) => {
+       const Comp = asChild ? Slot : "button"
+       return (
+         <Comp
+           className={cn(buttonVariants({ variant, size, className }))}
+           ref={ref}
+           disabled={props.disabled || isLoading}
+           {...props}
+         >
+           {isLoading && (
+             <svg className="mr-2 h-4 w-4 animate-spin" viewBox="0 0 24 24">
+               <circle
+                 className="opacity-25"
+                 cx="12"
+                 cy="12"
+                 r="10"
+                 stroke="currentColor"
+                 strokeWidth="4"
+               />
+               <path
+                 className="opacity-75"
+                 fill="currentColor"
+                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+               />
+             </svg>
+           )}
+           {children}
+         </Comp>
+       )
+     }
+   )
+   Button.displayName = "Button"
+   
+   export { Button, buttonVariants }
+   ```
+
+## 4. CSS Organization (P0)
+
+1. CRITICAL: CSS module naming:
+   ```typescript
+   // components/ui/card/card.module.css
+   .card {
+     @apply bg-card text-card-foreground rounded-lg border shadow-sm;
+   }
+   
+   .cardHeader {
+     @apply flex flex-col space-y-1.5 p-6;
+   }
+   
+   .cardTitle {
+     @apply text-2xl font-semibold leading-none tracking-tight;
+   }
+   
+   .cardDescription {
+     @apply text-sm text-muted-foreground;
+   }
+   
+   .cardContent {
+     @apply p-6 pt-0;
+   }
+   
+   .cardFooter {
+     @apply flex items-center p-6 pt-0;
+   }
+   ```
+
+2. REQUIRED: CSS-in-JS alternatives:
+   ```typescript
+   // lib/utils.ts with cn utility
+   import { clsx, type ClassValue } from "clsx"
+   import { twMerge } from "tailwind-merge"
+   
+   export function cn(...inputs: ClassValue[]) {
+     return twMerge(clsx(inputs))
+   }
+   ```
+
+## 5. Responsive Design (P1)
+
+1. CRITICAL: Responsive approach:
+   ```typescript
+   // components/layout/dashboard-layout.tsx
+   import { cn } from "@/lib/utils"
+   
+   interface DashboardLayoutProps {
+     children: React.ReactNode
+     sidebar?: React.ReactNode
+   }
+   
+   export function DashboardLayout({ children, sidebar }: DashboardLayoutProps) {
+     return (
+       <div className="flex min-h-screen flex-col md:flex-row">
+         <aside className={cn(
+           "w-full md:w-64 border-r", 
+           "fixed bottom-0 left-0 md:static md:h-screen",
+           "bg-background z-20"
+         )}>
+           {sidebar}
+         </aside>
+         <main className="flex-1 p-4 md:p-6">{children}</main>
+       </div>
+     )
+   }
+   ```
+
+2. REQUIRED: Breakpoint usage:
+   ```typescript
+   // Tailwind breakpoint usage example
+   <div className="
+     grid 
+     grid-cols-1 
+     sm:grid-cols-2 
+     md:grid-cols-3 
+     lg:grid-cols-4 
+     xl:grid-cols-5 
+     gap-4
+   ">
+     {items.map(item => (
+       <Card key={item.id} {...item} />
+     ))}
+   </div>
+   ```
+
+## 6. Theme Management (P1)
+
+1. CRITICAL: Theme provider:
+   ```typescript
+   // components/providers/theme-provider.tsx
+   "use client"
+   
+   import { createContext, useContext, useEffect, useState } from "react"
+   
+   type Theme = "dark" | "light" | "system"
+   
+   interface ThemeProviderProps {
+     children: React.ReactNode
+     defaultTheme?: Theme
+     storageKey?: string
+   }
+   
+   interface ThemeProviderState {
+     theme: Theme
+     setTheme: (theme: Theme) => void
+   }
+   
+   const ThemeProviderContext = createContext<ThemeProviderState | undefined>(undefined)
+   
+   export function ThemeProvider({
+     children,
+     defaultTheme = "system",
+     storageKey = "theme",
+     ...props
+   }: ThemeProviderProps) {
+     const [theme, setTheme] = useState<Theme>(defaultTheme)
+   
+     useEffect(() => {
+       const storedTheme = localStorage.getItem(storageKey) as Theme | null
+       if (storedTheme) {
+         setTheme(storedTheme)
+         return
+       }
+   
+       if (defaultTheme === "system") {
+         setTheme(
+           window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
+         )
+       }
+     }, [defaultTheme, storageKey])
+   
+     useEffect(() => {
+       const root = window.document.documentElement
+       root.classList.remove("light", "dark")
+   
+       if (theme === "system") {
+         const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
+           .matches ? "dark" : "light"
+         root.classList.add(systemTheme)
+         return
+       }
+   
+       root.classList.add(theme)
+     }, [theme])
+   
+     const value = {
+       theme,
+       setTheme: (theme: Theme) => {
+         localStorage.setItem(storageKey, theme)
+         setTheme(theme)
+       },
+     }
+   
+     return (
+       <ThemeProviderContext.Provider {...props} value={value}>
+         {children}
+       </ThemeProviderContext.Provider>
+     )
+   }
+   
+   export const useTheme = () => {
+     const context = useContext(ThemeProviderContext)
+     if (context === undefined) {
+       throw new Error("useTheme must be used within a ThemeProvider")
+     }
+     return context
+   }
+   ```
+
+2. REQUIRED: Theme implementation:
+   ```typescript
+   // app/layout.tsx
+   import { ThemeProvider } from "@/components/providers/theme-provider"
+   import { Inter } from "next/font/google"
+   import "@/styles/globals.css"
+   
+   const inter = Inter({ subsets: ["latin"], variable: "--font-sans" })
+   
+   export default function RootLayout({
+     children,
+   }: {
+     children: React.ReactNode
+   }) {
+     return (
+       <html lang="en" suppressHydrationWarning>
+         <body className={inter.variable}>
+           <ThemeProvider
+             attribute="class"
+             defaultTheme="system"
+             enableSystem
+             disableTransitionOnChange
+           >
+             {children}
+           </ThemeProvider>
+         </body>
+       </html>
+     )
+   }
+   ```
+
+## 7. Icon System (P1)
+
+1. CRITICAL: Icon component:
+   ```typescript
+   // components/ui/icon.tsx
+   import { cn } from "@/lib/utils"
+   import { LucideProps } from "lucide-react"
+   import dynamicIconImports from "lucide-react/dynamicIconImports"
+   import dynamic from "next/dynamic"
+   
+   interface IconProps extends LucideProps {
+     name: keyof typeof dynamicIconImports
+     className?: string
+   }
+   
+   const Icon = ({ name, className, ...props }: IconProps) => {
+     const LucideIcon = dynamic(dynamicIconImports[name])
+   
+     return (
+       <LucideIcon
+         className={cn("h-6 w-6", className)}
+         {...props}
+       />
+     )
+   }
+   
+   export { Icon }
+   ```
+
+2. REQUIRED: Usage example:
+   ```tsx
+   import { Icon } from "@/components/ui/icon"
+   
+   export function UserMenu() {
+     return (
+       <button className="flex items-center gap-2 p-2 hover:bg-accent rounded-md">
+         <Icon name="user" className="h-5 w-5" />
+         <span>Profile</span>
+       </button>
+     )
+   }
+   ```
+
+## 8. Accessibility Standards (P2)
+
+1. CRITICAL: Keyboard navigation:
+   ```typescript
+   // components/ui/dropdown-menu.tsx (excerpt)
+   import * as React from "react"
+   import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu"
+   import { Check, ChevronRight, Circle } from "lucide-react"
+   
+   import { cn } from "@/lib/utils"
+   
+   const DropdownMenu = DropdownMenuPrimitive.Root
+   
+   const DropdownMenuTrigger = DropdownMenuPrimitive.Trigger
+   
+   const DropdownMenuContent = React.forwardRef<
+     React.ElementRef<typeof DropdownMenuPrimitive.Content>,
+     React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Content>
+   >(({ className, sideOffset = 4, ...props }, ref) => (
+     <DropdownMenuPrimitive.Portal>
+       <DropdownMenuPrimitive.Content
+         ref={ref}
+         sideOffset={sideOffset}
+         className={cn(
+           "z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md animate-in fade-in-80",
+           "data-[side=right]:slide-in-from-left-2",
+           "data-[side=left]:slide-in-from-right-2",
+           "data-[side=bottom]:slide-in-from-top-2",
+           "data-[side=top]:slide-in-from-bottom-2",
+           className
+         )}
+         {...props}
+       />
+     </DropdownMenuPrimitive.Portal>
+   ))
+   ```
+
+2. REQUIRED: Color contrast:
+   ```typescript
+   // styles/globals.css (excerpt)
+   @layer base {
+     /* High contrast colors for accessibility */
+     .high-contrast {
+       --primary: 222.2 47.4% 11.2%;
+       --primary-foreground: 210 40% 98%;
+       
+       --destructive: 0 84.2% 40.2%; /* Darker red for better contrast */
+       --destructive-foreground: 210 40% 98%;
+       
+       --muted-foreground: 215.4 16.3% 36.9%; /* Darker than default for better contrast */
+     }
+   }
+   ```
+
+## 9. Animation Guidelines (P2)
+
+1. REQUIRED: Animation principles:
+   ```typescript
+   // lib/animation-utils.ts
+   import { twMerge } from "tailwind-merge"
+   
+   type AnimationVariant = 
+     | "fadeIn" 
+     | "slideIn" 
+     | "scaleIn" 
+     | "bounceIn"
+   
+   interface AnimationProps {
+     variant: AnimationVariant
+     delay?: "none" | "short" | "medium" | "long"
+     duration?: "fast" | "normal" | "slow"
+   }
+   
+   export function getAnimationClass({ 
+     variant, 
+     delay = "none", 
+     duration = "normal" 
+   }: AnimationProps) {
+     const variants = {
+       fadeIn: "animate-in fade-in",
+       slideIn: "animate-in slide-in-from-bottom",
+       scaleIn: "animate-in zoom-in",
+       bounceIn: "animate-in slide-in-from-bottom-4 duration-300 ease-bounce",
+     }
+     
+     const delays = {
+       none: "",
+       short: "delay-100",
+       medium: "delay-200",
+       long: "delay-300",
+     }
+     
+     const durations = {
+       fast: "duration-200",
+       normal: "duration-300",
+       slow: "duration-500",
+     }
+     
+     return twMerge(variants[variant], delays[delay], durations[duration])
+   }
+   ```
+
+## 10. Visual Feedback (P3)
+
+1. RECOMMENDED: Loading states:
+   ```typescript
+   // components/ui/loading-spinner.tsx
+   import { cn } from "@/lib/utils"
+   
+   interface LoadingSpinnerProps {
+     size?: "sm" | "md" | "lg"
+     className?: string
+   }
+   
+   export function LoadingSpinner({ size = "md", className }: LoadingSpinnerProps) {
+     return (
+       <div
+         className={cn(
+           "inline-block animate-spin rounded-full border-2 border-current border-t-transparent",
+           {
+             "h-4 w-4": size === "sm",
+             "h-6 w-6": size === "md",
+             "h-8 w-8": size === "lg",
+           },
+           className
+         )}
+       />
+     )
+   }
+   ```
+
+2. OPTIONAL: Skeleton components:
+   ```typescript
+   // components/ui/skeleton.tsx
+   import { cn } from "@/lib/utils"
+   
+   interface SkeletonProps {
+     className?: string
+   }
+   
+   export function Skeleton({ className }: SkeletonProps) {
+     return (
+       <div
+         className={cn(
+           "animate-pulse rounded-md bg-muted",
+           className
+         )}
+       />
+     )
+   }
+   ``` 

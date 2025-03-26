@@ -1,0 +1,660 @@
+---
+description: Guidelines for implementing internationalization in Next.js applications. Apply when adding multi-language support, localized content, and translations.
+globs:
+alwaysApply: false
+---
+
+# Next.js Internationalization Guidelines
+
+## 1. Internationalization Setup (P0)
+
+1. CRITICAL: Install dependencies:
+   ```bash
+   # Install next-intl
+   pnpm add next-intl
+   ```
+
+2. REQUIRED: Configure middleware:
+   ```typescript
+   // middleware.ts
+   import createMiddleware from 'next-intl/middleware'
+   
+   export default createMiddleware({
+     // A list of all locales that are supported
+     locales: ['en', 'ru', 'fr', 'de'],
+     
+     // If this locale is matched, pathnames work without a prefix (e.g. /about)
+     defaultLocale: 'en',
+     
+     // Domains can be used to match specific locales (optional)
+     domains: [
+       {
+         domain: 'example.com',
+         defaultLocale: 'en',
+       },
+       {
+         domain: 'example.ru',
+         defaultLocale: 'ru',
+       },
+     ],
+   })
+   
+   export const config = {
+     // Skip all paths that should not be internationalized
+     matcher: ['/((?!api|_next|.*\\..*).*)'],
+   }
+   ```
+
+3. ESSENTIAL: Configure Next.js:
+   ```typescript
+   // next.config.js
+   /** @type {import('next').NextConfig} */
+   const nextConfig = {
+     experimental: {
+       // Required for middleware-based routing with App Router
+       appDir: true,
+     },
+   }
+   
+   module.exports = nextConfig
+   ```
+
+## 2. Translation Management (P0)
+
+1. CRITICAL: Translation files structure:
+   ```
+   messages/
+   ├── en.json
+   ├── ru.json
+   ├── fr.json
+   └── de.json
+   ```
+
+2. REQUIRED: Translation JSON format:
+   ```json
+   // messages/en.json
+   {
+     "Index": {
+       "title": "Welcome to our app",
+       "description": "This is a multi-language application"
+     },
+     "Navigation": {
+       "home": "Home",
+       "about": "About",
+       "contact": "Contact"
+     },
+     "Auth": {
+       "login": "Login",
+       "register": "Register",
+       "email": "Email address",
+       "password": "Password",
+       "forgotPassword": "Forgot password?",
+       "errors": {
+         "invalidEmail": "Please enter a valid email address",
+         "requiredField": "This field is required"
+       }
+     },
+     "Common": {
+       "loading": "Loading...",
+       "error": "An error occurred",
+       "submit": "Submit",
+       "cancel": "Cancel",
+       "save": "Save",
+       "delete": "Delete",
+       "confirm": "Confirm",
+       "back": "Back",
+       "next": "Next"
+     }
+   }
+   ```
+
+3. ESSENTIAL: Namespace organization:
+   ```
+   messages/
+   ├── en/
+   │   ├── common.json
+   │   ├── auth.json
+   │   ├── home.json
+   │   └── dashboard.json
+   ├── ru/
+   │   ├── common.json
+   │   ├── auth.json
+   │   ├── home.json
+   │   └── dashboard.json
+   └── ...
+   ```
+
+## 3. Client-Side Translation (P0)
+
+1. CRITICAL: Translation provider:
+   ```typescript
+   // app/[locale]/layout.tsx
+   import { NextIntlClientProvider } from 'next-intl'
+   import { notFound } from 'next/navigation'
+   
+   export function generateStaticParams() {
+     return [{ locale: 'en' }, { locale: 'ru' }, { locale: 'fr' }, { locale: 'de' }]
+   }
+   
+   export default async function LocaleLayout({
+     children,
+     params: { locale },
+   }: {
+     children: React.ReactNode
+     params: { locale: string }
+   }) {
+     let messages
+     
+     try {
+       messages = (await import(`../../messages/${locale}.json`)).default
+     } catch (error) {
+       notFound()
+     }
+   
+     return (
+       <html lang={locale}>
+         <body>
+           <NextIntlClientProvider locale={locale} messages={messages}>
+             {children}
+           </NextIntlClientProvider>
+         </body>
+       </html>
+     )
+   }
+   ```
+
+2. REQUIRED: Using translations in client components:
+   ```typescript
+   // components/ui/login-form.tsx
+   'use client'
+   
+   import { useTranslations } from 'next-intl'
+   
+   export function LoginForm() {
+     const t = useTranslations('Auth')
+     
+     return (
+       <form className="space-y-4">
+         <div>
+           <label htmlFor="email">{t('email')}</label>
+           <input
+             id="email"
+             type="email"
+             placeholder={t('email')}
+           />
+         </div>
+         <div>
+           <label htmlFor="password">{t('password')}</label>
+           <input
+             id="password"
+             type="password"
+             placeholder={t('password')}
+           />
+         </div>
+         <button type="submit">{t('login')}</button>
+       </form>
+     )
+   }
+   ```
+
+3. ESSENTIAL: Format handling:
+   ```typescript
+   // components/ui/welcome-message.tsx
+   'use client'
+   
+   import { useTranslations } from 'next-intl'
+   
+   interface WelcomeMessageProps {
+     name: string
+     lastLoginDate: Date
+   }
+   
+   export function WelcomeMessage({ name, lastLoginDate }: WelcomeMessageProps) {
+     const t = useTranslations('Dashboard')
+     
+     return (
+       <div>
+         <h1>{t('welcome', { name })}</h1>
+         <p>
+           {t('lastLogin', {
+             date: lastLoginDate,
+             time: lastLoginDate,
+           })}
+         </p>
+       </div>
+     )
+   }
+   
+   // messages/en.json
+   {
+     "Dashboard": {
+       "welcome": "Welcome back, {name}!",
+       "lastLogin": "Last login: {date, date, medium} at {time, time, short}"
+     }
+   }
+   ```
+
+## 4. Server-Side Translation (P0)
+
+1. CRITICAL: Accessing translations in server components:
+   ```typescript
+   // app/[locale]/dashboard/page.tsx
+   import { useTranslations } from 'next-intl/server'
+   import { db } from '@/lib/db'
+   
+   export default async function DashboardPage() {
+     const t = useTranslations('Dashboard')
+     
+     const stats = await db.stats.findMany()
+     
+     return (
+       <div>
+         <h1>{t('title')}</h1>
+         <p>{t('description')}</p>
+         
+         <div className="grid grid-cols-3 gap-4">
+           {stats.map(stat => (
+             <div key={stat.id}>
+               <h3>{t(`stats.${stat.key}.title`)}</h3>
+               <p>{t(`stats.${stat.key}.description`)}</p>
+               <span>{stat.value}</span>
+             </div>
+           ))}
+         </div>
+       </div>
+     )
+   }
+   ```
+
+2. REQUIRED: Dynamic server-side translation:
+   ```typescript
+   // lib/get-dictionary.ts
+   import { getLocale } from 'next-intl/server'
+   
+   export async function getDictionary(namespace: string) {
+     const locale = await getLocale()
+     const dict = (await import(`../messages/${locale}/${namespace}.json`)).default
+     
+     return dict
+   }
+   
+   // Usage in server component
+   // app/[locale]/products/page.tsx
+   import { getDictionary } from '@/lib/get-dictionary'
+   
+   export default async function ProductsPage() {
+     const dict = await getDictionary('products')
+     
+     // Use translations
+     return <h1>{dict.title}</h1>
+   }
+   ```
+
+## 5. Locale Switching (P1)
+
+1. CRITICAL: Language selector component:
+   ```typescript
+   // components/language-selector.tsx
+   'use client'
+   
+   import { usePathname, useRouter } from 'next-intl/client'
+   import { useTranslations } from 'next-intl'
+   
+   interface Language {
+     code: string
+     name: string
+     flag: string
+   }
+   
+   const languages: Language[] = [
+     { code: 'en', name: 'English', flag: '🇬🇧' },
+     { code: 'ru', name: 'Русский', flag: '🇷🇺' },
+     { code: 'fr', name: 'Français', flag: '🇫🇷' },
+     { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
+   ]
+   
+   export function LanguageSelector() {
+     const t = useTranslations('Common')
+     const pathname = usePathname()
+     const router = useRouter()
+     
+     const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+       router.push(pathname, { locale: e.target.value })
+     }
+     
+     return (
+       <div className="relative">
+         <select
+           onChange={handleChange}
+           className="appearance-none bg-transparent pl-8 pr-4 py-2 border rounded"
+           aria-label={t('selectLanguage')}
+         >
+           {languages.map((lang) => (
+             <option key={lang.code} value={lang.code}>
+               {lang.flag} {lang.name}
+             </option>
+           ))}
+         </select>
+       </div>
+     )
+   }
+   ```
+
+2. REQUIRED: Locale-aware navigation:
+   ```typescript
+   // components/navigation.tsx
+   'use client'
+   
+   import { useTranslations } from 'next-intl'
+   import { Link } from 'next-intl'
+   
+   export function Navigation() {
+     const t = useTranslations('Navigation')
+     
+     return (
+       <nav className="space-x-4">
+         <Link href="/">{t('home')}</Link>
+         <Link href="/about">{t('about')}</Link>
+         <Link href="/contact">{t('contact')}</Link>
+       </nav>
+     )
+   }
+   ```
+
+## 6. Date and Number Formatting (P1)
+
+1. CRITICAL: Date formatting:
+   ```typescript
+   // components/date-display.tsx
+   'use client'
+   
+   import { useFormatter, useTranslations, useNow } from 'next-intl'
+   
+   interface DateDisplayProps {
+     date: Date | string
+     format?: 'short' | 'medium' | 'long' | 'relative'
+   }
+   
+   export function DateDisplay({ date, format = 'medium' }: DateDisplayProps) {
+     const t = useTranslations('Common')
+     const formatter = useFormatter()
+     const now = useNow({ updateInterval: 1000 * 60 }) // Update every minute
+     
+     const dateObj = date instanceof Date ? date : new Date(date)
+     
+     if (format === 'relative') {
+       return <time dateTime={dateObj.toISOString()}>
+         {formatter.relativeTime(dateObj, now)}
+       </time>
+     }
+     
+     return <time dateTime={dateObj.toISOString()}>
+       {formatter.dateTime(dateObj, { dateStyle: format })}
+     </time>
+   }
+   ```
+
+2. REQUIRED: Number formatting:
+   ```typescript
+   // components/price-display.tsx
+   'use client'
+   
+   import { useFormatter } from 'next-intl'
+   
+   interface PriceDisplayProps {
+     value: number
+     currency: string
+   }
+   
+   export function PriceDisplay({ value, currency }: PriceDisplayProps) {
+     const formatter = useFormatter()
+     
+     return <span>
+       {formatter.number(value, { 
+         style: 'currency', 
+         currency,
+         currencyDisplay: 'symbol',
+       })}
+     </span>
+   }
+   
+   // Usage
+   <PriceDisplay value={19.99} currency="USD" />
+   <PriceDisplay value={19.99} currency="EUR" />
+   <PriceDisplay value={19.99} currency="RUB" />
+   ```
+
+## 7. Right-to-Left Support (P1)
+
+1. CRITICAL: RTL detection and configuration:
+   ```typescript
+   // lib/is-rtl.ts
+   export function isRTL(locale: string): boolean {
+     const rtlLocales = ['ar', 'he', 'fa', 'ur']
+     return rtlLocales.includes(locale)
+   }
+   
+   // app/[locale]/layout.tsx (modified version)
+   import { NextIntlClientProvider } from 'next-intl'
+   import { isRTL } from '@/lib/is-rtl'
+   
+   export default async function LocaleLayout({
+     children,
+     params: { locale },
+   }: {
+     children: React.ReactNode
+     params: { locale: string }
+   }) {
+     // ...load messages
+     
+     const dir = isRTL(locale) ? 'rtl' : 'ltr'
+     
+     return (
+       <html lang={locale} dir={dir}>
+         <body className={isRTL(locale) ? 'rtl' : 'ltr'}>
+           <NextIntlClientProvider locale={locale} messages={messages}>
+             {children}
+           </NextIntlClientProvider>
+         </body>
+       </html>
+     )
+   }
+   ```
+
+2. REQUIRED: RTL styles with Tailwind:
+   ```typescript
+   // tailwind.config.js
+   module.exports = {
+     theme: {
+       extend: {
+         // ... other extensions
+       },
+     },
+     plugins: [
+       require('tailwindcss-rtl'),
+     ],
+   }
+   
+   // Usage in components
+   <div className="pl-4 rtl:pr-4 rtl:pl-0">
+     This will have left padding in LTR and right padding in RTL.
+   </div>
+   ```
+
+## 8. Translation Management Process (P2)
+
+1. REQUIRED: Translation workflow:
+   ```markdown
+   # Translation Workflow
+   
+   1. Extract new messages from codebase
+   2. Send to translators (or translate with AI assistance)
+   3. Review translations for accuracy and context
+   4. Import new translations
+   5. Verify translations in context
+   
+   ## Key Management Rules
+   
+   1. Use dot notation for hierarchical keys (e.g., 'Auth.login')
+   2. Group related messages under the same namespace
+   3. Reuse common messages across components
+   4. Include context comments for translators
+   5. Handle pluralization properly
+   ```
+
+2. RECOMMENDED: Translation extraction tool:
+   ```typescript
+   // scripts/extract-messages.ts
+   import * as fs from 'fs'
+   import * as path from 'path'
+   import glob from 'glob'
+   
+   // Function to extract messages from code
+   async function extractMessages() {
+     const files = glob.sync('**/*.{ts,tsx}', {
+       ignore: ['node_modules/**', '.next/**'],
+     })
+     
+     const messageRegex = /useTranslations\(['"](.+?)['"]\)/g
+     const messages = new Set<string>()
+     
+     files.forEach(file => {
+       const content = fs.readFileSync(file, 'utf8')
+       let match
+       
+       while ((match = messageRegex.exec(content)) !== null) {
+         messages.add(match[1])
+       }
+     })
+     
+     return Array.from(messages)
+   }
+   
+   // Main execution
+   async function main() {
+     const messages = await extractMessages()
+     
+     console.log('Found namespaces:', messages)
+     
+     // Further processing...
+   }
+   
+   main().catch(console.error)
+   ```
+
+## 9. Performance Optimization (P2)
+
+1. REQUIRED: Bundle optimization:
+   ```typescript
+   // next.config.js
+   /** @type {import('next').NextConfig} */
+   const nextConfig = {
+     // ... other config
+     
+     // Optimize bundle by removing unused locales in Intl API
+     experimental: {
+       optimizePackageImports: ['next-intl'],
+     },
+     
+     // Only include used locales in production builds
+     i18n: {
+       localeDetection: false,
+     },
+     
+     webpack: (config, { dev, isServer }) => {
+       if (!dev && !isServer) {
+         // Only include relevant Intl polyfills for supported locales
+         config.resolve.alias['intl-pluralrules'] = path.resolve(__dirname, './polyfills/intl-pluralrules.js')
+       }
+       return config
+     },
+   }
+   ```
+
+2. RECOMMENDED: Load translations on-demand:
+   ```typescript
+   // lib/load-messages.ts
+   export async function loadMessages(locale: string, namespace?: string) {
+     if (namespace) {
+       return (await import(`../messages/${locale}/${namespace}.json`)).default
+     }
+     
+     return (await import(`../messages/${locale}.json`)).default
+   }
+   
+   // Usage in client component
+   'use client'
+   
+   import { useState, useEffect } from 'react'
+   import { loadMessages } from '@/lib/load-messages'
+   
+   export function DynamicTranslatedContent({ locale, namespace }) {
+     const [messages, setMessages] = useState(null)
+     
+     useEffect(() => {
+       loadMessages(locale, namespace).then(setMessages)
+     }, [locale, namespace])
+     
+     if (!messages) return <div>Loading...</div>
+     
+     return <div>{messages.title}</div>
+   }
+   ```
+
+## 10. SEO and Metadata (P3)
+
+1. RECOMMENDED: Localized metadata:
+   ```typescript
+   // app/[locale]/layout.tsx
+   import { getTranslations } from 'next-intl/server'
+   
+   export async function generateMetadata({ params: { locale } }: {
+     params: { locale: string }
+   }) {
+     const t = await getTranslations({ locale, namespace: 'Metadata' })
+     
+     return {
+       title: {
+         default: t('title'),
+         template: `%s | ${t('title')}`,
+       },
+       description: t('description'),
+       keywords: t('keywords').split(','),
+       openGraph: {
+         title: t('og.title'),
+         description: t('og.description'),
+         locale,
+         alternateLocale: ['en', 'ru', 'fr', 'de'].filter(l => l !== locale),
+       },
+     }
+   }
+   ```
+
+2. OPTIONAL: Hreflang links:
+   ```typescript
+   // app/[locale]/layout.tsx (extended)
+   import { headers } from 'next/headers'
+   
+   export async function generateMetadata({ params: { locale } }: {
+     params: { locale: string }
+   }) {
+     const headersList = headers()
+     const domain = headersList.get('host') || 'example.com'
+     const path = headersList.get('x-pathname') || '/'
+     
+     const alternates = {
+       languages: {
+         'x-default': `https://${domain}/en${path === '/' ? '' : path}`,
+         en: `https://${domain}/en${path === '/' ? '' : path}`,
+         ru: `https://${domain}/ru${path === '/' ? '' : path}`,
+         fr: `https://${domain}/fr${path === '/' ? '' : path}`,
+         de: `https://${domain}/de${path === '/' ? '' : path}`,
+       }
+     }
+     
+     return {
+       // ... other metadata
+       alternates,
+     }
+   }
+   ``` 
