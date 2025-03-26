@@ -1,0 +1,507 @@
+---
+description: Guidelines for enforcing strict type-safety in Next.js applications. Apply when defining data models, API contracts, state management, and UI components. Focuses on replacing string literals with enums, constants, and other type-safe constructs.
+globs:
+alwaysApply: false
+---
+
+# Next.js Type Safety Guidelines
+
+## 1. String Literal Restrictions (P0)
+
+1. CRITICAL: String literal replacement requirements:
+   ```tsx
+   // 🚫 FORBIDDEN: Direct string literals for identifiers
+   const userRole = "admin";
+   if (user.role === "admin") { /* ... */ }
+   
+   // ✅ REQUIRED: Enum usage
+   enum UserRole {
+     ADMIN = "admin",
+     EDITOR = "editor",
+     VIEWER = "viewer",
+   }
+   
+   const userRole = UserRole.ADMIN;
+   if (user.role === UserRole.ADMIN) { /* ... */ }
+   ```
+
+2. REQUIRED: Const enums for better performance:
+   ```tsx
+   // Better performance with const enums
+   const enum UserRole {
+     ADMIN = "admin",
+     EDITOR = "editor",
+     VIEWER = "viewer",
+   }
+   
+   // Transpiles to direct value in JavaScript
+   const role = UserRole.ADMIN; // becomes "admin" at compile time
+   ```
+
+3. ESSENTIAL: String literal union types:
+   ```tsx
+   // When enums aren't suitable, use union types
+   type UserRole = "admin" | "editor" | "viewer";
+   
+   // With declared constant objects
+   const USER_ROLES = {
+     ADMIN: "admin" as const,
+     EDITOR: "editor" as const,
+     VIEWER: "viewer" as const,
+   };
+   
+   const userRole: UserRole = USER_ROLES.ADMIN;
+   ```
+
+## 2. Constant Collection Patterns (P0)
+
+1. CRITICAL: Creating type-safe constants:
+   ```tsx
+   // constants/routes.ts
+   export const ROUTES = {
+     HOME: '/' as const,
+     DASHBOARD: '/dashboard' as const,
+     SETTINGS: '/settings' as const,
+     PROFILE: (userId: string) => `/profile/${userId}` as const,
+   };
+   
+   // Usage
+   router.push(ROUTES.DASHBOARD);
+   ```
+
+2. REQUIRED: Derived type from constants:
+   ```tsx
+   // constants/apiEndpoints.ts
+   export const API_ENDPOINTS = {
+     USERS: '/api/users' as const,
+     USER_DETAILS: (id: string) => `/api/users/${id}` as const,
+     POSTS: '/api/posts' as const,
+   };
+   
+   // Derive type from the constant
+   export type ApiEndpoint = keyof typeof API_ENDPOINTS;
+   
+   // In a function
+   function fetchFromApi(endpoint: ApiEndpoint, options?: RequestInit) {
+     // Implementation
+   }
+   ```
+
+3. ESSENTIAL: Namespacing for related constants:
+   ```tsx
+   // constants/index.ts
+   export namespace AppConstants {
+     export namespace Permissions {
+       export const READ = 'read' as const;
+       export const WRITE = 'write' as const;
+       export const DELETE = 'delete' as const;
+     }
+     
+     export namespace Themes {
+       export const LIGHT = 'light' as const;
+       export const DARK = 'dark' as const;
+       export const SYSTEM = 'system' as const;
+     }
+   }
+   
+   // Usage
+   const requiredPermission = AppConstants.Permissions.WRITE;
+   ```
+
+## 3. Event Handling and Actions (P1)
+
+1. CRITICAL: Typed event names:
+   ```tsx
+   // 🚫 FORBIDDEN: String literals for event names
+   element.addEventListener("click", handleClick);
+   emitter.emit("user-login", userData);
+   
+   // ✅ REQUIRED: Constant-based event handling
+   const EVENTS = {
+     CLICK: 'click' as const,
+     USER_LOGIN: 'user-login' as const,
+     DATA_LOADED: 'data-loaded' as const,
+   };
+   
+   element.addEventListener(EVENTS.CLICK, handleClick);
+   emitter.emit(EVENTS.USER_LOGIN, userData);
+   ```
+
+2. REQUIRED: Redux/state management action types:
+   ```tsx
+   // 🚫 FORBIDDEN
+   dispatch({ type: "ADD_TODO", payload: todo });
+   
+   // ✅ REQUIRED
+   const ACTION_TYPES = {
+     ADD_TODO: 'ADD_TODO' as const,
+     REMOVE_TODO: 'REMOVE_TODO' as const,
+     TOGGLE_TODO: 'TOGGLE_TODO' as const,
+   };
+   
+   // With action creators
+   const addTodo = (todo: Todo) => ({
+     type: ACTION_TYPES.ADD_TODO,
+     payload: todo,
+   });
+   
+   // Usage
+   dispatch(addTodo(newTodo));
+   ```
+
+3. ESSENTIAL: Complete action typing with reducers:
+   ```tsx
+   // Redux action type definition
+   type TodoAction = 
+     | { type: typeof ACTION_TYPES.ADD_TODO; payload: Todo }
+     | { type: typeof ACTION_TYPES.REMOVE_TODO; payload: { id: string } }
+     | { type: typeof ACTION_TYPES.TOGGLE_TODO; payload: { id: string } };
+   
+   // Reducer with proper type safety
+   function todoReducer(state: TodoState, action: TodoAction): TodoState {
+     switch (action.type) {
+       case ACTION_TYPES.ADD_TODO:
+         return { ...state, todos: [...state.todos, action.payload] };
+       case ACTION_TYPES.REMOVE_TODO:
+         return {
+           ...state,
+           todos: state.todos.filter(todo => todo.id !== action.payload.id)
+         };
+       case ACTION_TYPES.TOGGLE_TODO:
+         return {
+           ...state,
+           todos: state.todos.map(todo => 
+             todo.id === action.payload.id 
+               ? { ...todo, completed: !todo.completed } 
+               : todo
+           )
+         };
+       default:
+         return state;
+     }
+   }
+   ```
+
+## 4. Error and Status Codes (P1)
+
+1. CRITICAL: HTTP status codes:
+   ```tsx
+   // 🚫 FORBIDDEN
+   if (response.status === 404) { /* ... */ }
+   
+   // ✅ REQUIRED
+   const HTTP_STATUS = {
+     OK: 200 as const,
+     CREATED: 201 as const,
+     BAD_REQUEST: 400 as const,
+     UNAUTHORIZED: 401 as const,
+     FORBIDDEN: 403 as const,
+     NOT_FOUND: 404 as const,
+     INTERNAL_SERVER_ERROR: 500 as const,
+   };
+   
+   if (response.status === HTTP_STATUS.NOT_FOUND) {
+     // Handle not found
+   }
+   ```
+
+2. REQUIRED: Error codes for API responses:
+   ```tsx
+   // Define specific error codes
+   export const ERROR_CODES = {
+     INVALID_INPUT: 'E001' as const,
+     UNAUTHORIZED: 'E002' as const,
+     RESOURCE_NOT_FOUND: 'E003' as const,
+     SERVER_ERROR: 'E004' as const,
+   };
+   
+   // Define error response type
+   interface ErrorResponse {
+     code: typeof ERROR_CODES[keyof typeof ERROR_CODES];
+     message: string;
+     details?: any;
+   }
+   
+   // Error handling
+   if (error.code === ERROR_CODES.UNAUTHORIZED) {
+     redirectToLogin();
+   }
+   ```
+
+3. ESSENTIAL: Application state indicators:
+   ```tsx
+   // Loading states
+   export const LOADING_STATE = {
+     IDLE: 'idle' as const,
+     LOADING: 'loading' as const,
+     SUCCESS: 'success' as const,
+     ERROR: 'error' as const,
+   };
+   
+   // In a component
+   const [state, setState] = useState<typeof LOADING_STATE[keyof typeof LOADING_STATE]>(
+     LOADING_STATE.IDLE
+   );
+   
+   // Type-safe usage
+   if (state === LOADING_STATE.LOADING) {
+     return <LoadingSpinner />;
+   }
+   ```
+
+## 5. Component Props and UI States (P1)
+
+1. CRITICAL: Component variant types:
+   ```tsx
+   // 🚫 FORBIDDEN
+   <Button variant="primary" size="large">Click me</Button>
+   
+   // ✅ REQUIRED
+   const BUTTON_VARIANTS = {
+     PRIMARY: 'primary' as const,
+     SECONDARY: 'secondary' as const,
+     OUTLINE: 'outline' as const,
+     GHOST: 'ghost' as const,
+   };
+   
+   const BUTTON_SIZES = {
+     SMALL: 'small' as const,
+     MEDIUM: 'medium' as const,
+     LARGE: 'large' as const,
+   };
+   
+   type ButtonVariant = typeof BUTTON_VARIANTS[keyof typeof BUTTON_VARIANTS];
+   type ButtonSize = typeof BUTTON_SIZES[keyof typeof BUTTON_SIZES];
+   
+   interface ButtonProps {
+     variant: ButtonVariant;
+     size: ButtonSize;
+     children: React.ReactNode;
+     onClick?: () => void;
+   }
+   
+   <Button 
+     variant={BUTTON_VARIANTS.PRIMARY} 
+     size={BUTTON_SIZES.LARGE}
+   >
+     Click me
+   </Button>
+   ```
+
+2. REQUIRED: Form field types:
+   ```tsx
+   // Define field types
+   const FIELD_TYPES = {
+     TEXT: 'text' as const,
+     EMAIL: 'email' as const,
+     PASSWORD: 'password' as const,
+     NUMBER: 'number' as const,
+     DATE: 'date' as const,
+   };
+   
+   type FieldType = typeof FIELD_TYPES[keyof typeof FIELD_TYPES];
+   
+   // In a component
+   interface InputFieldProps {
+     type: FieldType;
+     name: string;
+     value: string | number;
+     onChange: (value: string | number) => void;
+   }
+   
+   function InputField({ type, name, value, onChange }: InputFieldProps) {
+     // Implementation
+   }
+   
+   // Usage
+   <InputField
+     type={FIELD_TYPES.EMAIL}
+     name="email"
+     value={email}
+     onChange={setEmail}
+   />
+   ```
+
+3. ESSENTIAL: UI state machines:
+   ```tsx
+   // Define UI states
+   const MODAL_STATES = {
+     CLOSED: 'closed' as const,
+     OPENING: 'opening' as const,
+     OPEN: 'open' as const,
+     CLOSING: 'closing' as const,
+   };
+   
+   type ModalState = typeof MODAL_STATES[keyof typeof MODAL_STATES];
+   
+   // In component
+   const [modalState, setModalState] = useState<ModalState>(MODAL_STATES.CLOSED);
+   
+   const openModal = () => {
+     setModalState(MODAL_STATES.OPENING);
+     // Animation logic
+     setTimeout(() => setModalState(MODAL_STATES.OPEN), 300);
+   };
+   
+   // Type-safe condition
+   const isModalVisible = 
+     modalState === MODAL_STATES.OPENING || 
+     modalState === MODAL_STATES.OPEN;
+   ```
+
+## 6. API Parameters and Responses (P2)
+
+1. REQUIRED: API parameter constants:
+   ```tsx
+   // 🚫 FORBIDDEN
+   const url = `/api/search?sort=asc&filter=active`;
+   
+   // ✅ REQUIRED
+   const SORT_DIRECTIONS = {
+     ASC: 'asc' as const,
+     DESC: 'desc' as const,
+   };
+   
+   const FILTER_TYPES = {
+     ALL: 'all' as const,
+     ACTIVE: 'active' as const,
+     ARCHIVED: 'archived' as const,
+   };
+   
+   type SortDirection = typeof SORT_DIRECTIONS[keyof typeof SORT_DIRECTIONS];
+   type FilterType = typeof FILTER_TYPES[keyof typeof FILTER_TYPES];
+   
+   // Build URL with type safety
+   function buildSearchUrl(sort: SortDirection, filter: FilterType): string {
+     return `/api/search?sort=${sort}&filter=${filter}`;
+   }
+   
+   // Usage
+   const url = buildSearchUrl(SORT_DIRECTIONS.ASC, FILTER_TYPES.ACTIVE);
+   ```
+
+2. RECOMMENDED: Zod schemas for API validation:
+   ```tsx
+   import { z } from 'zod';
+   
+   // Constants for field requirements
+   const USERNAME_MIN_LENGTH = 3;
+   const USERNAME_MAX_LENGTH = 20;
+   const PASSWORD_MIN_LENGTH = 8;
+   
+   // Schema with constants
+   const userSchema = z.object({
+     username: z.string()
+       .min(USERNAME_MIN_LENGTH, `Username must be at least ${USERNAME_MIN_LENGTH} characters`)
+       .max(USERNAME_MAX_LENGTH, `Username cannot exceed ${USERNAME_MAX_LENGTH} characters`),
+     email: z.string().email(),
+     password: z.string().min(PASSWORD_MIN_LENGTH),
+     role: z.enum([
+       UserRole.ADMIN, 
+       UserRole.EDITOR, 
+       UserRole.VIEWER
+     ]),
+   });
+   
+   // Derived type
+   type User = z.infer<typeof userSchema>;
+   
+   // Validation
+   function validateUser(data: unknown): User {
+     return userSchema.parse(data);
+   }
+   ```
+
+## 7. Environment Variables (P2)
+
+1. REQUIRED: Environment variable constants:
+   ```tsx
+   // constants/env.ts
+   
+   // 🚫 FORBIDDEN
+   const apiKey = process.env.NEXT_PUBLIC_API_KEY;
+   
+   // ✅ REQUIRED
+   export const ENV = {
+     API_KEY: process.env.NEXT_PUBLIC_API_KEY as string,
+     API_URL: process.env.NEXT_PUBLIC_API_URL as string,
+     NODE_ENV: process.env.NODE_ENV as 'development' | 'production' | 'test',
+     DEBUG_MODE: process.env.NEXT_PUBLIC_DEBUG_MODE === 'true',
+   };
+   
+   // Usage with type safety
+   fetch(`${ENV.API_URL}/data`, {
+     headers: {
+       'Authorization': `Bearer ${ENV.API_KEY}`
+     }
+   });
+   ```
+
+2. RECOMMENDED: Environment variable validation:
+   ```tsx
+   // utils/validateEnv.ts
+   function validateEnv() {
+     const requiredVars = [
+       'NEXT_PUBLIC_API_KEY',
+       'NEXT_PUBLIC_API_URL'
+     ];
+     
+     const missingVars = requiredVars.filter(
+       varName => !process.env[varName]
+     );
+     
+     if (missingVars.length > 0) {
+       throw new Error(
+         `Missing required environment variables: ${missingVars.join(', ')}`
+       );
+     }
+   }
+   
+   // In _app.tsx or main entry point
+   validateEnv();
+   ```
+
+## 8. Migration Strategies (P3)
+
+1. RECOMMENDED: Gradual migration approach:
+   ```tsx
+   // 1. First, identify string literals in the codebase
+   // Tools: ESLint with no-string-literals rule
+   
+   // 2. Create constants files for each domain
+   
+   // 3. Replace literals one module at a time
+   
+   // 4. Add ESLint rule to prevent regressions
+   // .eslintrc.js
+   module.exports = {
+     rules: {
+       'no-restricted-syntax': [
+         'error',
+         {
+           selector: "Literal[value=/.+/]",
+           message: "String literals are not allowed. Use constants instead."
+         }
+       ]
+     }
+   }
+   ```
+
+2. OPTIONAL: Legacy code handling:
+   ```tsx
+   // For legacy code with many string literals
+   // Create a wrapper function to enforce type checking
+   
+   const ALLOWED_ROLES = ['admin', 'editor', 'viewer'] as const;
+   type AllowedRole = typeof ALLOWED_ROLES[number];
+   
+   function validateRole(role: string): AllowedRole {
+     if (ALLOWED_ROLES.includes(role as AllowedRole)) {
+       return role as AllowedRole;
+     }
+     throw new Error(`Invalid role: ${role}`);
+   }
+   
+   // In legacy code
+   const userRole = validateRole(userData.role);
+   

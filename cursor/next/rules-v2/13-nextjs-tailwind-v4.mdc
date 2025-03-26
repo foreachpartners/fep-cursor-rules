@@ -1,0 +1,395 @@
+---
+description: Guidelines for using Tailwind CSS v4 in Next.js applications. Apply when setting up, customizing, and optimizing Tailwind v4 styles, utilities, and components.
+globs:
+alwaysApply: false
+---
+
+# Next.js Tailwind CSS v4 Guidelines
+
+## 1. Installation and Setup (P0)
+
+1. CRITICAL: Initial installation:
+   ```bash
+   # Install Tailwind CSS v4
+   npm install tailwindcss@next
+   
+   # Initialize tailwind.config.js
+   npx tailwindcss init
+   ```
+
+2. REQUIRED: Configuration file setup:
+   ```js
+   // tailwind.config.js
+   /** @type {import('tailwindcss').Config} */
+   module.exports = {
+     content: [
+       './app/**/*.{js,ts,jsx,tsx,mdx}',
+       './pages/**/*.{js,ts,jsx,tsx,mdx}',
+       './components/**/*.{js,ts,jsx,tsx,mdx}',
+     ],
+     theme: {
+       extend: {},
+     },
+     plugins: [],
+   }
+   ```
+
+3. ESSENTIAL: CSS setup:
+   ```css
+   /* app/globals.css */
+   @import 'tailwindcss';
+   
+   @layer base {
+     :root {
+       --foreground-rgb: 0, 0, 0;
+       --background-rgb: 255, 255, 255;
+     }
+     
+     @media (prefers-color-scheme: dark) {
+       :root {
+         --foreground-rgb: 255, 255, 255;
+         --background-rgb: 0, 0, 0;
+       }
+     }
+     
+     body {
+       color: rgb(var(--foreground-rgb));
+       background: rgb(var(--background-rgb));
+     }
+   }
+   ```
+
+## 2. Tailwind v4 Syntax Upgrades (P0)
+
+1. CRITICAL: New arbitrary property syntax:
+   ```jsx
+   // Old Tailwind v3 syntax (still supported)
+   <div className="[mask-type:luminance]">...</div>
+   
+   // New Tailwind v4 syntax
+   <div className="@[mask-type:luminance]">...</div>
+   ```
+
+2. REQUIRED: Arbitrary group syntax:
+   ```jsx
+   // Old Tailwind v3 syntax
+   <div className="group">
+     <div className="group-hover:text-red-500">...</div>
+   </div>
+   
+   // New Tailwind v4 syntax
+   <div className="@[&:hover]:text-red-500">...</div>
+   ```
+
+3. ESSENTIAL: Leveraging `@apply` with new syntax:
+   ```css
+   /* components/Button.module.css */
+   .button {
+     @apply bg-blue-500 text-white py-2 px-4 rounded;
+     @apply @[&:hover]:bg-blue-600 @[&:focus]:ring-2 @[&:focus]:ring-blue-300;
+   }
+   ```
+
+## 3. Color Opacity Handling (P0)
+
+1. CRITICAL: New opacity value syntax:
+   ```jsx
+   // Old Tailwind v3 syntax
+   <div className="bg-blue-500/50">...</div>
+   
+   // New Tailwind v4 syntax
+   <div className="bg-blue-500-50%">...</div>
+   ```
+
+2. REQUIRED: Alpha value support:
+   ```jsx
+   // Variable opacity from variables
+   <div className="bg-blue-500-[var(--opacity)]">...</div>
+   
+   // With arbitrary colors
+   <div className="bg-[#ff5733]-50%">...</div>
+   <div className="bg-[rgb(255,87,51)]-50%">...</div>
+   <div className="text-[hsl(13,100%,60%)]-50%">...</div>
+   ```
+
+3. ESSENTIAL: CSS variables with opacity:
+   ```css
+   /* app/globals.css */
+   @layer base {
+     :root {
+       --color-primary: 59 130 246; /* blue-500 */
+       --opacity-subtle: 50%;
+     }
+   }
+   ```
+   
+   ```jsx
+   // Component usage
+   <div className="bg-[rgb(var(--color-primary))]-[var(--opacity-subtle)]">
+     Semi-transparent blue background
+   </div>
+   ```
+
+## 4. New Viewport Units (P1)
+
+1. CRITICAL: Large and small viewport units:
+   ```jsx
+   // Large viewport units (ignore UI elements)
+   <div className="h-100lvh w-100lvw">Full large viewport</div>
+   
+   // Small viewport units (account for mobile UI elements)
+   <div className="h-100svh w-100svw">Full small viewport</div>
+   
+   // Dynamic viewport units (change based on UI elements visibility)
+   <div className="h-100dvh w-100dvw">Full dynamic viewport</div>
+   ```
+
+2. REQUIRED: Custom viewport unit config:
+   ```js
+   // tailwind.config.js
+   module.exports = {
+     theme: {
+       extend: {
+         height: {
+           'screen-sm': '100svh',
+           'screen-lg': '100lvh',
+           'screen-dyn': '100dvh',
+         },
+         minHeight: {
+           'screen-sm': '100svh',
+           'screen-lg': '100lvh',
+           'screen-dyn': '100dvh',
+         },
+       },
+     },
+   }
+   ```
+
+3. ESSENTIAL: Mobile-friendly layouts:
+   ```jsx
+   // Automatically adjusts to avoid mobile browser UI interference
+   <div className="min-h-screen-sm flex flex-col">
+     <header className="h-16">Header</header>
+     <main className="flex-1">
+       Content that adjusts to the visible viewport
+     </main>
+     <footer className="h-16">Footer</footer>
+   </div>
+   ```
+
+## 5. Container Queries (P1)
+
+1. CRITICAL: Container query syntax:
+   ```jsx
+   <div className="@container">
+     <div className="@lg:text-2xl @sm:text-lg text-base">
+       Responsive to parent size, not viewport
+     </div>
+   </div>
+   ```
+
+2. REQUIRED: Custom container query breakpoints:
+   ```js
+   // tailwind.config.js
+   module.exports = {
+     theme: {
+       extend: {
+         // Define custom container query breakpoints
+         containerQueries: {
+           'card-sm': '200px',
+           'card-md': '300px',
+           'card-lg': '400px',
+         },
+       },
+     },
+   }
+   ```
+   
+   ```jsx
+   // Component usage
+   <div className="@container">
+     <div className="@card-sm:p-2 @card-md:p-4 @card-lg:p-6">
+       Content adapts to parent container width
+     </div>
+   </div>
+   ```
+
+3. ESSENTIAL: Practical application:
+   ```jsx
+   // GridCard component that adapts based on its container size
+   function GridCard({ title, content, image }) {
+     return (
+       <div className="@container border rounded-lg overflow-hidden">
+         <div className="@card-md:flex @card-sm:block">
+           <div className="@card-md:w-1/3 @card-sm:w-full">
+             <img 
+               src={image} 
+               alt={title} 
+               className="w-full h-full object-cover @card-sm:h-48"
+             />
+           </div>
+           <div className="@card-md:w-2/3 @card-sm:w-full p-4">
+             <h3 className="@card-lg:text-xl @card-md:text-lg font-bold">{title}</h3>
+             <p className="@card-md:mt-2 @card-sm:mt-1 @card-lg:text-base @card-sm:text-sm">
+               {content}
+             </p>
+           </div>
+         </div>
+       </div>
+     )
+   }
+   ```
+
+## 6. Scroll-Linked Animations (P1)
+
+1. CRITICAL: Scroll-triggered animations:
+   ```jsx
+   <div className="@[view(0px 0px 100px 0px)]:animate-fade-in">
+     This fades in when it enters the viewport
+   </div>
+   ```
+
+2. REQUIRED: Configuring view() options:
+   ```jsx
+   // Element that only animates once it's fully in the viewport
+   <div className="@[view(0% 0% 0% 0%)]:animate-slide-in">
+     Only animates when fully visible
+   </div>
+   
+   // Element that animates when it's 50% in the viewport
+   <div className="@[view(50% 0% 50% 0%)]:animate-slide-in">
+     Animates at 50% visibility
+   </div>
+   ```
+
+3. ESSENTIAL: Custom animation keyframes:
+   ```js
+   // tailwind.config.js
+   module.exports = {
+     theme: {
+       extend: {
+         keyframes: {
+           'fade-in': {
+             '0%': { opacity: '0' },
+             '100%': { opacity: '1' },
+           },
+           'slide-in': {
+             '0%': { transform: 'translateY(20px)', opacity: '0' },
+             '100%': { transform: 'translateY(0)', opacity: '1' },
+           },
+         },
+         animation: {
+           'fade-in': 'fade-in 0.5s ease-out forwards',
+           'slide-in': 'slide-in 0.5s ease-out forwards',
+         },
+       },
+     },
+   }
+   ```
+
+## 7. New Color Features (P2)
+
+1. REQUIRED: CSS color functions:
+   ```css
+   /* app/globals.css */
+   @layer base {
+     :root {
+       --brand-color: #3b82f6; /* blue-500 */
+     }
+   }
+   
+   @layer utilities {
+     .text-brand-lighter {
+       color: color-mix(in srgb, var(--brand-color), white 30%);
+     }
+     
+     .text-brand-darker {
+       color: color-mix(in srgb, var(--brand-color), black 20%);
+     }
+     
+     .bg-brand-alpha {
+       background-color: rgb(from var(--brand-color) r g b / 50%);
+     }
+   }
+   ```
+
+2. RECOMMENDED: Relative color utilities:
+   ```js
+   // tailwind.config.js
+   module.exports = {
+     theme: {
+       extend: {
+         // Define color relationships
+         colors: {
+           primary: {
+             DEFAULT: 'rgb(var(--color-primary) / <alpha-value>)',
+             light: 'color-mix(in srgb, rgb(var(--color-primary)), white 30%)',
+             dark: 'color-mix(in srgb, rgb(var(--color-primary)), black 20%)',
+           },
+         },
+       },
+     },
+   }
+   ```
+
+## 8. Performance Optimizations (P2)
+
+1. REQUIRED: Content transform for better tree-shaking:
+   ```js
+   // tailwind.config.js
+   /** @type {import('tailwindcss').Config} */
+   module.exports = {
+     content: {
+       files: [
+         './app/**/*.{js,ts,jsx,tsx,mdx}',
+         './pages/**/*.{js,ts,jsx,tsx,mdx}',
+         './components/**/*.{js,ts,jsx,tsx,mdx}',
+       ],
+       transform: {
+         // Transform dynamic class name expressions
+         // to help Tailwind's content scanner find them
+         jsx: (content) => {
+           // Example: find dynamic classes in template literals
+           return content.replace(/\$\{([^}]+)\}/g, (match) => {
+             // Replace with classes that might be used
+             return 'text-dynamic bg-dynamic p-1 p-2 p-3 p-4';
+           });
+         },
+       },
+     },
+     // rest of config
+   }
+   ```
+
+2. RECOMMENDED: Advanced CSS optimization:
+   ```js
+   // postcss.config.js
+   module.exports = {
+     plugins: {
+       tailwindcss: {},
+       autoprefixer: {},
+       ...(process.env.NODE_ENV === 'production'
+         ? {
+             cssnano: {
+               preset: ['default', { discardComments: { removeAll: true } }],
+             },
+           }
+         : {}),
+     },
+   }
+   ```
+
+3. OPTIONAL: Just-in-time mode configuration:
+   ```js
+   // tailwind.config.js
+   module.exports = {
+     mode: 'jit',  // Explicitly enable JIT mode (though it's the default in v4)
+     safelist: [
+       // Add any dynamic classes that might not be detected
+       'bg-red-500', 'bg-green-500', 'bg-blue-500',
+       {
+         pattern: /^p-[1-4]$/,  // Will include p-1, p-2, p-3, p-4
+       },
+     ],
+   }
+   ``` 
