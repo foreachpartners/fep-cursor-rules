@@ -1,10 +1,12 @@
 ---
-description: Comprehensive guidelines for implementing API and data management layers in Next.js applications. Apply when building API clients, data fetching, and state management.
+description: Guidelines for implementing API routes, data fetching, and state management in Next.js applications. Apply when building server-side APIs, client-side data access, and data caching.
 globs:
 alwaysApply: false
 ---
 
 # Next.js API and Data Layer Guidelines
+
+This file complements the type safety rules in @3-nextjs-type-system.mdc and @14-nextjs-type-safety.mdc, focusing specifically on API implementation and data management.
 
 ## 1. API Route Implementation (P0)
 

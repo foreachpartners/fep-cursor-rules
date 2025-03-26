@@ -1,5 +1,5 @@
 ---
-description: Comprehensive UI and styling guidelines for Next.js applications. Apply when implementing UI components, layouts, and design systems.
+description: Guidelines for UI components, styling, and design systems in Next.js applications. Apply when implementing visual elements, layouts, and theming solutions.
 globs:
 alwaysApply: false
 ---
@@ -334,6 +334,8 @@ alwaysApply: false
    export { Button, buttonVariants }
    ```
 
+3. ESSENTIAL: For detailed shadcn/ui configuration guidelines, see @11-nextjs-shadcn-ui.mdc
+
 ## 4. CSS Organization (P0)
 
 1. CRITICAL: CSS module naming:
@@ -420,6 +422,8 @@ alwaysApply: false
      ))}
    </div>
    ```
+
+3. ESSENTIAL: For Tailwind v4 responsive features, see @13-nextjs-tailwind-v4.mdc sections 4 and 5
 
 ## 6. Theme Management (P1)
 
@@ -681,9 +685,11 @@ alwaysApply: false
    }
    ```
 
-## 10. Visual Feedback (P3)
+2. ESSENTIAL: For scroll-linked animations, see @13-nextjs-tailwind-v4.mdc section 6
 
-1. RECOMMENDED: Loading states:
+## 10. Visual Feedback (P2)
+
+1. REQUIRED: Loading states:
    ```typescript
    // components/ui/loading-spinner.tsx
    import { cn } from "@/lib/utils"
@@ -710,7 +716,7 @@ alwaysApply: false
    }
    ```
 
-2. OPTIONAL: Skeleton components:
+2. RECOMMENDED: Skeleton components:
    ```typescript
    // components/ui/skeleton.tsx
    import { cn } from "@/lib/utils"
