@@ -1,0 +1,268 @@
+---
+description: Guidelines for implementing API integration in Next.js applications. Apply when building API endpoints, server actions, data fetching, and state management.
+globs:
+alwaysApply: false
+---
+
+# Next.js API Guidelines
+
+## 1. Purpose (P0)
+
+1. These guidelines ensure consistent implementation of API features in Next.js applications
+2. Apply when creating API routes, server actions, data fetching, and state management
+3. Follow type-safety principles throughout the implementation
+
+## 2. Server-Side Implementation (P0)
+
+1. CRITICAL: Implement route handlers with validation and error handling:
+   ```typescript
+   // app/api/[resource]/route.ts
+   import { NextResponse } from "next/server"
+   import { z } from "zod"
+   
+   const ResourceSchema = z.object({
+     // Define your schema
+   })
+   
+   export async function GET(request: Request) {
+     try {
+       // Handle GET request
+       return NextResponse.json({ data: null, error: null })
+     } catch (error) {
+       return NextResponse.json(
+         { data: null, error: { code: "INTERNAL_ERROR", message: String(error) }},
+         { status: 500 }
+       )
+     }
+   }
+   
+   export async function POST(request: Request) {
+     try {
+       const body = await request.json()
+       const result = ResourceSchema.safeParse(body)
+       
+       if (!result.success) {
+         return NextResponse.json(
+           { data: null, error: { code: "VALIDATION_ERROR", message: "Invalid data" }},
+           { status: 400 }
+         )
+       }
+       
+       return NextResponse.json({ data: null, error: null }, { status: 201 })
+     } catch (error) {
+       return NextResponse.json(
+         { data: null, error: { code: "INTERNAL_ERROR", message: String(error) }},
+         { status: 500 }
+       )
+     }
+   }
+   ```
+
+2. REQUIRED: Implement server actions with validation:
+   ```typescript
+   // lib/actions.ts
+   "use server"
+   
+   import { revalidatePath } from "next/cache"
+   import { z } from "zod"
+   
+   const UserSchema = z.object({
+     name: z.string().min(2),
+     email: z.string().email(),
+   })
+   
+   export async function createUser(formData: FormData) {
+     const result = UserSchema.safeParse({
+       name: formData.get("name"),
+       email: formData.get("email"),
+     })
+     
+     if (!result.success) {
+       return { error: result.error.format(), data: null }
+     }
+     
+     try {
+       // Handle user creation
+       revalidatePath("/users")
+       return { data: null, error: null }
+     } catch (error) {
+       return { error: { message: String(error) }, data: null }
+     }
+   }
+   ```
+
+## 3. Client-Side Implementation (P0)
+
+1. CRITICAL: Implement type-safe API client:
+   ```typescript
+   // lib/api/client.ts
+   import { AppError } from "@/lib/errors"
+   
+   export class ApiClient {
+     constructor(private baseUrl = "/api") {}
+     
+     async request<T>(path: string, options: RequestInit = {}): Promise<T> {
+       const response = await fetch(`${this.baseUrl}${path}`, {
+         ...options,
+         headers: {
+           "Content-Type": "application/json",
+           ...options.headers,
+         },
+       })
+       
+       const data = await response.json()
+       
+       if (!response.ok) {
+         throw new AppError(
+           data.error?.code || "API_ERROR",
+           data.error?.message || "API request failed"
+         )
+       }
+       
+       return data
+     }
+     
+     get<T>(path: string, options?: RequestInit) {
+       return this.request<T>(path, { ...options, method: "GET" })
+     }
+     
+     post<T>(path: string, body: unknown, options?: RequestInit) {
+       return this.request<T>(path, {
+         ...options,
+         method: "POST",
+         body: JSON.stringify(body),
+       })
+     }
+   }
+   
+   // lib/api/users.ts
+   const UserSchema = z.object({
+     id: z.string(),
+     name: z.string(),
+     email: z.string().email(),
+   })
+   
+   export class UserApi {
+     async getUsers() {
+       const response = await apiClient.get("/users")
+       return UserSchema.array().parse(response.data)
+     }
+   }
+   ```
+
+2. REQUIRED: Implement TanStack Query integration:
+   ```typescript
+   // hooks/queries/useUsers.ts
+   import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+   import { UserApi } from "@/lib/api/users"
+   
+   const userApi = new UserApi()
+   
+   export function useUsers() {
+     return useQuery({
+       queryKey: ["users"],
+       queryFn: () => userApi.getUsers(),
+     })
+   }
+   
+   // app/providers.tsx
+   const queryClient = new QueryClient({
+     defaultOptions: {
+       queries: {
+         staleTime: 60 * 1000,
+         retry: 1,
+       },
+     },
+   })
+   
+   export function Providers({ children }: { children: React.ReactNode }) {
+     return (
+       <QueryClientProvider client={queryClient}>
+         {children}
+         {process.env.NODE_ENV === "development" && <ReactQueryDevtools />}
+       </QueryClientProvider>
+     )
+   }
+   ```
+
+## 4. Error Handling (P1)
+
+1. CRITICAL: Implement shared error utilities:
+   ```typescript
+   // lib/errors.ts
+   export class AppError extends Error {
+     constructor(
+       public code: string,
+       message: string,
+       public details?: Record<string, unknown>
+     ) {
+       super(message)
+       this.name = "AppError"
+     }
+   }
+   
+   // components/ErrorBoundary.tsx
+   export function ErrorBoundary({ children }: { children: React.ReactNode }) {
+     const { reset } = useQueryErrorResetBoundary()
+     
+     return (
+       <ReactErrorBoundary
+         onReset={reset}
+         fallbackRender={({ error, resetErrorBoundary }) => (
+           <div role="alert">
+             <p>Something went wrong:</p>
+             <pre>{error.message}</pre>
+             <button onClick={resetErrorBoundary}>Try again</button>
+           </div>
+         )}
+       >
+         {children}
+       </ReactErrorBoundary>
+     )
+   }
+   ```
+
+## 5. Bad Practices to Avoid (P1)
+
+1. CRITICAL: Never expose internal errors:
+   ```typescript
+   // Bad example - exposing errors
+   export async function GET() {
+     try {
+       const result = await db.query("SELECT * FROM users")
+       return NextResponse.json(result) // DON'T DO THIS
+     } catch (error) {
+       return NextResponse.json({ error: error.message }, { status: 500 }) // DON'T DO THIS
+     }
+   }
+   ```
+
+2. REQUIRED: Avoid mixing client and server code:
+   ```typescript
+   // Bad example - mixing concerns
+   async function UserProfile({ userId }: { userId: string }) {
+     const user = await prisma.user.findUnique({ where: { id: userId }})
+     return (
+       <div>
+         <h1>{user.name}</h1>
+         <button onClick={() => fetch(`/api/users/${userId}`)}>Refresh</button>
+       </div>
+     )
+   }
+   
+   // Good example - separation
+   async function UserProfile({ userId }: { userId: string }) {
+     const user = await prisma.user.findUnique({ where: { id: userId }})
+     return <UserProfileClient user={user} />
+   }
+   
+   function UserProfileClient({ user }: { user: User }) {
+     const { refetch } = useUser(user.id)
+     return (
+       <div>
+         <h1>{user.name}</h1>
+         <button onClick={() => refetch()}>Refresh</button>
+       </div>
+     )
+   }
+   ``` 
