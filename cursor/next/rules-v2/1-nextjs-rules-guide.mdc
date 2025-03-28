@@ -6,9 +6,9 @@ alwaysApply: true
 
 # Next.js Rules Guide
 
-This is the primary rule file for Next.js development. It outlines the core principles, priorities, and technology stack, and provides navigation to more specific rule files.
+This is the primary rule file for Next.js development. It outlines the core principles, priorities, and technology stack, and provides navigation to more specific rule files. ALWAYS start here when consulting the rules.
 
-## Technology Stack
+## Technology Stack (P0)
 
 1. **Core Framework**:
    - Next.js 14.x (App Router)
@@ -37,14 +37,14 @@ This is the primary rule file for Next.js development. It outlines the core prin
    - Internationalization (next-i18next)
    - Telegram Mini Apps SDK
 
-## Priority Levels
+## Priority Levels (P0)
 
-- **P0 (Critical)**: Must be followed. No exceptions.
-- **P1 (Required)**: Must be followed unless there's a justified reason not to.
-- **P2 (Essential)**: Strongly recommended but can be adapted.
-- **P3 (Recommended)**: Best practices, should consider implementing.
+1. **P0 (Critical)**: Must be followed. No exceptions.
+2. **P1 (Required)**: Must be followed unless there's a justified reason not to.
+3. **P2 (Essential)**: Strongly recommended but can be adapted.
+4. **P3 (Recommended)**: Best practices, should consider implementing.
 
-## Core Principles
+## Core Principles (P0)
 
 1. **Developer Experience**: Create maintainable, well-structured code to improve developer productivity.
 2. **Performance**: Optimize for Core Web Vitals and fast rendering.
@@ -53,27 +53,39 @@ This is the primary rule file for Next.js development. It outlines the core prin
 5. **Internationalization**: Design with multilingual support from the beginning.
 6. **Code Organization**: Follow consistent patterns for project structure and code organization.
 
-## Rules Navigation
+## Rules Navigation (P0)
 
-### Project Structure and Architecture
-- **@2-nextjs-code-structure.mdc**: Directory organization, file naming, and module structure
-- **@7-nextjs-dev-experience.mdc**: Development workflow, tooling, and environments
-- **@9-nextjs-package-management.mdc**: pnpm usage and dependency management
+When addressing specific needs, MUST consult these rules in the following order:
 
-### Frontend Implementation
-- **@3-nextjs-type-system.mdc**: TypeScript configuration and type patterns
-- **@14-nextjs-type-safety.mdc**: Strict type safety and string literal prohibitions
-- **@5-nextjs-ui-system.mdc**: UI components, styling, and shadcn/ui integration
-- **@13-nextjs-tailwind-v4.mdc**: Tailwind CSS v4 specific features and patterns
+### 1. Project Foundation
+CRITICAL: Start with these rules when setting up or modifying project structure:
+- **@2-nextjs-code-structure.mdc**: Project organization, file naming conventions, and module architecture
+- **@3-nextjs-type-system.mdc**: TypeScript configuration, type patterns, and best practices
+- **@4-nextjs-testing.mdc**: Testing strategy, unit tests, and integration testing guidelines
 
-### API and Data Layer
-- **@6-nextjs-api-server.mdc**: Server-side API implementation
-- **@6a-nextjs-api-client.mdc**: Client-side data fetching and state management
+### 2. UI Development
+REQUIRED: Follow these rules for frontend implementation:
+- **@5-nextjs-ui-system.mdc**: Component architecture, styling principles, and shadcn/ui usage
+- **@6-nextjs-api.mdc**: API design, data fetching, and state management patterns
+- **@7-nextjs-dev-experience.mdc**: Developer tooling, workflows, and environment setup
 
-### Testing and Performance
-- **@7-nextjs-testing.mdc**: Unit testing methodology and practices
-- **@8-nextjs-performance.mdc**: Performance optimization guidelines
+### 3. Advanced Features
+ESSENTIAL: Implement these rules for production-ready applications:
+- **@8-nextjs-i18n.mdc**: Complete internationalization and localization guide
+- **@9-nextjs-package-management.mdc**: Dependency management and pnpm workspace configuration
+- **@10-nextjs-storybook.mdc**: Component documentation and visual testing
 
-### Specialized Areas
-- **@8-nextjs-i18n.mdc**: Internationalization and localization
-- **@12-nextjs-telegram.mdc**: Telegram Mini Apps development 
+### 4. Production Optimization
+REQUIRED: Apply these rules before deployment:
+- **@11-nextjs-performance.mdc**: Performance optimization and Core Web Vitals
+- **@12-nextjs-telegram.mdc**: Telegram Mini Apps integration and features
+- **@13-nextjs-tailwind-v4.mdc**: Tailwind CSS configuration and utility patterns
+- **@14-nextjs-type-safety.mdc**: Advanced type safety and string literal management
+
+## Rule Application Process (P0)
+
+1. ALWAYS start with this guide (@1-nextjs-rules-guide.mdc)
+2. Follow the Rules Navigation section to identify relevant rules
+3. Apply rules according to their priority levels (P0 → P3)
+4. Reference cross-linked rules when mentioned in any rule file
+5. Return to this guide when switching development contexts 
