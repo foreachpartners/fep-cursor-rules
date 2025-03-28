@@ -1,5 +1,5 @@
 ---
-description: Guidelines for implementing and using Ladle with Next.js applications. Apply when creating, organizing, and documenting UI components.
+description: Guidelines for implementing and using Ladle with Next.js applications. Apply when creating, organizing, and documenting UI components. For component implementation guidelines, refer to @5-nextjs-ui-system.mdc.
 globs:
 alwaysApply: false
 ---

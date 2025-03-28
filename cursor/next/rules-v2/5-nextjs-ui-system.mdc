@@ -286,3 +286,16 @@ alwaysApply: false
      return matches
    }
    ``` 
+
+## 7. Component Documentation and Testing (P2)
+
+1. CRITICAL: Component documentation:
+   - Document component APIs with JSDoc comments
+   - Include examples of component usage
+   - Provide visual documentation using Ladle
+   - For detailed component documentation guidelines, refer to @10-nextjs-ladle.mdc
+
+2. REQUIRED: Component integration:
+   - Test components in isolation using @15-nextjs-unit-testing.mdc patterns
+   - Document component variants and states in Ladle stories
+   - Ensure visual consistency across all components 

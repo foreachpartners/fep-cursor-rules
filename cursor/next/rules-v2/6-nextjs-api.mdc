@@ -265,4 +265,18 @@ alwaysApply: false
        </div>
      )
    }
-   ``` 
+   ```
+
+## 7. API Testing (P1)
+
+1. CRITICAL: API testing strategy:
+   - Test API routes in isolation
+   - Test integration with client-side code
+   - Ensure proper error handling and validation
+   - For detailed API testing guidelines, refer to @4-nextjs-testing.mdc section 6
+
+2. REQUIRED: Mock strategies:
+   - Use MSW for mocking API responses
+   - Create test fixtures for API data
+   - Test error scenarios
+   - For comprehensive mocking strategies, refer to @4-nextjs-testing.mdc section 7 
