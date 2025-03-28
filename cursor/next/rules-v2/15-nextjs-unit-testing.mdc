@@ -1,5 +1,5 @@
 ---
-description: Guidelines for implementing unit tests in Next.js applications.
+description: Specialized guidelines for unit testing in Next.js applications. Apply when implementing component, hook, and utility tests. For comprehensive testing strategy, refer to @4-nextjs-testing.mdc.
 globs:
 alwaysApply: false
 ---

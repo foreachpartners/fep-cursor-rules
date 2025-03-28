@@ -81,6 +81,7 @@ REQUIRED: Apply these rules before deployment:
 - **@12-nextjs-telegram.mdc**: Telegram Mini Apps integration and features
 - **@13-nextjs-tailwind-v4.mdc**: Tailwind CSS configuration and utility patterns
 - **@14-nextjs-type-safety.mdc**: Advanced type safety and string literal management
+- **@15-nextjs-unit-testing.mdc**: Specialized unit testing patterns and best practices
 
 ## Rule Application Process (P0)
 

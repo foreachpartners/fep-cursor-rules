@@ -6,7 +6,31 @@ alwaysApply: false
 
 # Next.js Testing Guidelines
 
-## 1. Testing Framework Setup (P0)
+## 1. Testing Strategy Overview (P0)
+
+1. CRITICAL: Testing types hierarchy:
+   ```
+   - Unit tests: Individual components, functions, hooks
+   - Integration tests: Component interactions, form submissions
+   - API tests: Route handlers, API endpoints
+   - E2E tests: Complete user flows
+   ```
+
+2. REQUIRED: Test file location:
+   ```
+   - Co-located tests: component.test.tsx next to component.tsx
+   - Centralized tests: tests/ directory mirroring source structure
+   ```
+
+3. ESSENTIAL: Test coverage expectations:
+   - Unit tests: 80%+ coverage for components and utilities
+   - Integration tests: Critical user flows covered
+   - API tests: All endpoints and error cases
+   - E2E tests: Main user journeys
+
+4. REQUIRED: For detailed unit testing patterns and examples, refer to @15-nextjs-unit-testing.mdc
+
+## 2. Testing Framework Setup (P0)
 
 1. CRITICAL: Jest configuration:
    ```javascript
@@ -60,7 +84,7 @@ alwaysApply: false
    })
    ```
 
-## 2. Unit Testing Components (P0)
+## 3. Unit Testing Components (P0)
 
 1. CRITICAL: Component testing structure:
    ```typescript
@@ -116,7 +140,7 @@ alwaysApply: false
    // render(<Component />, { wrapper: TestProviders })
    ```
 
-## 3. Integration Testing (P0)
+## 4. Integration Testing (P0)
 
 1. CRITICAL: Form testing:
    ```typescript
@@ -222,7 +246,7 @@ alwaysApply: false
    })
    ```
 
-## 4. Testing App Router Components (P1)
+## 5. Testing App Router Components (P1)
 
 1. CRITICAL: Testing server components:
    ```typescript
@@ -271,7 +295,7 @@ alwaysApply: false
    })
    ```
 
-## 5. API Route Testing (P1)
+## 6. API Route Testing (P1)
 
 1. CRITICAL: Testing API handlers:
    ```typescript
@@ -322,7 +346,7 @@ alwaysApply: false
    })
    ```
 
-## 6. Mocking Strategies (P1)
+## 7. Mocking Strategies (P1)
 
 1. CRITICAL: API mocking:
    ```typescript
@@ -401,7 +425,7 @@ alwaysApply: false
    afterAll(() => server.close())
    ```
 
-## 7. E2E Testing with Playwright (P2)
+## 8. E2E Testing with Playwright (P2)
 
 1. CRITICAL: Basic Playwright setup:
    ```typescript
@@ -476,7 +500,7 @@ alwaysApply: false
    })
    ```
 
-## 8. Test Organization (P2)
+## 9. Test Organization (P2)
 
 1. REQUIRED: Test folder structure:
    ```
