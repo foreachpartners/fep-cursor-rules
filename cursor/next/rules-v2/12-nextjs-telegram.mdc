@@ -1,0 +1,214 @@
+---
+description: Guidelines for developing Telegram Mini Apps with Next.js.
+globs:
+alwaysApply: false
+---
+
+# Next.js Telegram Mini Apps Guidelines
+
+## 1. Setup and Configuration (P0)
+
+1. CRITICAL: Initialize:
+   ```bash
+   npm install @tma.js/sdk @tma.js/sdk-react
+   ```
+
+2. REQUIRED: Configuration:
+   ```js
+   // next.config.js
+   module.exports = {
+     output: 'export',
+     images: { unoptimized: true },
+     async rewrites() {
+       return [{ source: '/:path/', destination: '/:path' }]
+     },
+   }
+   ```
+
+## 2. Core Integration (P0)
+
+1. CRITICAL: SDK provider:
+   ```tsx
+   // app/providers.tsx
+   'use client'
+   
+   import { SDKProvider, DisplayGate } from '@tma.js/sdk-react'
+   
+   export function TelegramProvider({ children }) {
+     return (
+       <SDKProvider options={{ acceptCustomStyles: true }}>
+         <DisplayGate>{children}</DisplayGate>
+       </SDKProvider>
+     )
+   }
+   ```
+
+2. REQUIRED: Theme adaptation:
+   ```css
+   /* globals.css */
+   :root {
+     --tg-theme-bg-color: #fff;
+     --tg-theme-text-color: #000;
+     --tg-theme-button-color: #2678b6;
+     --tg-theme-button-text-color: #fff;
+   }
+   
+   body {
+     background: var(--tg-theme-bg-color);
+     color: var(--tg-theme-text-color);
+     padding: env(safe-area-inset-top) env(safe-area-inset-right)
+              env(safe-area-inset-bottom) env(safe-area-inset-left);
+   }
+   ```
+
+## 3. Backend Integration (P0)
+
+1. CRITICAL: Data validation:
+   ```typescript
+   // lib/validate.ts
+   import crypto from 'crypto'
+   
+   export function validateInitData(
+     initData: string,
+     botToken: string
+   ) {
+     try {
+       const params = new URLSearchParams(initData)
+       const hash = params.get('hash')
+       params.delete('hash')
+       
+       const dataString = Array.from(params.entries())
+         .sort(([a], [b]) => a.localeCompare(b))
+         .map(([k, v]) => `${k}=${v}`)
+         .join('\n')
+       
+       const calculatedHash = crypto
+         .createHmac('sha256', botToken)
+         .update(dataString)
+         .digest('hex')
+       
+       return calculatedHash === hash
+     } catch (error) {
+       return false
+     }
+   }
+   ```
+
+2. REQUIRED: API route:
+   ```typescript
+   // app/api/telegram/route.ts
+   import { validateInitData } from '@/lib/validate'
+   
+   export async function POST(request: Request) {
+     try {
+       const { initData, data } = await request.json()
+       
+       if (!validateInitData(initData, process.env.BOT_TOKEN!)) {
+         return Response.json({ error: 'Invalid data' }, { status: 400 })
+       }
+       
+       // Process validated data
+       return Response.json({ success: true })
+     } catch (error) {
+       return Response.json({ error: String(error) }, { status: 500 })
+     }
+   }
+   ```
+
+## 4. UI Components (P1)
+
+1. CRITICAL: Main button:
+   ```tsx
+   // components/main-button.tsx
+   'use client'
+   
+   import { useMainButton } from '@tma.js/sdk-react'
+   
+   export function MainButton({ 
+     text, 
+     onClick,
+     loading = false 
+   }) {
+     const btn = useMainButton()
+     
+     useEffect(() => {
+       btn.setText(text)
+       btn.show()
+       btn.on('click', onClick)
+       loading ? btn.showProgress() : btn.hideProgress()
+       
+       return () => {
+         btn.hide()
+         btn.offClick(onClick)
+       }
+     }, [text, onClick, loading])
+     
+     return null
+   }
+   ```
+
+2. REQUIRED: Popup:
+   ```tsx
+   // components/popup.tsx
+   'use client'
+   
+   import { usePopup } from '@tma.js/sdk-react'
+   
+   export function showPopup({ 
+     title, 
+     message,
+     buttons = [{ type: 'close', text: 'Close' }]
+   }) {
+     const popup = usePopup()
+     
+     return popup.open({
+       title,
+       message,
+       buttons: buttons.map(({ type, text, onPress }) => ({
+         type,
+         text,
+         ...(onPress && { onClick: onPress })
+       }))
+     })
+   }
+   ```
+
+## 5. Performance (P2)
+
+1. REQUIRED: Bundle optimization:
+   ```js
+   // next.config.js
+   module.exports = {
+     // ... other config
+     webpack: (config) => {
+       config.optimization.minimize = true
+       config.optimization.minimizer.push(
+         new TerserPlugin({
+           terserOptions: {
+             compress: { drop_console: true }
+           }
+         })
+       )
+       return config
+     }
+   }
+   ```
+
+2. RECOMMENDED: Image optimization:
+   ```tsx
+   // components/image.tsx
+   export function TelegramImage({ src, alt, ...props }) {
+     return (
+       <Image
+         src={src}
+         alt={alt}
+         loading="lazy"
+         width={0}
+         height={0}
+         sizes="100vw"
+         style={{ width: '100%', height: 'auto' }}
+         {...props}
+       />
+     )
+   }
+   ``` 

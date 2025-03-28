@@ -1,0 +1,234 @@
+---
+description: Guidelines for API implementation and data fetching in Next.js applications.
+globs:
+alwaysApply: false
+---
+
+# Next.js API and Data Fetching Guidelines
+
+## 1. Server-Side API (P0)
+
+1. CRITICAL: Route handlers:
+   ```typescript
+   // app/api/users/route.ts
+   import { NextResponse } from "next/server"
+   import { db } from "@/lib/db"
+   
+   export async function GET() {
+     try {
+       const users = await db.user.findMany()
+       return NextResponse.json({ data: users, error: null })
+     } catch (error) {
+       return NextResponse.json(
+         { 
+           data: null, 
+           error: { code: "INTERNAL_ERROR", message: String(error) }
+         },
+         { status: 500 }
+       )
+     }
+   }
+   
+   export async function POST(request: Request) {
+     try {
+       const body = await request.json()
+       const user = await db.user.create({ data: body })
+       return NextResponse.json({ data: user, error: null }, { status: 201 })
+     } catch (error) {
+       return NextResponse.json(
+         { data: null, error: { code: "INTERNAL_ERROR", message: String(error) }},
+         { status: 500 }
+       )
+     }
+   }
+   ```
+
+2. REQUIRED: Server actions:
+   ```typescript
+   // lib/actions.ts
+   "use server"
+   
+   import { revalidatePath } from "next/cache"
+   import { z } from "zod"
+   
+   const UserSchema = z.object({
+     name: z.string().min(2),
+     email: z.string().email(),
+   })
+   
+   export async function createUser(formData: FormData) {
+     const result = UserSchema.safeParse({
+       name: formData.get("name"),
+       email: formData.get("email"),
+     })
+     
+     if (!result.success) {
+       return { error: result.error.format(), data: null }
+     }
+     
+     try {
+       const user = await db.user.create({ data: result.data })
+       revalidatePath("/users")
+       return { data: user, error: null }
+     } catch (error) {
+       return { error: { message: String(error) }, data: null }
+     }
+   }
+   ```
+
+## 2. Client-Side Data Fetching (P0)
+
+1. CRITICAL: API client:
+   ```typescript
+   // lib/api-client.ts
+   interface ApiResponse<T> {
+     data: T | null
+     error: { code: string; message: string } | null
+   }
+   
+   export class ApiClient {
+     constructor(private baseUrl = "/api") {}
+     
+     async request<T>(
+       endpoint: string,
+       options: RequestInit = {}
+     ): Promise<ApiResponse<T>> {
+       try {
+         const url = `${this.baseUrl}/${endpoint}`
+         const response = await fetch(url, {
+           headers: { "Content-Type": "application/json" },
+           ...options,
+         })
+         return response.json()
+       } catch (error) {
+         return {
+           data: null,
+           error: { code: "REQUEST_FAILED", message: String(error) }
+         }
+       }
+     }
+     
+     get<T>(endpoint: string) {
+       return this.request<T>(endpoint)
+     }
+     
+     post<T>(endpoint: string, data: unknown) {
+       return this.request<T>(endpoint, {
+         method: "POST",
+         body: JSON.stringify(data),
+       })
+     }
+   }
+   
+   export const api = new ApiClient()
+   ```
+
+2. REQUIRED: TanStack Query setup:
+   ```typescript
+   // lib/query-provider.tsx
+   "use client"
+   
+   import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+   
+   const queryClient = new QueryClient({
+     defaultOptions: {
+       queries: {
+         staleTime: 60 * 1000,
+         refetchOnWindowFocus: false,
+       },
+     },
+   })
+   
+   export function QueryProvider({ children }: { children: React.ReactNode }) {
+     return (
+       <QueryClientProvider client={queryClient}>
+         {children}
+       </QueryClientProvider>
+     )
+   }
+   ```
+
+3. ESSENTIAL: Data hooks:
+   ```typescript
+   // lib/hooks/use-users.ts
+   import { useQuery, useMutation } from "@tanstack/react-query"
+   import { api } from "@/lib/api-client"
+   
+   const userKeys = {
+     all: ["users"] as const,
+     detail: (id: string) => ["users", id] as const,
+   }
+   
+   export function useUsers() {
+     return useQuery({
+       queryKey: userKeys.all,
+       queryFn: () => api.get("users"),
+     })
+   }
+   
+   export function useCreateUser() {
+     return useMutation({
+       mutationFn: (data: unknown) => api.post("users", data),
+     })
+   }
+   ```
+
+## 3. Error Handling (P1)
+
+1. CRITICAL: Error types:
+   ```typescript
+   // lib/errors.ts
+   export class AppError extends Error {
+     constructor(
+       public code: string,
+       message: string,
+       public details?: Record<string, unknown>
+     ) {
+       super(message)
+       this.name = "AppError"
+     }
+   }
+   
+   export function handleApiError(error: unknown) {
+     console.error(error)
+     return {
+       data: null,
+       error: {
+         code: "INTERNAL_ERROR",
+         message: error instanceof Error ? error.message : "Unknown error",
+       },
+     }
+   }
+   ```
+
+2. REQUIRED: Error boundaries:
+   ```typescript
+   // components/error-boundary.tsx
+   "use client"
+   
+   import { useEffect } from "react"
+   
+   export function ErrorBoundary({
+     error,
+     reset,
+   }: {
+     error: Error
+     reset: () => void
+   }) {
+     useEffect(() => {
+       console.error(error)
+     }, [error])
+   
+     return (
+       <div className="p-4">
+         <h2 className="text-red-500">Something went wrong!</h2>
+         <button
+           onClick={reset}
+           className="mt-4 px-4 py-2 bg-blue-500 text-white rounded"
+         >
+           Try again
+         </button>
+       </div>
+     )
+   }
+   ``` 
