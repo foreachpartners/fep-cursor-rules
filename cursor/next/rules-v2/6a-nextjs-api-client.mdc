@@ -1,81 +1,124 @@
 ---
-description: Guidelines for implementing client-side API integration and data fetching in Next.js applications.
+description: Guidelines for implementing client-side data fetching and state management in Next.js applications. Apply when building API clients, managing server state, or implementing data caching.
 globs:
 alwaysApply: false
 ---
 
 # Next.js Client API Guidelines
 
-## 1. API Client (P0)
+## 1. Purpose (P0)
 
-1. CRITICAL: Base client:
+These guidelines ensure consistent and efficient implementation of client-side data fetching and state management. Apply when creating API clients, implementing data caching, or managing server state with TanStack Query.
+
+## 2. API Client Structure (P0)
+
+1. CRITICAL: Base client setup:
    ```typescript
-   // lib/api-client.ts
-   interface ApiResponse<T> {
-     data: T | null
-     error: { code: string; message: string } | null
-   }
+   // lib/api/client.ts
+   import { AppError } from "@/lib/errors"
    
    export class ApiClient {
-     constructor(private baseUrl = "/api") {}
+     private baseUrl: string
      
-     async request<T>(
-       endpoint: string,
-       options: RequestInit = {}
-     ): Promise<ApiResponse<T>> {
-       try {
-         const url = `${this.baseUrl}/${endpoint}`
-         const response = await fetch(url, {
-           headers: { "Content-Type": "application/json" },
-           ...options,
-         })
-         
-         if (!response.ok) {
-           throw new Error(`HTTP error! status: ${response.status}`)
-         }
-         
-         return response.json()
-       } catch (error) {
-         return {
-           data: null,
-           error: { code: "REQUEST_FAILED", message: String(error) }
-         }
+     constructor(baseUrl = "/api") {
+       this.baseUrl = baseUrl
+     }
+     
+     async request<T>(path: string, options: RequestInit = {}): Promise<T> {
+       const response = await fetch(`${this.baseUrl}${path}`, {
+         ...options,
+         headers: {
+           "Content-Type": "application/json",
+           ...options.headers,
+         },
+       })
+       
+       const data = await response.json()
+       
+       if (!response.ok) {
+         throw new AppError(
+           data.error?.code || "API_ERROR",
+           data.error?.message || "API request failed",
+           data.error?.details
+         )
        }
+       
+       return data
      }
      
-     get<T>(endpoint: string) {
-       return this.request<T>(endpoint)
+     async get<T>(path: string, options?: RequestInit) {
+       return this.request<T>(path, { ...options, method: "GET" })
      }
      
-     post<T>(endpoint: string, data: unknown) {
-       return this.request<T>(endpoint, {
+     async post<T>(path: string, body: unknown, options?: RequestInit) {
+       return this.request<T>(path, {
+         ...options,
          method: "POST",
-         body: JSON.stringify(data),
+         body: JSON.stringify(body),
        })
-     }
-     
-     put<T>(endpoint: string, data: unknown) {
-       return this.request<T>(endpoint, {
-         method: "PUT",
-         body: JSON.stringify(data),
-       })
-     }
-     
-     delete(endpoint: string) {
-       return this.request(endpoint, { method: "DELETE" })
      }
    }
    
-   export const api = new ApiClient()
+   export const apiClient = new ApiClient()
    ```
 
-## 2. Data Fetching (P0)
-
-1. CRITICAL: TanStack Query setup:
+2. REQUIRED: Resource-specific clients:
    ```typescript
-   // providers/query.tsx
-   "use client"
+   // lib/api/users.ts
+   import { apiClient } from "./client"
+   import { z } from "zod"
    
+   const UserSchema = z.object({
+     id: z.string(),
+     name: z.string(),
+     email: z.string().email(),
+   })
+   
+   export class UserApi {
+     async getUsers() {
+       const response = await apiClient.get("/users")
+       return UserSchema.array().parse(response.data)
+     }
+     
+     async createUser(data: z.infer<typeof UserSchema>) {
+       const response = await apiClient.post("/users", data)
+       return UserSchema.parse(response.data)
+     }
+   }
+   ```
+
+## 3. TanStack Query Integration (P0)
+
+1. CRITICAL: Query hooks:
+   ```typescript
+   // hooks/queries/useUsers.ts
+   import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+   import { UserApi } from "@/lib/api/users"
+   
+   const userApi = new UserApi()
+   
+   export function useUsers() {
+     return useQuery({
+       queryKey: ["users"],
+       queryFn: () => userApi.getUsers(),
+     })
+   }
+   
+   export function useCreateUser() {
+     const queryClient = useQueryClient()
+     
+     return useMutation({
+       mutationFn: userApi.createUser,
+       onSuccess: () => {
+         queryClient.invalidateQueries({ queryKey: ["users"] })
+       },
+     })
+   }
+   ```
+
+2. REQUIRED: Query provider setup:
+   ```typescript
+   // app/providers.tsx
    import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
    import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
    
@@ -83,13 +126,12 @@ alwaysApply: false
      defaultOptions: {
        queries: {
          staleTime: 60 * 1000,
-         refetchOnWindowFocus: false,
          retry: 1,
        },
      },
    })
    
-   export function QueryProvider({ children }: { children: React.ReactNode }) {
+   export function Providers({ children }: { children: React.ReactNode }) {
      return (
        <QueryClientProvider client={queryClient}>
          {children}
@@ -99,191 +141,103 @@ alwaysApply: false
    }
    ```
 
-2. REQUIRED: Query hooks:
+## 4. Error Handling (P1)
+
+1. CRITICAL: Error boundaries:
    ```typescript
-   // lib/hooks/use-query.ts
-   import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-   import { api } from "@/lib/api-client"
+   // components/ErrorBoundary.tsx
+   "use client"
    
-   export function createQueryKeys(resource: string) {
-     return {
-       all: [resource] as const,
-       lists: () => [...this.all, "list"] as const,
-       list: (filters: unknown) => [...this.lists(), { filters }] as const,
-       details: () => [...this.all, "detail"] as const,
-       detail: (id: string) => [...this.details(), id] as const,
-     }
-   }
+   import { useQueryErrorResetBoundary } from "@tanstack/react-query"
+   import { ErrorBoundary as ReactErrorBoundary } from "react-error-boundary"
    
-   export function createQueryHooks<T>(resource: string) {
-     const keys = createQueryKeys(resource)
+   export function ErrorBoundary({ children }: { children: React.ReactNode }) {
+     const { reset } = useQueryErrorResetBoundary()
      
-     return {
-       useList(filters = {}) {
-         return useQuery({
-           queryKey: keys.list(filters),
-           queryFn: () => api.get(`${resource}?${new URLSearchParams(filters)}`),
-         })
-       },
-       
-       useDetail(id: string) {
-         return useQuery({
-           queryKey: keys.detail(id),
-           queryFn: () => api.get(`${resource}/${id}`),
-         })
-       },
-       
-       useCreate() {
-         const queryClient = useQueryClient()
-         
-         return useMutation({
-           mutationFn: (data: unknown) => api.post(resource, data),
-           onSuccess: () => {
-             queryClient.invalidateQueries({ queryKey: keys.lists() })
-           },
-         })
-       },
-       
-       useUpdate() {
-         const queryClient = useQueryClient()
-         
-         return useMutation({
-           mutationFn: ({ id, data }: { id: string; data: unknown }) =>
-             api.put(`${resource}/${id}`, data),
-           onSuccess: (_, { id }) => {
-             queryClient.invalidateQueries({ queryKey: keys.detail(id) })
-           },
-         })
-       },
-       
-       useDelete() {
-         const queryClient = useQueryClient()
-         
-         return useMutation({
-           mutationFn: (id: string) => api.delete(`${resource}/${id}`),
-           onSuccess: () => {
-             queryClient.invalidateQueries({ queryKey: keys.lists() })
-           },
-         })
-       },
-     }
+     return (
+       <ReactErrorBoundary
+         onReset={reset}
+         fallbackRender={({ error, resetErrorBoundary }) => (
+           <div role="alert">
+             <p>Something went wrong:</p>
+             <pre>{error.message}</pre>
+             <button onClick={resetErrorBoundary}>Try again</button>
+           </div>
+         )}
+       >
+         {children}
+       </ReactErrorBoundary>
+     )
    }
    ```
 
-## 3. Error Handling (P1)
+## 5. Bad Practices to Avoid (P1)
 
-1. CRITICAL: Error boundary:
+1. CRITICAL: Avoid direct fetch calls:
    ```typescript
-   // components/error-boundary.tsx
-   "use client"
-   
-   import { useEffect } from "react"
-   import { useQueryErrorResetBoundary } from "@tanstack/react-query"
-   
-   export function ErrorBoundary({
-     error,
-     reset,
-   }: {
-     error: Error
-     reset: () => void
-   }) {
-     const { reset: resetQueries } = useQueryErrorResetBoundary()
+   // Bad example
+   function UserList() {
+     const [users, setUsers] = useState([])
      
      useEffect(() => {
-       console.error(error)
-     }, [error])
+       // DON'T DO THIS: Direct fetch without proper error handling
+       fetch("/api/users")
+         .then(res => res.json())
+         .then(data => setUsers(data))
+     }, [])
+     
+     return <ul>{users.map(user => <li key={user.id}>{user.name}</li>)}</ul>
+   }
+   
+   // Good example
+   function UserList() {
+     const { data: users, isLoading, error } = useUsers()
+     
+     if (isLoading) return <div>Loading...</div>
+     if (error) return <div>Error: {error.message}</div>
      
      return (
-       <div className="p-4 border border-red-500 rounded">
-         <h2 className="text-red-500 font-bold">Something went wrong!</h2>
-         <p className="text-sm text-gray-600">{error.message}</p>
-         <button
-           onClick={() => {
-             resetQueries()
-             reset()
-           }}
-           className="mt-4 px-4 py-2 bg-red-500 text-white rounded"
-         >
-           Try again
+       <ul>
+         {users?.map(user => <li key={user.id}>{user.name}</li>)}
+       </ul>
+     )
+   }
+   ```
+
+2. REQUIRED: Avoid mixing client and server code:
+   ```typescript
+   // Bad example - mixing server and client code
+   // DON'T DO THIS: Component with both server and client logic
+   async function UserProfile({ userId }: { userId: string }) {
+     const user = await prisma.user.findUnique({ where: { id: userId }})
+     
+     return (
+       <div>
+         <h1>{user.name}</h1>
+         <button onClick={() => fetch(`/api/users/${userId}`)}>
+           Refresh
          </button>
        </div>
      )
    }
-   ```
-
-2. REQUIRED: Loading states:
-   ```typescript
-   // components/loading-state.tsx
-   export function LoadingState() {
-     return (
-       <div className="flex items-center justify-center p-4">
-         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-       </div>
-     )
+   
+   // Good example - separation of concerns
+   // Server component
+   async function UserProfile({ userId }: { userId: string }) {
+     const user = await prisma.user.findUnique({ where: { id: userId }})
+     return <UserProfileClient user={user} />
    }
    
-   export function LoadingButton({ children, loading, ...props }) {
-     return (
-       <button
-         disabled={loading}
-         className="relative"
-         {...props}
-       >
-         {loading && (
-           <span className="absolute inset-0 flex items-center justify-center bg-black/10">
-             <span className="animate-spin h-4 w-4 border-b-2 border-white" />
-           </span>
-         )}
-         {children}
-       </button>
-     )
-   }
-   ```
-
-## 4. Optimistic Updates (P2)
-
-1. REQUIRED: Optimistic mutation:
-   ```typescript
-   // Example usage in hooks
-   export function useOptimisticUpdate() {
-     const queryClient = useQueryClient()
+   // Client component
+   "use client"
+   function UserProfileClient({ user }: { user: User }) {
+     const { refetch } = useUser(user.id)
      
-     return useMutation({
-       mutationFn: ({ id, data }) => api.put(`/items/${id}`, data),
-       onMutate: async ({ id, data }) => {
-         await queryClient.cancelQueries({ queryKey: ["items", id] })
-         
-         const previousItem = queryClient.getQueryData(["items", id])
-         
-         queryClient.setQueryData(["items", id], {
-           data: { id, ...data },
-           error: null,
-         })
-         
-         return { previousItem }
-       },
-       onError: (err, { id }, context) => {
-         queryClient.setQueryData(["items", id], context.previousItem)
-       },
-       onSettled: (_, __, { id }) => {
-         queryClient.invalidateQueries({ queryKey: ["items", id] })
-       },
-     })
-   }
-   ```
-
-2. RECOMMENDED: Infinite queries:
-   ```typescript
-   // lib/hooks/use-infinite-query.ts
-   export function useInfiniteList(resource: string) {
-     return useInfiniteQuery({
-       queryKey: [resource, "infinite"],
-       queryFn: ({ pageParam = 1 }) =>
-         api.get(`${resource}?page=${pageParam}&limit=10`),
-       getNextPageParam: (lastPage, pages) => {
-         if (!lastPage.data?.hasMore) return undefined
-         return pages.length + 1
-       },
-     })
+     return (
+       <div>
+         <h1>{user.name}</h1>
+         <button onClick={() => refetch()}>Refresh</button>
+       </div>
+     )
    }
    ``` 

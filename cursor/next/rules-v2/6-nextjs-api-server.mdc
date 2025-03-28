@@ -1,12 +1,16 @@
 ---
-description: Guidelines for implementing server-side API routes and data handling in Next.js applications.
+description: Guidelines for implementing server-side API routes and data handling in Next.js applications. Apply when building API endpoints, server actions, and database integrations.
 globs:
 alwaysApply: false
 ---
 
 # Next.js Server API Guidelines
 
-## 1. Route Handlers (P0)
+## 1. Purpose (P0)
+
+These guidelines ensure consistent and type-safe implementation of server-side API features in Next.js applications. Apply when creating API routes, implementing server actions, or setting up database integrations.
+
+## 2. Route Handlers (P0)
 
 1. CRITICAL: Basic structure:
    ```typescript
@@ -96,7 +100,7 @@ alwaysApply: false
    }
    ```
 
-## 2. Server Actions (P0)
+## 3. Server Actions (P0)
 
 1. CRITICAL: Form actions:
    ```typescript
@@ -147,62 +151,6 @@ alwaysApply: false
    }
    ```
 
-## 3. Middleware (P1)
-
-1. CRITICAL: Authentication:
-   ```typescript
-   // middleware.ts
-   import { NextResponse } from "next/server"
-   import type { NextRequest } from "next/server"
-   
-   export function middleware(request: NextRequest) {
-     const token = request.cookies.get("token")
-     
-     if (!token && request.nextUrl.pathname.startsWith("/api")) {
-       return NextResponse.json(
-         { error: { code: "UNAUTHORIZED", message: "Missing token" }},
-         { status: 401 }
-       )
-     }
-     
-     return NextResponse.next()
-   }
-   
-   export const config = {
-     matcher: ["/api/:path*"],
-   }
-   ```
-
-2. REQUIRED: Rate limiting:
-   ```typescript
-   // lib/rate-limit.ts
-   import { NextResponse } from "next/server"
-   import { Redis } from "@upstash/redis"
-   
-   const redis = new Redis({
-     url: process.env.REDIS_URL!,
-     token: process.env.REDIS_TOKEN!,
-   })
-   
-   export async function rateLimit(ip: string, limit = 10, window = 60) {
-     const key = `rate-limit:${ip}`
-     const count = await redis.incr(key)
-     
-     if (count === 1) {
-       await redis.expire(key, window)
-     }
-     
-     if (count > limit) {
-       return NextResponse.json(
-         { error: { code: "RATE_LIMITED", message: "Too many requests" }},
-         { status: 429 }
-       )
-     }
-     
-     return null
-   }
-   ```
-
 ## 4. Database Integration (P1)
 
 1. CRITICAL: Connection handling:
@@ -244,5 +192,62 @@ alwaysApply: false
      async delete(id: string) {
        return prisma.user.delete({ where: { id } })
      }
+   }
+   ```
+
+## 5. Bad Practices to Avoid (P1)
+
+1. CRITICAL: Never expose internal errors:
+   ```typescript
+   // Bad example
+   export async function GET() {
+     try {
+       const result = await db.query("SELECT * FROM users")
+       return NextResponse.json(result)
+     } catch (error) {
+       // DON'T DO THIS: Exposes internal error details
+       return NextResponse.json({ error: error.message }, { status: 500 })
+     }
+   }
+   
+   // Good example
+   export async function GET() {
+     try {
+       const result = await db.query("SELECT * FROM users")
+       return NextResponse.json({ data: result, error: null })
+     } catch (error) {
+       console.error("Database error:", error)
+       return NextResponse.json(
+         { data: null, error: { code: "INTERNAL_ERROR", message: "Internal server error" }},
+         { status: 500 }
+       )
+     }
+   }
+   ```
+
+2. REQUIRED: Avoid mixing concerns:
+   ```typescript
+   // Bad example - mixing database and validation logic
+   export async function POST(request: Request) {
+     const body = await request.json()
+     const user = await prisma.user.create({ data: body }) // DON'T DO THIS
+     return NextResponse.json(user)
+   }
+   
+   // Good example - separation of concerns
+   export async function POST(request: Request) {
+     const body = await request.json()
+     const result = UserSchema.safeParse(body)
+     
+     if (!result.success) {
+       return NextResponse.json(
+         { error: { code: "VALIDATION_ERROR", message: "Invalid data" }},
+         { status: 400 }
+       )
+     }
+     
+     const userRepository = new UserRepository()
+     const user = await userRepository.create(result.data)
+     return NextResponse.json({ data: user, error: null })
    }
    ``` 
