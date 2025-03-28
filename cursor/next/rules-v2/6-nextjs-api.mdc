@@ -267,7 +267,7 @@ alwaysApply: false
    }
    ```
 
-## 7. API Testing (P1)
+## 6. API Testing (P1)
 
 1. CRITICAL: API testing strategy:
    - Test API routes in isolation

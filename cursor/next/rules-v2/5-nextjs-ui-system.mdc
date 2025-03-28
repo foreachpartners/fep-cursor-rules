@@ -287,7 +287,7 @@ alwaysApply: false
    }
    ``` 
 
-## 7. Component Documentation and Testing (P2)
+## 6. Component Documentation and Testing (P2)
 
 1. CRITICAL: Component documentation:
    - Document component APIs with JSDoc comments
