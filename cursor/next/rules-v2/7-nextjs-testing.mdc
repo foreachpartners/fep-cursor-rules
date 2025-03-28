@@ -1,0 +1,273 @@
+---
+description: Guidelines for implementing unit tests in Next.js applications.
+globs:
+alwaysApply: false
+---
+
+# Next.js Unit Testing Guidelines
+
+## 1. Testing Setup (P0)
+
+1. CRITICAL: Jest configuration:
+   ```typescript
+   // jest.config.js
+   const nextJest = require("next/jest")
+   
+   const createJestConfig = nextJest({
+     dir: "./",
+   })
+   
+   const customJestConfig = {
+     setupFilesAfterEnv: ["<rootDir>/jest.setup.js"],
+     testEnvironment: "jest-environment-jsdom",
+     moduleNameMapper: {
+       "^@/(.*)$": "<rootDir>/src/$1",
+     },
+     collectCoverageFrom: [
+       "app/**/*.{js,jsx,ts,tsx}",
+       "components/**/*.{js,jsx,ts,tsx}",
+       "lib/**/*.{js,jsx,ts,tsx}",
+       "!**/*.d.ts",
+       "!**/node_modules/**",
+     ],
+   }
+   
+   module.exports = createJestConfig(customJestConfig)
+   ```
+
+2. REQUIRED: Test utilities:
+   ```typescript
+   // lib/test-utils.tsx
+   import { render } from "@testing-library/react"
+   import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+   
+   const queryClient = new QueryClient({
+     defaultOptions: {
+       queries: {
+         retry: false,
+       },
+     },
+   })
+   
+   export function renderWithProviders(ui: React.ReactElement) {
+     return render(
+       <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>
+     )
+   }
+   
+   export * from "@testing-library/react"
+   ```
+
+## 2. Component Testing (P0)
+
+1. CRITICAL: Component test structure:
+   ```typescript
+   // components/__tests__/button.test.tsx
+   import { render, screen, fireEvent } from "@testing-library/react"
+   import { Button } from "../button"
+   
+   describe("Button", () => {
+     // Arrange - Setup test data
+     const defaultProps = {
+       onClick: jest.fn(),
+       children: "Click me",
+     }
+     
+     // Reset mocks before each test
+     beforeEach(() => {
+       jest.clearAllMocks()
+     })
+     
+     it("renders with default props", () => {
+       // Act - Perform the action
+       render(<Button {...defaultProps} />)
+       
+       // Assert - Check the result
+       expect(screen.getByRole("button")).toHaveTextContent("Click me")
+     })
+     
+     it("handles click events", () => {
+       render(<Button {...defaultProps} />)
+       
+       fireEvent.click(screen.getByRole("button"))
+       expect(defaultProps.onClick).toHaveBeenCalledTimes(1)
+     })
+     
+     it("shows loading state correctly", () => {
+       render(<Button {...defaultProps} isLoading />)
+       
+       const button = screen.getByRole("button")
+       expect(button).toBeDisabled()
+       expect(button).toHaveClass("opacity-50")
+       expect(screen.getByText("Loading...")).toBeInTheDocument()
+     })
+   })
+   ```
+
+2. REQUIRED: Hook testing:
+   ```typescript
+   // hooks/__tests__/use-counter.test.ts
+   import { renderHook, act } from "@testing-library/react"
+   import { useCounter } from "../use-counter"
+   
+   describe("useCounter", () => {
+     it("initializes with default value", () => {
+       const { result } = renderHook(() => useCounter())
+       expect(result.current.count).toBe(0)
+     })
+     
+     it("increments counter", () => {
+       const { result } = renderHook(() => useCounter())
+       
+       act(() => {
+         result.current.increment()
+       })
+       
+       expect(result.current.count).toBe(1)
+     })
+     
+     it("decrements counter", () => {
+       const { result } = renderHook(() => useCounter(5))
+       
+       act(() => {
+         result.current.decrement()
+       })
+       
+       expect(result.current.count).toBe(4)
+     })
+   })
+   ```
+
+## 3. Utils Testing (P0)
+
+1. CRITICAL: Pure function testing:
+   ```typescript
+   // utils/__tests__/format-date.test.ts
+   import { formatDate } from "../format-date"
+   
+   describe("formatDate", () => {
+     it("formats date correctly", () => {
+       const date = new Date("2024-03-15T12:00:00Z")
+       expect(formatDate(date)).toBe("15 Mar 2024")
+     })
+     
+     it("handles invalid date", () => {
+       expect(formatDate(new Date("invalid"))).toBe("Invalid Date")
+     })
+     
+     it("formats with custom pattern", () => {
+       const date = new Date("2024-03-15T12:00:00Z")
+       expect(formatDate(date, "YYYY/MM/DD")).toBe("2024/03/15")
+     })
+   })
+   ```
+
+2. REQUIRED: Complex utils testing:
+   ```typescript
+   // utils/__tests__/calculate-total.test.ts
+   import { calculateTotal } from "../calculate-total"
+   
+   describe("calculateTotal", () => {
+     const items = [
+       { price: 10, quantity: 2 },
+       { price: 15, quantity: 1 },
+     ]
+     
+     it("calculates total correctly", () => {
+       expect(calculateTotal(items)).toBe(35)
+     })
+     
+     it("handles empty array", () => {
+       expect(calculateTotal([])).toBe(0)
+     })
+     
+     it("handles discount", () => {
+       expect(calculateTotal(items, { discount: 10 })).toBe(31.5)
+     })
+     
+     it("handles tax", () => {
+       expect(calculateTotal(items, { tax: 20 })).toBe(42)
+     })
+     
+     it("handles both discount and tax", () => {
+       expect(calculateTotal(items, { discount: 10, tax: 20 })).toBe(37.8)
+     })
+   })
+   ```
+
+## 4. Best Practices (P1)
+
+1. CRITICAL: Test organization:
+   ```typescript
+   describe("ComponentName", () => {
+     // 1. Constants and mocks
+     const mockData = { /* ... */ }
+     const mockFunction = jest.fn()
+     
+     // 2. Helper functions
+     const setupComponent = (props = {}) => {
+       return render(<Component {...mockData} {...props} />)
+     }
+     
+     // 3. Cleanup after tests
+     afterEach(() => {
+       jest.clearAllMocks()
+     })
+     
+     // 4. Test grouping
+     describe("initialization", () => {
+       it("renders with default props", () => {})
+       it("renders with custom props", () => {})
+     })
+     
+     describe("interactions", () => {
+       it("handles click events", () => {})
+       it("handles input changes", () => {})
+     })
+     
+     describe("error states", () => {
+       it("displays error message", () => {})
+       it("handles network errors", () => {})
+     })
+   })
+   ```
+
+2. REQUIRED: Mock patterns:
+   ```typescript
+   // __mocks__/api-client.ts
+   export const api = {
+     get: jest.fn(),
+     post: jest.fn(),
+     put: jest.fn(),
+     delete: jest.fn(),
+   }
+   
+   // hooks/__tests__/use-data.test.ts
+   import { renderHook } from "@testing-library/react"
+   import { useData } from "../use-data"
+   import { api } from "@/__mocks__/api-client"
+   
+   jest.mock("@/lib/api-client")
+   
+   describe("useData", () => {
+     const mockData = { id: 1, name: "Test" }
+     
+     beforeEach(() => {
+       api.get.mockResolvedValue({ data: mockData })
+     })
+     
+     afterEach(() => {
+       jest.clearAllMocks()
+     })
+     
+     it("fetches data successfully", async () => {
+       const { result } = renderHook(() => useData())
+       
+       expect(result.current.isLoading).toBe(true)
+       await waitFor(() => {
+         expect(result.current.data).toEqual(mockData)
+       })
+     })
+   })
+   ```
+   

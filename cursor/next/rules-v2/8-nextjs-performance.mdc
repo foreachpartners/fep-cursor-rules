@@ -1,0 +1,259 @@
+---
+description: Guidelines for optimizing performance in Next.js applications.
+globs:
+alwaysApply: false
+---
+
+# Next.js Performance Guidelines
+
+## 1. Image Optimization (P0)
+
+1. CRITICAL: Next.js Image component:
+   ```typescript
+   // components/optimized-image.tsx
+   import Image from "next/image"
+   import { useState } from "react"
+   
+   interface OptimizedImageProps {
+     src: string
+     alt: string
+     width: number
+     height: number
+     priority?: boolean
+   }
+   
+   export function OptimizedImage({
+     src,
+     alt,
+     width,
+     height,
+     priority = false,
+   }: OptimizedImageProps) {
+     const [isLoading, setLoading] = useState(true)
+   
+     return (
+       <div className="relative aspect-w-16 aspect-h-9">
+         <Image
+           src={src}
+           alt={alt}
+           fill
+           className={cn(
+             "object-cover duration-700 ease-in-out",
+             isLoading ? "scale-105 blur-lg" : "scale-100 blur-0"
+           )}
+           onLoadingComplete={() => setLoading(false)}
+           priority={priority}
+           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+         />
+       </div>
+     )
+   }
+   ```
+
+2. REQUIRED: Image configuration:
+   ```typescript
+   // next.config.js
+   module.exports = {
+     images: {
+       domains: ["your-domain.com"],
+       deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+       imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+       formats: ["image/webp"],
+       minimumCacheTTL: 60,
+     },
+   }
+   ```
+
+## 2. Bundle Optimization (P0)
+
+1. CRITICAL: Dynamic imports:
+   ```typescript
+   // components/heavy-component.tsx
+   import dynamic from "next/dynamic"
+   
+   const HeavyChart = dynamic(() => import("./chart"), {
+     loading: () => <div>Loading chart...</div>,
+     ssr: false,
+   })
+   
+   const HeavyEditor = dynamic(
+     () => import("./editor").then((mod) => mod.Editor),
+     {
+       loading: () => <div>Loading editor...</div>,
+       ssr: false,
+     }
+   )
+   ```
+
+2. REQUIRED: Bundle analyzer:
+   ```typescript
+   // next.config.js
+   const withBundleAnalyzer = require("@next/bundle-analyzer")({
+     enabled: process.env.ANALYZE === "true",
+   })
+   
+   module.exports = withBundleAnalyzer({
+     // your existing config
+   })
+   ```
+
+## 3. Caching Strategy (P0)
+
+1. CRITICAL: API response caching:
+   ```typescript
+   // lib/cache.ts
+   import { unstable_cache } from "next/cache"
+   
+   export const getCachedData = unstable_cache(
+     async (key: string) => {
+       // Your data fetching logic
+       const response = await fetch(`/api/${key}`)
+       return response.json()
+     },
+     ["cache-key"],
+     {
+       revalidate: 3600, // 1 hour
+       tags: ["data-tag"],
+     }
+   )
+   
+   // Usage in route handlers
+   export async function GET() {
+     const data = await getCachedData("users")
+     return Response.json(data)
+   }
+   ```
+
+2. REQUIRED: Static page revalidation:
+   ```typescript
+   // app/page.tsx
+   export const revalidate = 3600 // revalidate every hour
+   
+   export default async function Page() {
+     const data = await fetch("https://api.example.com/data", {
+       next: { revalidate: 3600 },
+     })
+     
+     return <div>{/* Your component */}</div>
+   }
+   ```
+
+## 4. Route Optimization (P1)
+
+1. CRITICAL: Parallel routes:
+   ```typescript
+   // app/@modal/loading.tsx
+   export default function Loading() {
+     return <div>Loading modal...</div>
+   }
+   
+   // app/@modal/default.tsx
+   export default function Default() {
+     return null
+   }
+   
+   // app/@modal/photo/[id]/page.tsx
+   export default function PhotoModal({ params }: { params: { id: string } }) {
+     return <div>Photo {params.id}</div>
+   }
+   
+   // app/layout.tsx
+   export default function Layout(props: {
+     children: React.ReactNode
+     modal: React.ReactNode
+   }) {
+     return (
+       <html>
+         <body>
+           {props.children}
+           {props.modal}
+         </body>
+       </html>
+     )
+   }
+   ```
+
+2. REQUIRED: Route groups:
+   ```typescript
+   // app/(marketing)/blog/page.tsx
+   export default function BlogPage() {
+     return <div>Blog content</div>
+   }
+   
+   // app/(marketing)/about/page.tsx
+   export default function AboutPage() {
+     return <div>About content</div>
+   }
+   
+   // app/(app)/dashboard/page.tsx
+   export default function DashboardPage() {
+     return <div>Dashboard content</div>
+   }
+   ```
+
+## 5. Client Optimization (P1)
+
+1. CRITICAL: React Query optimization:
+   ```typescript
+   // lib/query-config.ts
+   import { QueryClient } from "@tanstack/react-query"
+   
+   export const queryClient = new QueryClient({
+     defaultOptions: {
+       queries: {
+         staleTime: 1000 * 60 * 5, // 5 minutes
+         cacheTime: 1000 * 60 * 30, // 30 minutes
+         retry: 1,
+         refetchOnWindowFocus: false,
+         refetchOnReconnect: false,
+       },
+     },
+   })
+   
+   export function prefetchQuery(key: string[], fn: () => Promise<any>) {
+     return queryClient.prefetchQuery({
+       queryKey: key,
+       queryFn: fn,
+       staleTime: 1000 * 60 * 5,
+     })
+   }
+   ```
+
+2. REQUIRED: Component memoization:
+   ```typescript
+   // components/expensive-list.tsx
+   import { memo, useMemo } from "react"
+   
+   interface Item {
+     id: string
+     title: string
+   }
+   
+   interface ItemProps {
+     item: Item
+     onSelect: (id: string) => void
+   }
+   
+   const ListItem = memo(function ListItem({ item, onSelect }: ItemProps) {
+     return (
+       <div onClick={() => onSelect(item.id)}>
+         {item.title}
+       </div>
+     )
+   })
+   
+   export function ExpensiveList({ items, onSelect }: { items: Item[] }) {
+     const sortedItems = useMemo(
+       () => [...items].sort((a, b) => a.title.localeCompare(b.title)),
+       [items]
+     )
+     
+     return (
+       <div>
+         {sortedItems.map((item) => (
+           <ListItem key={item.id} item={item} onSelect={onSelect} />
+         ))}
+       </div>
+     )
+   }
+   ``` 
