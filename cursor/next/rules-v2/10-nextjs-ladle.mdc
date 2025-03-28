@@ -1,0 +1,514 @@
+---
+description: Guidelines for implementing and using Ladle with Next.js applications. Apply when creating, organizing, and documenting UI components.
+globs:
+alwaysApply: false
+---
+
+# Next.js Ladle Guidelines
+
+## 1. Ladle Setup and Configuration (P0)
+
+1. CRITICAL: Initial installation:
+   ```bash
+   # Add Ladle to existing Next.js project
+   pnpm add @ladle/react react react-dom -D
+   
+   # Start Ladle development server
+   pnpm ladle serve
+   ```
+
+2. REQUIRED: Vite configuration for Next.js components:
+   ```js
+   // vite.config.ts
+   import path from "path";
+   import { defineConfig } from "vite";
+   
+   export default defineConfig({
+     resolve: {
+       alias: {
+         "next/image": path.resolve(__dirname, "./.ladle/UnoptimizedImage.tsx"),
+         "next/link": path.resolve(__dirname, "./.ladle/UnoptimizedLink.tsx"),
+       },
+     },
+   });
+   ```
+
+3. ESSENTIAL: Component mocks for Next.js:
+   ```tsx
+   // .ladle/UnoptimizedImage.tsx
+   const UnoptimizedImage = (props: any) => {
+     return <img {...props} />;
+   };
+   export default UnoptimizedImage;
+   
+   // .ladle/UnoptimizedLink.tsx
+   const UnoptimizedLink = (props: any) => {
+     return <a {...props} />;
+   };
+   export default UnoptimizedLink;
+   ```
+
+4. REQUIRED: Ladle configuration:
+   ```js
+   // .ladle/config.mjs
+   /** @type {import('@ladle/react').UserConfig} */
+   export default {
+     stories: 'components/**/*.stories.{js,jsx,ts,tsx}',
+     outDir: '.ladle',
+     port: 61000,
+     addons: {
+       a11y: {
+         enabled: true,
+       },
+       action: {
+         enabled: true,
+       },
+       controls: {
+         enabled: true,
+       },
+       ladle: {
+         enabled: true,
+       },
+       source: {
+         enabled: true,
+       },
+       width: {
+         enabled: true,
+       },
+     },
+   };
+   ```
+
+## 2. Story Organization (P0)
+
+1. CRITICAL: Story location and naming:
+   ```
+   # Co-located with components (recommended)
+   components/
+   ├── Button/
+   │   ├── Button.tsx
+   │   ├── Button.stories.tsx
+   │   └── index.ts
+   └── Card/
+       ├── Card.tsx
+       ├── Card.stories.tsx
+       └── index.ts
+   
+   # Centralized in stories directory (alternative)
+   components/
+   └── ui/
+       ├── Button.tsx
+       └── Card.tsx
+   stories/
+   ├── Button.stories.tsx
+   └── Card.stories.tsx
+   ```
+
+2. REQUIRED: Story structure:
+   ```tsx
+   // Button.stories.tsx
+   import type { Story } from '@ladle/react';
+   import { Button } from './Button';
+   
+   export default {
+     title: 'UI/Button',
+   };
+   
+   interface ButtonStoryProps {
+     variant: 'primary' | 'secondary' | 'outline';
+     size: 'sm' | 'md' | 'lg';
+     children: string;
+   }
+   
+   export const Primary: Story<ButtonStoryProps> = (args) => (
+     <Button variant={args.variant} size={args.size}>
+       {args.children}
+     </Button>
+   );
+   
+   Primary.args = {
+     variant: 'primary',
+     size: 'md',
+     children: 'Button',
+   };
+   
+   Primary.argTypes = {
+     variant: {
+       control: { type: 'select' },
+       options: ['primary', 'secondary', 'outline'],
+     },
+     size: {
+       control: { type: 'radio' },
+       options: ['sm', 'md', 'lg'],
+     },
+   };
+   
+   export const Secondary: Story<ButtonStoryProps> = (args) => (
+     <Button variant={args.variant} size={args.size}>
+       {args.children}
+     </Button>
+   );
+   
+   Secondary.args = {
+     variant: 'secondary',
+     size: 'md',
+     children: 'Button',
+   };
+   
+   export const Large: Story<ButtonStoryProps> = (args) => (
+     <Button variant="primary" size={args.size}>
+       {args.children}
+     </Button>
+   );
+   
+   Large.args = {
+     size: 'lg',
+     children: 'Button',
+   };
+   ```
+
+3. ESSENTIAL: Component composition:
+   ```tsx
+   // CardWithButton.stories.tsx
+   import type { Story } from '@ladle/react';
+   import { Card } from '../Card/Card';
+   import { Button } from '../Button/Button';
+   
+   export const Default: Story = () => (
+     <Card>
+       <Card.Header>Card Title</Card.Header>
+       <Card.Body>Card content goes here</Card.Body>
+       <Card.Footer>
+         <Button variant="primary">Action</Button>
+       </Card.Footer>
+     </Card>
+   );
+   ```
+
+## 3. Component Documentation (P1)
+
+1. CRITICAL: JSDoc comments:
+   ```tsx
+   // Button.tsx
+   
+   export interface ButtonProps {
+     /**
+      * Button variant affects background, border and text color
+      * @default 'primary'
+      */
+     variant?: 'primary' | 'secondary' | 'outline';
+     
+     /**
+      * Button size affects padding, font size, and border radius
+      * @default 'md'
+      */
+     size?: 'sm' | 'md' | 'lg';
+     
+     /**
+      * Button contents - text or other elements
+      */
+     children: React.ReactNode;
+     
+     /**
+      * Optional click handler
+      */
+     onClick?: () => void;
+     
+     /**
+      * Disables the button when true
+      * @default false
+      */
+     disabled?: boolean;
+   }
+   
+   /**
+    * Primary UI component for user interaction
+    */
+   export const Button = ({
+     variant = 'primary',
+     size = 'md',
+     children,
+     onClick,
+     disabled = false,
+   }: ButtonProps) => {
+     // Component implementation
+   };
+   ```
+
+2. REQUIRED: Story source display:
+   ```tsx
+   // Button.stories.tsx - Source will be displayed automatically
+   import type { Story } from '@ladle/react';
+   import { Button } from './Button';
+   
+   export const Default: Story = () => (
+     <Button variant="primary" onClick={() => console.log('Button clicked')}>
+       Click Me
+     </Button>
+   );
+   ```
+
+## 4. Testing and Interactions (P1)
+
+1. CRITICAL: Setup for testing with Playwright:
+   ```ts
+   // tests/button.spec.ts
+   import { test, expect } from '@playwright/test';
+   
+   test('button interactions', async ({ page }) => {
+     // Navigate to the button story
+     await page.goto('http://localhost:61000/?story=ui-button--primary');
+     
+     // Find the button and verify its text
+     const button = page.locator('button:has-text("Button")');
+     await expect(button).toBeVisible();
+     
+     // Click the button and verify any side effects
+     await button.click();
+   });
+   ```
+
+2. REQUIRED: Accessibility testing:
+   ```js
+   // .ladle/config.mjs
+   /** @type {import('@ladle/react').UserConfig} */
+   export default {
+     // ... other config
+     addons: {
+       a11y: {
+         enabled: true,
+       },
+       // ... other addons
+     },
+   };
+   ```
+
+## 5. Integration with UI Libraries (P1)
+
+1. CRITICAL: Tailwind CSS integration:
+   ```js
+   // .ladle/components.tsx
+   import '../app/globals.css';
+   import type { GlobalProvider } from '@ladle/react';
+   
+   export const Provider: GlobalProvider = ({ children }) => {
+     return (
+       <div className="p-4 min-h-screen">
+         {children}
+       </div>
+     );
+   };
+   ```
+
+2. REQUIRED: Theme switching:
+   ```js
+   // .ladle/components.tsx
+   import '../app/globals.css';
+   import { useState } from 'react';
+   import type { GlobalProvider } from '@ladle/react';
+   
+   export const Provider: GlobalProvider = ({ children }) => {
+     const [isDark, setIsDark] = useState(false);
+     
+     return (
+       <div className={`p-4 min-h-screen ${isDark ? 'dark' : ''}`}>
+         <div className="mb-4">
+           <button 
+             onClick={() => setIsDark(!isDark)}
+             className="px-3 py-1 bg-gray-200 dark:bg-gray-700 rounded"
+           >
+             Toggle {isDark ? 'Light' : 'Dark'} Mode
+           </button>
+         </div>
+         {children}
+       </div>
+     );
+   };
+   ```
+
+## 6. Advanced Configurations (P2)
+
+1. REQUIRED: Custom viewports:
+   ```js
+   // .ladle/config.mjs
+   /** @type {import('@ladle/react').UserConfig} */
+   export default {
+     // ... other config
+     addons: {
+       // ... other addons
+       width: {
+         enabled: true,
+         options: {
+           mobile: 375,
+           tablet: 768,
+           desktop: 1440,
+         },
+       },
+     },
+   };
+   ```
+
+2. RECOMMENDED: Environment variable handling:
+   ```js
+   // vite.config.ts
+   import { defineConfig, loadEnv } from 'vite';
+   
+   export default defineConfig(({ mode }) => {
+     // Load app-level env vars to node-level env vars
+     const env = loadEnv(mode, process.cwd(), '');
+     
+     return {
+       // ... other config
+       define: {
+         'process.env.NEXT_PUBLIC_API_URL': JSON.stringify(env.NEXT_PUBLIC_API_URL || 'https://mock-api.example.com'),
+       },
+     };
+   });
+   ```
+
+## 7. Deployment and CI/CD (P2)
+
+1. REQUIRED: Static build configuration:
+   ```json
+   // package.json
+   {
+     "scripts": {
+       "ladle:build": "ladle build",
+       "ladle:serve": "ladle serve"
+     }
+   }
+   ```
+
+2. RECOMMENDED: GitHub Actions integration:
+   ```yaml
+   # .github/workflows/ladle.yml
+   name: Build and Deploy Ladle
+   
+   on:
+     push:
+       branches: [main]
+   
+   jobs:
+     build-and-deploy:
+       runs-on: ubuntu-latest
+       steps:
+         - uses: actions/checkout@v3
+         
+         - name: Setup Node.js
+           uses: actions/setup-node@v3
+           with:
+             node-version: '18'
+         
+         - name: Setup pnpm
+           uses: pnpm/action-setup@v2
+           with:
+             version: 8
+         
+         - name: Install dependencies
+           run: pnpm install
+         
+         - name: Build Ladle
+           run: pnpm ladle:build
+         
+         - name: Deploy to GitHub Pages
+           uses: JamesIves/github-pages-deploy-action@v4.3.3
+           with:
+             branch: gh-pages
+             folder: .ladle/build
+   ```
+
+## 8. Component-Driven Development Workflow (P3)
+
+1. RECOMMENDED: CDD workflow:
+   ```
+   1. Start with defining component props
+   2. Create initial story with base props
+   3. Implement component to match story
+   4. Add variants and edge cases as stories
+   5. Add integration tests using Playwright
+   6. Document component usage with JSDoc
+   7. Review and refine
+   ```
+
+2. OPTIONAL: Development tips:
+   ```
+   1. Run Ladle during development for instant feedback
+   2. Use controls to test different component states
+   3. Verify accessibility with the built-in a11y addon
+   4. Test responsive design with width addon
+   5. Use source addon to ensure code quality
+   ```
+
+## 9. Working with Next.js App Router (P1)
+
+1. CRITICAL: Server components support:
+   ```tsx
+   // components/ui/Button.tsx - Server Component
+   export const Button = ({ children, variant = 'primary' }) => {
+     return (
+       <button className={`btn btn-${variant}`}>
+         {children}
+       </button>
+     );
+   };
+   
+   // Button.stories.tsx - Client Component for Ladle
+   'use client';
+   
+   import type { Story } from '@ladle/react';
+   import { Button } from './Button';
+   
+   export const Primary: Story = () => (
+     <Button variant="primary">Primary Button</Button>
+   );
+   ```
+
+2. REQUIRED: Using Client Components:
+   ```tsx
+   // Button.client.tsx - Extract client-specific logic
+   'use client';
+   
+   import { ButtonBase, type ButtonBaseProps } from './ButtonBase';
+   
+   export function ButtonClient(props: ButtonBaseProps) {
+     const handleClick = () => {
+       console.log('Button clicked');
+       props.onClick?.();
+     };
+     
+     return <ButtonBase {...props} onClick={handleClick} />;
+   }
+   
+   // Button.stories.tsx
+   import type { Story } from '@ladle/react';
+   import { ButtonClient } from './Button.client';
+   
+   export const Interactive: Story = () => (
+     <ButtonClient variant="primary">Click Me</ButtonClient>
+   );
+   ```
+
+## 10. Performance and Best Practices (P1)
+
+1. CRITICAL: Fast development experience:
+   ```bash
+   # Run Ladle in development mode
+   pnpm ladle serve
+   
+   # Build optimized version for deployment
+   pnpm ladle build
+   ```
+
+2. REQUIRED: Code organization best practices:
+   - Keep story files colocated with components
+   - Use clear naming conventions for story exports
+   - Reuse components between stories using composition
+   - Organize stories by feature or component type
+   - Maintain a consistent structure across all stories
+
+3. RECOMMENDED: Ladle advantages:
+   - Faster startup times compared to Storybook
+   - Powered by Vite for instant HMR
+   - Smaller bundle sizes
+   - Simpler configuration
+   - Code-splitting for better performance

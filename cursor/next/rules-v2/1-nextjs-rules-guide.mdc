@@ -73,7 +73,7 @@ REQUIRED: Follow these rules for frontend implementation:
 ESSENTIAL: Implement these rules for production-ready applications:
 - **@8-nextjs-i18n.mdc**: Complete internationalization and localization guide
 - **@9-nextjs-package-management.mdc**: Dependency management and pnpm workspace configuration
-- **@10-nextjs-storybook.mdc**: Component documentation and visual testing
+- **@10-nextjs-ladle.mdc**: Component documentation and visual testing with Ladle
 
 ### 4. Production Optimization
 REQUIRED: Apply these rules before deployment:
