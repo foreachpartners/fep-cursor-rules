@@ -225,3 +225,33 @@ alwaysApply: false
    - Use kebab-case for file names
    - Include dimensions in image names
    - Group by type and feature 
+
+## 9. Existing Project Integration (P0)
+
+1. CRITICAL: Respect existing directory structure:
+   - MUST preserve existing folders (src, requirements, design, etc.)
+   - NEVER regenerate folders that already exist
+   - Integrate new components into the existing structure
+   ```
+   // Example: Working with existing structure
+   existing-project/
+   ├── src/                  # Use existing source directory
+   ├── requirements/         # Use existing requirements directory
+   ├── design/               # Use existing design assets
+   └── [new-directories]/    # Add only new directories as needed
+   ```
+
+2. REQUIRED: Code generation adaptation:
+   - Analyze existing patterns before generating new code
+   - Match established naming conventions
+   - Follow existing component hierarchies
+   - Use the same style and organization approach
+
+3. ESSENTIAL: Project initialization strategy:
+   - Initialize new components within existing directories
+   - When generating code for features, follow the established directory structure
+   - Validate file paths against existing structure before creating new files
+   ```typescript
+   // Example: Adding a new component to existing structure
+   // src/components/features/NewFeature/index.tsx (not components/features/NewFeature/index.tsx)
+   ``` 

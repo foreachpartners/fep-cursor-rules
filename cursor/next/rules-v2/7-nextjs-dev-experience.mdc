@@ -42,6 +42,20 @@ alwaysApply: false
    }
    ```
 
+3. CRITICAL: Existing project integration:
+   - When initializing code in existing projects, MUST respect existing directory structure
+   - NEVER regenerate folders that already exist (src, requirements, design, etc.)
+   - Reference @2-nextjs-code-structure.mdc section 9 for detailed guidelines
+   ```bash
+   # Adding Next.js to existing project
+   cd existing-project
+   pnpm add next react react-dom
+   pnpm add -D typescript @types/react @types/node @types/react-dom eslint eslint-config-next
+   
+   # Update package.json without changing structure
+   # Integrate into existing directories
+   ```
+
 ## 2. Package Management (P0)
 
 1. CRITICAL: pnpm setup:

@@ -59,7 +59,7 @@ When addressing specific needs, MUST consult these rules in the following order:
 
 ### 1. Project Foundation
 CRITICAL: Start with these rules when setting up or modifying project structure:
-- **@2-nextjs-code-structure.mdc**: Project organization, file naming conventions, and module architecture
+- **@2-nextjs-code-structure.mdc**: Project organization, file naming conventions, module architecture, and existing project integration
 - **@3-nextjs-type-system.mdc**: TypeScript configuration, type patterns, and best practices
 - **@4-nextjs-testing.mdc**: Testing strategy, unit tests, and integration testing guidelines
 
