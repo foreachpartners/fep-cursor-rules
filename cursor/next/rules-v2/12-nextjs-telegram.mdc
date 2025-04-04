@@ -10,7 +10,7 @@ alwaysApply: false
 
 1. CRITICAL: Initialize:
    ```bash
-   npm install @tma.js/sdk @tma.js/sdk-react
+   pnpm add @tma.js/sdk @tma.js/sdk-react
    ```
 
 2. REQUIRED: Configuration:

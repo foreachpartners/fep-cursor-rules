@@ -20,7 +20,7 @@ alwaysApply: false
 2. REQUIRED: shadcn/ui setup:
    ```bash
    # Interactive mode (will prompt for options)
-   npx shadcn-ui@latest init
+   pnpx shadcn-ui@latest init
    
    # Non-interactive mode with default settings
    pnpx shadcn-ui@latest init -d --yes
@@ -43,7 +43,7 @@ alwaysApply: false
 3. REQUIRED: Adding shadcn/ui components:
    ```bash
    # Interactive mode
-   npx shadcn-ui@latest add button
+   pnpx shadcn-ui@latest add button
    
    # Non-interactive mode
    pnpx shadcn-ui@latest add --yes button card dialog form input
