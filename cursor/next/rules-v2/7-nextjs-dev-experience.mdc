@@ -10,8 +10,11 @@ alwaysApply: false
 
 1. CRITICAL: Initial project creation:
    ```bash
-   # Create new Next.js project with TypeScript and App Router
+   # Create new Next.js project with TypeScript and App Router (interactive mode)
    npx create-next-app@latest my-project --typescript --eslint --tailwind --app --src-dir --import-alias "@/*"
+   
+   # Create new Next.js project with TypeScript and App Router (non-interactive mode)
+   pnpx create-next-app@latest my-project --typescript --eslint --tailwind --app --src-dir --import-alias "@/*" --yes
    ```
 
 2. REQUIRED: Editor configuration:

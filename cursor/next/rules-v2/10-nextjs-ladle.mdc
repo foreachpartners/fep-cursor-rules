@@ -10,11 +10,17 @@ alwaysApply: false
 
 1. CRITICAL: Initial installation:
    ```bash
-   # Add Ladle to existing Next.js project
+   # Add Ladle to existing Next.js project (interactive)
    pnpm add @ladle/react react react-dom -D
+   
+   # Non-interactive installation with fixed versions
+   pnpm add -D @ladle/react@latest react react-dom --save-exact
    
    # Start Ladle development server
    pnpm ladle serve
+   
+   # Build Ladle for production (non-interactive)
+   pnpm ladle build
    ```
 
 2. REQUIRED: Vite configuration for Next.js components:

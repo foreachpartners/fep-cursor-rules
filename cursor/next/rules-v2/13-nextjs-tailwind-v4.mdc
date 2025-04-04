@@ -10,14 +10,20 @@ alwaysApply: false
 
 1. CRITICAL: Initial installation:
    ```bash
-   # Install Tailwind CSS v4
+   # Install Tailwind CSS v4 (interactive mode)
    npm install tailwindcss@next
    
-   # Initialize tailwind.config.js
+   # Install Tailwind CSS v4 with pnpm (non-interactive)
+   pnpm add tailwindcss@next --save-exact
+   
+   # Initialize tailwind.config.js (Tailwind v3)
    npx tailwindcss init
+   
+   # For Tailwind v4 (no init command needed)
+   # Instead, manually create the tailwind.config.js file
    ```
 
-2. REQUIRED: Configuration file setup:
+2. REQUIRED: Configuration file setup for v4:
    ```js
    // tailwind.config.js
    /** @type {import('tailwindcss').Config} */

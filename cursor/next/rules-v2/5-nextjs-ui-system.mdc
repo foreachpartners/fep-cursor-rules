@@ -19,7 +19,14 @@ alwaysApply: false
 
 2. REQUIRED: shadcn/ui setup:
    ```bash
+   # Interactive mode (will prompt for options)
    npx shadcn-ui@latest init
+   
+   # Non-interactive mode with default settings
+   pnpx shadcn-ui@latest init -d --yes
+   
+   # Non-interactive mode with custom settings
+   pnpx shadcn-ui@latest init --yes --typescript --style=default --base-color=slate --css-file=app/globals.css --rsc --src-dir
    
    # Configuration:
    √ TypeScript: Yes
@@ -31,6 +38,15 @@ alwaysApply: false
    √ Components path: @/components
    √ Utils path: @/lib/utils
    √ React Server Components: Yes
+   ```
+
+3. REQUIRED: Adding shadcn/ui components:
+   ```bash
+   # Interactive mode
+   npx shadcn-ui@latest add button
+   
+   # Non-interactive mode
+   pnpx shadcn-ui@latest add --yes button card dialog form input
    ```
 
 ## 2. Base Components (P0)
