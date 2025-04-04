@@ -1,257 +1,386 @@
 ---
-description: Comprehensive guidelines for Next.js project structure and code organization. Apply when setting up new projects or organizing existing ones.
+description: Guidelines for Next.js project structure, file organization, and naming conventions. Apply when setting up new projects or organizing existing codebases.
 globs:
 alwaysApply: false
 ---
 
 # Next.js Code Structure Guidelines
 
-## 1. Project Directory Structure (P0)
+## 1. Project Organization (P0)
 
-1. CRITICAL: Root-level organization:
+1. CRITICAL: Top-level structure:
    ```
    project-root/
-   ├── app/                 # Next.js App Router
-   ├── components/          # React components
-   ├── lib/                 # Utility functions and shared code
-   ├── styles/             # Global styles and CSS modules
-   ├── public/             # Static assets
-   └── tests/              # Test files
+   ├── src/             # All source code
+   │   ├── app/         # Next.js App Router
+   │   ├── components/  # React components
+   │   ├── lib/         # Utilities and shared code
+   │   └── styles/      # Global styles
+   ├── test/            # All test files
+   ├── public/          # Static assets
+   ├── package.json     # Package definition
+   └── tsconfig.json    # TypeScript configuration
    ```
 
-2. REQUIRED: App directory structure:
+2. REQUIRED: Source directory organization:
    ```
-   app/
-   ├── (auth)/             # Auth-related routes (grouped)
-   ├── (dashboard)/        # Dashboard routes (grouped)
-   ├── api/                # API routes
-   ├── layout.tsx          # Root layout
-   └── page.tsx            # Home page
+   src/
+   ├── app/             # Next.js App Router pages
+   │   ├── layout.tsx   # Root layout
+   │   ├── page.tsx     # Homepage
+   │   └── [feature]/   # Feature routes
+   │       ├── page.tsx # Feature page
+   │       └── layout.tsx # Feature layout
+   ├── components/      # UI components
+   │   ├── ui/          # Base components
+   │   └── features/    # Feature-specific components
+   ├── lib/             # Shared utilities
+   │   ├── utils.ts     # General utilities
+   │   ├── types.ts     # Shared type definitions
+   │   └── constants.ts # Application constants
+   └── styles/          # Global styles
+       └── globals.css  # Global CSS
    ```
 
-3. ESSENTIAL: Components organization:
+3. ESSENTIAL: Test directory organization:
+   ```
+   test/
+   ├── unit/            # Unit tests
+   │   ├── components/  # Component tests
+   │   │   └── ui/
+   │   │       └── Button.test.tsx  # Component test
+   │   └── lib/
+   │       └── utils.test.ts        # Utility test
+   └── integration/
+       └── auth-flow.test.tsx       # Integration test
+   ```
+
+## 2. Naming Conventions (P0)
+
+1. CRITICAL: File and directory naming rules:
+   - MUST use kebab-case for multi-word directory names: `user-profile/`
+   - MUST use kebab-case for utility and configuration files: `form-utils.ts`
+   - MUST use PascalCase for component files: `Button.tsx`
+   - NEVER use spaces, special characters or brackets in file or directory names
+   - REQUIRED to use descriptive, noun-based names for directories
+   - File extensions MUST be lowercase
+
+2. REQUIRED: Component naming patterns:
    ```
    components/
-   ├── ui/                 # Basic UI components
-   ├── features/           # Feature-specific components
-   ├── layouts/            # Layout components
-   └── providers/          # Context providers
+   ├── ui/
+   │   ├── Button.tsx         # Base component
+   │   ├── Card.tsx           # Base component
+   │   └── TextField.tsx      # Base component
+   └── features/
+       ├── auth/
+       │   ├── LoginForm.tsx  # Feature component
+       │   └── SignupForm.tsx # Feature component
+       └── dashboard/
+           └── ActivityChart.tsx # Feature component
    ```
 
-## 2. File Naming Conventions (P0)
+3. ESSENTIAL: Test file naming:
+   ```
+   test/
+   ├── unit/
+   │   ├── components/
+   │   │   └── ui/
+   │   │       └── Button.test.tsx  # Component test
+   │   └── lib/
+   │       └── utils.test.ts        # Utility test
+   └── integration/
+       └── auth-flow.test.tsx       # Integration test
+   ```
 
-1. CRITICAL: Component files:
-   - Use PascalCase for component files
-   - Add `.tsx` extension for TypeScript
-   - Match file name to component name
+## 3. Import Conventions (P0)
+
+1. CRITICAL: Import aliases:
    ```typescript
-   // components/features/Dashboard/UserProfile.tsx
-   export function UserProfile() {
-     return <div>User Profile Component</div>
-   }
-   ```
-
-2. REQUIRED: Utility files:
-   - Use camelCase for utility files
-   - Group related utilities
-   - Export named functions
-   ```typescript
-   // lib/utils/formatters.ts
-   export function formatDate(date: Date): string {
-     return date.toLocaleDateString()
-   }
-   ```
-
-3. ESSENTIAL: Test files:
-   - Add `.test.tsx` or `.spec.tsx` suffix
-   - Mirror source file structure
-   ```typescript
-   // tests/components/UserProfile.test.tsx
-   describe('UserProfile', () => {
-     it('renders correctly', () => {
-       // test implementation
-     })
-   })
-   ```
-
-## 3. Component Architecture (P0)
-
-1. CRITICAL: Component organization:
-   ```typescript
-   // components/features/Dashboard/UserProfile/index.tsx
-   import { ProfileHeader } from './ProfileHeader'
-   import { ProfileDetails } from './ProfileDetails'
-   import { ProfileActions } from './ProfileActions'
-   
-   export function UserProfile() {
-     return (
-       <div>
-         <ProfileHeader />
-         <ProfileDetails />
-         <ProfileActions />
-       </div>
-     )
-   }
-   ```
-
-2. REQUIRED: Props interface definition:
-   ```typescript
-   // components/ui/Button/Button.tsx
-   interface ButtonProps {
-     variant: 'primary' | 'secondary'
-     size: 'sm' | 'md' | 'lg'
-     children: React.ReactNode
-     onClick?: () => void
-   }
-   
-   export function Button({ variant, size, children, onClick }: ButtonProps) {
-     return (
-       <button
-         className={`btn-${variant} btn-${size}`}
-         onClick={onClick}
-       >
-         {children}
-       </button>
-     )
-   }
-   ```
-
-## 4. Module Boundaries (P1)
-
-1. CRITICAL: Feature module structure:
-   ```
-   features/Dashboard/
-   ├── api/                # API functions
-   ├── components/         # Dashboard components
-   ├── hooks/             # Custom hooks
-   ├── types/             # TypeScript types
-   └── utils/             # Utility functions
-   ```
-
-2. REQUIRED: Module exports:
-   ```typescript
-   // features/Dashboard/index.ts
-   export * from './components/DashboardLayout'
-   export * from './components/DashboardHeader'
-   export * from './hooks/useDashboardData'
-   export * from './types'
-   ```
-
-## 5. Route Organization (P1)
-
-1. CRITICAL: Route grouping:
-   ```
-   app/
-   ├── (auth)/
-   │   ├── login/
-   │   ├── register/
-   │   └── layout.tsx
-   ├── (dashboard)/
-   │   ├── overview/
-   │   ├── settings/
-   │   └── layout.tsx
-   └── layout.tsx
-   ```
-
-2. REQUIRED: Route components:
-   ```typescript
-   // app/(dashboard)/overview/page.tsx
-   import { DashboardOverview } from '@/components/features/Dashboard'
-   
-   export default function OverviewPage() {
-     return <DashboardOverview />
-   }
-   ```
-
-## 6. Data and API Structure (P1)
-
-1. CRITICAL: API route organization:
-   ```
-   app/api/
-   ├── auth/
-   │   ├── login/
-   │   └── register/
-   ├── users/
-   └── posts/
-   ```
-
-2. REQUIRED: API handlers:
-   ```typescript
-   // app/api/users/route.ts
-   import { NextResponse } from 'next/server'
-   
-   export async function GET() {
-     try {
-       // Implementation
-       return NextResponse.json({ data })
-     } catch (error) {
-       return NextResponse.json(
-         { error: 'Failed to fetch users' },
-         { status: 500 }
-       )
+   // tsconfig.json
+   {
+     "compilerOptions": {
+       "baseUrl": ".",
+       "paths": {
+         "@/*": ["./src/*"]
+       }
      }
    }
    ```
 
-## 7. Style Organization (P2)
-
-1. CRITICAL: Global styles:
-   ```
-   styles/
-   ├── globals.css        # Global styles
-   ├── variables.css      # CSS variables
-   └── themes/            # Theme files
-   ```
-
-2. REQUIRED: Component styles:
-   ```
-   components/ui/Button/
-   ├── Button.tsx
-   └── Button.module.css
-   ```
-
-## 8. Asset Organization (P2)
-
-1. REQUIRED: Public assets:
-   ```
-   public/
-   ├── images/
-   ├── fonts/
-   ├── icons/
-   └── locales/
-   ```
-
-2. RECOMMENDED: Asset naming:
-   - Use kebab-case for file names
-   - Include dimensions in image names
-   - Group by type and feature 
-
-## 9. Existing Project Integration (P0)
-
-1. CRITICAL: Respect existing directory structure:
-   - MUST preserve existing folders (src, requirements, design, etc.)
-   - NEVER regenerate folders that already exist
-   - Integrate new components into the existing structure
-   ```
-   // Example: Working with existing structure
-   existing-project/
-   ├── src/                  # Use existing source directory
-   ├── requirements/         # Use existing requirements directory
-   ├── design/               # Use existing design assets
-   └── [new-directories]/    # Add only new directories as needed
-   ```
-
-2. REQUIRED: Code generation adaptation:
-   - Analyze existing patterns before generating new code
-   - Match established naming conventions
-   - Follow existing component hierarchies
-   - Use the same style and organization approach
-
-3. ESSENTIAL: Project initialization strategy:
-   - Initialize new components within existing directories
-   - When generating code for features, follow the established directory structure
-   - Validate file paths against existing structure before creating new files
+2. REQUIRED: Import organization:
    ```typescript
-   // Example: Adding a new component to existing structure
-   // src/components/features/NewFeature/index.tsx (not components/features/NewFeature/index.tsx)
+   // External dependencies first (alphabetical order)
+   import { useState } from 'react'
+   import { z } from 'zod'
+   
+   // Internal modules (by path depth, then alphabetical)
+   import { Button } from '@/components/ui/Button'
+   import { useAuth } from '@/lib/auth'
+   
+   // Types and styles last
+   import type { User } from '@/lib/types'
+   import '@/styles/module.css'
+   ```
+
+3. ESSENTIAL: Barrel exports:
+   ```typescript
+   // src/components/ui/index.ts
+   export { Button } from './Button'
+   export { Card } from './Card'
+   export { TextField } from './TextField'
+   
+   // Usage
+   import { Button, Card, TextField } from '@/components/ui'
+   ```
+
+## 4. Component Structure (P1)
+
+1. CRITICAL: Component file organization:
+   ```typescript
+   // src/components/features/auth/LoginForm.tsx
+   
+   // 1. Imports
+   import { useState } from 'react'
+   import { Button } from '@/components/ui/Button'
+   
+   // 2. Types
+   interface LoginFormProps {
+     onSuccess?: () => void
+   }
+   
+   // 3. Component definition
+   export function LoginForm({ onSuccess }: LoginFormProps) {
+     // Component logic
+     return (
+       <form>
+         {/* Component JSX */}
+       </form>
+     )
+   }
+   ```
+
+2. REQUIRED: Client component annotation:
+   ```typescript
+   // src/components/features/auth/LoginForm.tsx
+   'use client'
+   
+   import { useState } from 'react'
+   // Rest of component
+   ```
+
+3. ESSENTIAL: Prop typing:
+   ```typescript
+   // Direct interface definition
+   interface ButtonProps {
+     variant?: 'primary' | 'secondary' | 'outline'
+     size?: 'sm' | 'md' | 'lg'
+     isLoading?: boolean
+     children: React.ReactNode
+   }
+   
+   // Or using ComponentPropsWithoutRef for HTML element extension
+   import { ComponentPropsWithoutRef } from 'react'
+   
+   interface ButtonProps extends ComponentPropsWithoutRef<'button'> {
+     variant?: 'primary' | 'secondary' | 'outline'
+     size?: 'sm' | 'md' | 'lg'
+     isLoading?: boolean
+   }
+   ```
+
+## 5. Route Organization (P1)
+
+1. CRITICAL: App Router structure:
+   ```
+   src/app/
+   ├── layout.tsx         # Root layout with shared UI
+   ├── page.tsx           # Homepage
+   ├── auth/
+   │   ├── login/
+   │   │   └── page.tsx   # Login page
+   │   └── signup/
+   │       └── page.tsx   # Signup page
+   └── dashboard/
+       ├── layout.tsx     # Dashboard layout
+       ├── page.tsx       # Dashboard index
+       └── settings/
+           └── page.tsx   # Settings page
+   ```
+
+2. REQUIRED: Route grouping:
+   ```
+   src/app/
+   ├── (marketing)/       # Group for marketing pages
+   │   ├── layout.tsx     # Marketing layout
+   │   ├── page.tsx       # Homepage
+   │   ├── about/
+   │   │   └── page.tsx   # About page
+   │   └── contact/
+   │       └── page.tsx   # Contact page
+   └── (app)/             # Group for authenticated app
+       ├── layout.tsx     # App layout with auth checks
+       ├── dashboard/
+       │   └── page.tsx   # Dashboard page
+       └── settings/
+           └── page.tsx   # Settings page
+   ```
+
+3. ESSENTIAL: Route segmentation:
+   ```
+   src/app/
+   ├── [locale]/         # Internationalization segment
+   │   ├── layout.tsx    # Layout with language settings
+   │   ├── page.tsx      # Home page
+   │   └── products/
+   │       ├── page.tsx  # Products listing
+   │       └── [id]/     # Dynamic product ID segment
+   │           └── page.tsx  # Product detail page
+   └── api/              # API routes
+       └── [...]         # API endpoints
+   ```
+
+## 6. State Management (P1)
+
+1. CRITICAL: State organization:
+   ```typescript
+   // src/lib/store/auth-store.ts
+   import { create } from 'zustand'
+   
+   interface AuthState {
+     user: User | null
+     isLoading: boolean
+     error: string | null
+     login: (email: string, password: string) => Promise<void>
+     logout: () => Promise<void>
+   }
+   
+   export const useAuthStore = create<AuthState>((set) => ({
+     user: null,
+     isLoading: false,
+     error: null,
+     login: async (email, password) => {
+       // Implementation
+     },
+     logout: async () => {
+       // Implementation
+     },
+   }))
+   ```
+
+2. REQUIRED: Context providers:
+   ```
+   src/
+   ├── providers/
+   │   ├── auth-provider.tsx     # Authentication provider
+   │   ├── theme-provider.tsx    # Theme provider
+   │   └── providers.tsx         # Combined providers
+   ```
+
+3. ESSENTIAL: Server state:
+   ```typescript
+   // src/lib/queries/products.ts
+   import { useQuery } from '@tanstack/react-query'
+   
+   export function useProducts() {
+     return useQuery({
+       queryKey: ['products'],
+       queryFn: async () => {
+         const res = await fetch('/api/products')
+         return res.json()
+       },
+     })
+   }
+   ```
+
+## 7. API Organization (P2)
+
+1. REQUIRED: API route structure:
+   ```
+   src/app/api/
+   ├── auth/
+   │   ├── login/
+   │   │   └── route.ts  # POST /api/auth/login
+   │   └── logout/
+   │       └── route.ts  # POST /api/auth/logout
+   └── products/
+       ├── route.ts      # GET, POST /api/products
+       └── [id]/
+           └── route.ts  # GET, PUT, DELETE /api/products/[id]
+   ```
+
+2. RECOMMENDED: Service layer:
+   ```
+   src/lib/
+   ├── services/
+   │   ├── auth-service.ts     # Authentication related functions
+   │   └── product-service.ts  # Product management functions
+   ```
+
+3. OPTIONAL: API client:
+   ```typescript
+   // src/lib/api/client.ts
+   export async function apiRequest<T>(
+     endpoint: string,
+     options: RequestInit = {}
+   ): Promise<T> {
+     const response = await fetch(`/api/${endpoint}`, {
+       headers: {
+         'Content-Type': 'application/json',
+       },
+       ...options,
+     })
+     
+     if (!response.ok) {
+       throw new Error(`API error: ${response.statusText}`)
+     }
+     
+     return response.json()
+   }
+   ```
+
+## 8. Configuration Files (P2)
+
+1. REQUIRED: Configuration file organization:
+   ```
+   project-root/
+   ├── .eslintrc.js             # ESLint configuration
+   ├── .prettierrc              # Prettier configuration
+   ├── next.config.js           # Next.js configuration
+   ├── postcss.config.js        # PostCSS configuration
+   ├── tailwind.config.js       # Tailwind CSS configuration
+   └── tsconfig.json            # TypeScript configuration
+   ```
+
+2. RECOMMENDED: Environment variables:
+   ```
+   project-root/
+   ├── .env                     # Default env vars (committed)
+   ├── .env.local               # Local overrides (not committed)
+   ├── .env.development         # Development env vars (committed)
+   └── .env.production          # Production env vars (committed)
+   ```
+
+## 9. Migration from Pages to App Router (P2)
+
+1. REQUIRED: Gradual migration approach:
+   ```
+   src/
+   ├── app/                     # New App Router pages
+   │   └── new-feature/
+   │       └── page.tsx
+   └── pages/                   # Legacy Pages Router pages
+       ├── index.tsx
+       └── old-feature.tsx
+   ```
+
+2. RECOMMENDED: Feature flags for router coexistence:
+   ```typescript
+   // next.config.js
+   module.exports = {
+     // Both routers enabled during migration
+     experimental: {
+       appDir: true,
+     },
+   }
    ``` 
