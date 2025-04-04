@@ -16,36 +16,28 @@ alwaysApply: false
    # Non-interactive mode with default settings
    pnpx shadcn-ui@latest init -d --yes
    
-   # Non-interactive mode with custom settings
+   # With custom settings
    pnpx shadcn-ui@latest init --yes --typescript --style=default --base-color=slate --css-file=app/globals.css --rsc --src-dir
    ```
 
-2. REQUIRED: Configuration options explained:
+2. REQUIRED: Key configuration options:
    ```
    --typescript    # Use TypeScript for component types
    --style         # Style to use (default, new-york)
-   --base-color    # Base color for theming (slate, zinc, neutral, etc.)
-   --css-file      # Location of global CSS file
-   --css-variables # Whether to use CSS variables for theming
-   --tailwind-config # Path to tailwind.config.js file
-   --components    # Path to components directory
-   --utils         # Path to utils directory
+   --base-color    # Base color for theming (slate, zinc, etc.)
    --rsc           # Support React Server Components
-   --aliases       # Use import aliases (@/components)
    --src-dir       # Whether to use src directory
-   -d, --defaults  # Use default configuration
-   -y, --yes       # Skip confirmation prompt
    ```
 
 3. ESSENTIAL: Adding components:
    ```bash
-   # Add a single component (interactive)
+   # Add a single component
    pnpx shadcn-ui@latest add button
    
-   # Add multiple components (non-interactive)
+   # Add multiple components
    pnpx shadcn-ui@latest add --yes button card dialog form input
    
-   # Add all available components (non-interactive)
+   # Add all available components
    pnpx shadcn-ui@latest add --yes --all
    ```
 
@@ -61,7 +53,7 @@ alwaysApply: false
    ├── custom/            # Custom components based on shadcn/ui
    │   ├── primary-button.tsx  # Extends ui/button.tsx
    │   └── user-card.tsx       # Composition of ui/card.tsx
-   └── providers/         # Context providers for shadcn/ui (theme, etc.)
+   └── providers/         # Context providers for shadcn/ui
        └── theme-provider.tsx
    ```
 
@@ -89,7 +81,7 @@ alwaysApply: false
    }
    ```
 
-3. ESSENTIAL: Component composition:
+3. ESSENTIAL: Component composition pattern:
    ```typescript
    // components/custom/user-card.tsx
    import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -115,7 +107,7 @@ alwaysApply: false
            </div>
          </CardHeader>
          <CardContent>
-           <p>Additional user information goes here.</p>
+           <p>Additional user information here.</p>
          </CardContent>
        </Card>
      );
@@ -124,9 +116,9 @@ alwaysApply: false
 
 ## 3. Theming and Styling (P0)
 
-1. CRITICAL: Global CSS setup:
+1. CRITICAL: Global CSS core variables:
    ```css
-   /* app/globals.css */
+   /* app/globals.css - minimal version */
    @tailwind base;
    @tailwind components;
    @tailwind utilities;
@@ -135,63 +127,26 @@ alwaysApply: false
      :root {
        --background: 0 0% 100%;
        --foreground: 240 10% 3.9%;
-       
-       --card: 0 0% 100%;
-       --card-foreground: 240 10% 3.9%;
-       
-       --popover: 0 0% 100%;
-       --popover-foreground: 240 10% 3.9%;
-       
        --primary: 240 5.9% 10%;
        --primary-foreground: 0 0% 98%;
-       
        --secondary: 240 4.8% 95.9%;
        --secondary-foreground: 240 5.9% 10%;
-       
        --muted: 240 4.8% 95.9%;
        --muted-foreground: 240 3.8% 46.1%;
-       
-       --accent: 240 4.8% 95.9%;
-       --accent-foreground: 240 5.9% 10%;
-       
-       --destructive: 0 84.2% 60.2%;
-       --destructive-foreground: 0 0% 98%;
-       
        --border: 240 5.9% 90%;
-       --input: 240 5.9% 90%;
-       --ring: 240 5.9% 10%;
-       
        --radius: 0.5rem;
      }
      
      .dark {
        --background: 240 10% 3.9%;
        --foreground: 0 0% 98%;
-       
-       --card: 240 10% 3.9%;
-       --card-foreground: 0 0% 98%;
-       
-       --popover: 240 10% 3.9%;
-       --popover-foreground: 0 0% 98%;
-       
        --primary: 0 0% 98%;
        --primary-foreground: 240 5.9% 10%;
-       
        --secondary: 240 3.7% 15.9%;
        --secondary-foreground: 0 0% 98%;
-       
        --muted: 240 3.7% 15.9%;
        --muted-foreground: 240 5% 64.9%;
-       
-       --accent: 240 3.7% 15.9%;
-       --accent-foreground: 0 0% 98%;
-       
-       --destructive: 0 62.8% 30.6%;
-       --destructive-foreground: 0 0% 98%;
-       
        --border: 240 3.7% 15.9%;
-       --input: 240 3.7% 15.9%;
-       --ring: 240 4.9% 83.9%;
      }
    }
    
@@ -246,7 +201,7 @@ alwaysApply: false
 
 ## 4. Component Customization (P1)
 
-1. CRITICAL: Consistent customization pattern:
+1. CRITICAL: Custom variants pattern:
    ```typescript
    // components/ui/custom-button.tsx
    import { cva } from "class-variance-authority";
@@ -260,7 +215,6 @@ alwaysApply: false
          variant: {
            brand: "bg-brand text-white hover:bg-brand/90",
            success: "bg-green-600 text-white hover:bg-green-700",
-           warning: "bg-amber-500 text-white hover:bg-amber-600",
          },
          size: {
            xs: "h-7 px-2 text-xs",
@@ -270,25 +224,17 @@ alwaysApply: false
      }
    );
    
-   export function CustomButton({ 
-     className, 
-     variant, 
-     size,
-     ...props 
-   }) {
+   export function CustomButton({ className, variant, size, ...props }) {
      return (
        <Button
-         className={cn(
-           variant && customButtonVariants({ variant, size }),
-           className
-         )}
+         className={cn(variant && customButtonVariants({ variant, size }), className)}
          {...props}
        />
      );
    }
    ```
 
-2. REQUIRED: Utility tools for component customization:
+2. REQUIRED: Essential utility function:
    ```typescript
    // lib/utils.ts
    import { type ClassValue, clsx } from "clsx";
@@ -297,75 +243,11 @@ alwaysApply: false
    export function cn(...inputs: ClassValue[]) {
      return twMerge(clsx(inputs));
    }
-   
-   // Example of enhancing the utility with additional functionality
-   export function cnWithCondition(
-     baseClasses: ClassValue,
-     conditionalClasses: Record<string, boolean>
-   ) {
-     return cn(
-       baseClasses,
-       Object.entries(conditionalClasses)
-         .filter(([_, condition]) => Boolean(condition))
-         .map(([className]) => className)
-     );
-   }
-   ```
-
-3. ESSENTIAL: Extending component variants:
-   ```typescript
-   // components/ui/custom-card.tsx
-   import { cva } from "class-variance-authority";
-   import { Card, CardProps } from "@/components/ui/card";
-   import { cn } from "@/lib/utils";
-   
-   const cardVariants = cva(
-     "shadow",
-     {
-       variants: {
-         variant: {
-           default: "bg-card",
-           outline: "bg-transparent border border-border",
-           flat: "shadow-none border border-border",
-           elevated: "shadow-lg",
-         },
-         padding: {
-           none: "p-0",
-           sm: "p-2",
-           md: "p-4",
-           lg: "p-6",
-         },
-       },
-       defaultVariants: {
-         variant: "default",
-         padding: "md",
-       },
-     }
-   );
-   
-   interface CustomCardProps extends CardProps {
-     variant?: "default" | "outline" | "flat" | "elevated";
-     padding?: "none" | "sm" | "md" | "lg";
-   }
-   
-   export const CustomCard = ({ 
-     className, 
-     variant, 
-     padding,
-     ...props 
-   }: CustomCardProps) => {
-     return (
-       <Card
-         className={cn(cardVariants({ variant, padding }), className)}
-         {...props}
-       />
-     );
-   };
    ```
 
 ## 5. Integration with Next.js (P1)
 
-1. CRITICAL: Using shadcn/ui in server components:
+1. CRITICAL: Server component pattern:
    ```typescript
    // app/users/page.tsx
    import { db } from "@/lib/db";
@@ -376,7 +258,7 @@ alwaysApply: false
      const users = await db.user.findMany();
      
      return (
-       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
          {users.map((user) => (
            <UserCard
              key={user.id}
@@ -390,89 +272,7 @@ alwaysApply: false
    }
    ```
 
-2. REQUIRED: Interactive components pattern:
-   ```typescript
-   // components/interactive-form.tsx
-   "use client";
-   
-   import { useState } from "react";
-   import { zodResolver } from "@hookform/resolvers/zod";
-   import { useForm } from "react-hook-form";
-   import * as z from "zod";
-   
-   import { Button } from "@/components/ui/button";
-   import {
-     Form,
-     FormControl,
-     FormField,
-     FormItem,
-     FormLabel,
-     FormMessage,
-   } from "@/components/ui/form";
-   import { Input } from "@/components/ui/input";
-   
-   const formSchema = z.object({
-     email: z.string().email(),
-     password: z.string().min(8),
-   });
-   
-   export function InteractiveForm() {
-     const [isLoading, setIsLoading] = useState(false);
-     
-     const form = useForm<z.infer<typeof formSchema>>({
-       resolver: zodResolver(formSchema),
-       defaultValues: {
-         email: "",
-         password: "",
-       },
-     });
-     
-     async function onSubmit(values: z.infer<typeof formSchema>) {
-       setIsLoading(true);
-       // Submit form logic
-       await new Promise((resolve) => setTimeout(resolve, 1000));
-       setIsLoading(false);
-     }
-     
-     return (
-       <Form {...form}>
-         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-           <FormField
-             control={form.control}
-             name="email"
-             render={({ field }) => (
-               <FormItem>
-                 <FormLabel>Email</FormLabel>
-                 <FormControl>
-                   <Input placeholder="example@email.com" {...field} />
-                 </FormControl>
-                 <FormMessage />
-               </FormItem>
-             )}
-           />
-           <FormField
-             control={form.control}
-             name="password"
-             render={({ field }) => (
-               <FormItem>
-                 <FormLabel>Password</FormLabel>
-                 <FormControl>
-                   <Input type="password" {...field} />
-                 </FormControl>
-                 <FormMessage />
-               </FormItem>
-             )}
-           />
-           <Button type="submit" disabled={isLoading}>
-             {isLoading ? "Submitting..." : "Submit"}
-           </Button>
-         </form>
-       </Form>
-     );
-   }
-   ```
-
-3. ESSENTIAL: Client component wrapping pattern:
+2. REQUIRED: Client component wrapper:
    ```typescript
    // components/custom/dialog-wrapper.tsx
    "use client";
@@ -481,26 +281,18 @@ alwaysApply: false
    import {
      Dialog,
      DialogContent,
-     DialogDescription,
      DialogHeader,
      DialogTitle,
      DialogTrigger,
    } from "@/components/ui/dialog";
-   import { Button } from "@/components/ui/button";
    
    interface DialogWrapperProps {
      trigger: React.ReactNode;
      title: string;
-     description?: string;
      children: React.ReactNode;
    }
    
-   export function DialogWrapper({
-     trigger,
-     title,
-     description,
-     children,
-   }: DialogWrapperProps) {
+   export function DialogWrapper({ trigger, title, children }: DialogWrapperProps) {
      const [open, setOpen] = useState(false);
      
      return (
@@ -509,22 +301,12 @@ alwaysApply: false
          <DialogContent>
            <DialogHeader>
              <DialogTitle>{title}</DialogTitle>
-             {description && <DialogDescription>{description}</DialogDescription>}
            </DialogHeader>
            {children}
          </DialogContent>
        </Dialog>
      );
    }
-   
-   // Usage example in a server component:
-   // <DialogWrapper 
-   //   trigger={<Button>Open Dialog</Button>}
-   //   title="User Details"
-   //   description="View and edit user information"
-   // >
-   //   <div>Dialog content here</div>
-   // </DialogWrapper>
    ```
 
 ## 6. Performance Optimization (P2)
@@ -534,6 +316,7 @@ alwaysApply: false
    // app/dashboard/page.tsx
    import { Suspense } from "react";
    import { Skeleton } from "@/components/ui/skeleton";
+   import dynamic from "next/dynamic";
    
    // Dynamically import heavy components
    const DataTable = dynamic(() => import("@/components/data-table"), {
@@ -553,38 +336,7 @@ alwaysApply: false
    }
    ```
 
-2. RECOMMENDED: Lightweight component variants:
-   ```typescript
-   // components/custom/button-light.tsx
-   // Simplified version without unnecessary features for performance-critical paths
-   import { cn } from "@/lib/utils";
-   
-   interface ButtonLightProps
-     extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-     variant?: "primary" | "secondary";
-   }
-   
-   export function ButtonLight({
-     className,
-     variant = "primary",
-     ...props
-   }: ButtonLightProps) {
-     return (
-       <button
-         className={cn(
-           "inline-flex items-center justify-center rounded px-4 py-2 text-sm font-medium transition-colors",
-           variant === "primary"
-             ? "bg-primary text-primary-foreground hover:bg-primary/90"
-             : "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-           className
-         )}
-         {...props}
-       />
-     );
-   }
-   ```
-
-3. OPTIONAL: Server-only components:
+2. RECOMMENDED: Server-only components:
    ```typescript
    // components/server-only/data-display.tsx
    import "server-only";
@@ -612,51 +364,15 @@ alwaysApply: false
 
 ## 7. Best Practices and Maintenance (P2)
 
-1. REQUIRED: Component documentation:
-   ```typescript
-   // components/ui/custom-toast.tsx
-   
-   /**
-    * Custom toast component based on shadcn/ui Sonner implementation
-    * 
-    * @example
-    * ```tsx
-    * // Basic usage
-    * toast("Event has been created");
-    * 
-    * // With type
-    * toast.success("Profile updated");
-    * toast.error("Failed to save changes");
-    * 
-    * // With custom content
-    * toast(
-    *   <div className="flex gap-2">
-    *     <CalendarIcon />
-    *     <div>
-    *       <h3 className="font-medium">Event Created</h3>
-    *       <p className="text-muted-foreground">Friday, November 10, 2023</p>
-    *     </div>
-    *   </div>
-    * );
-    * ```
-    */
-   ```
-
-2. RECOMMENDED: Versioning approach:
+1. REQUIRED: Component versioning:
    ```bash
-   # When updating shadcn/ui components, handle carefully to avoid breaking changes
-   
-   # 1. Back up your existing component
+   # When updating shadcn/ui components:
    cp components/ui/button.tsx components/ui/button.tsx.bak
-   
-   # 2. Generate the new version with the --overwrite flag
    pnpx shadcn-ui@latest add button --overwrite --yes
-   
-   # 3. Compare and merge custom modifications if needed
-   diff components/ui/button.tsx.bak components/ui/button.tsx
+   # Compare and merge custom modifications if needed
    ```
 
-3. ESSENTIAL: Testing approach:
+2. ESSENTIAL: Testing pattern:
    ```typescript
    // tests/component/button.test.tsx
    import { render, screen } from "@testing-library/react";
@@ -678,13 +394,6 @@ alwaysApply: false
        await userEvent.click(screen.getByRole("button", { name: /click me/i }));
        expect(handleClick).toHaveBeenCalledTimes(1);
      });
-     
-     it("applies different variants correctly", () => {
-       const { rerender } = render(<Button variant="secondary">Secondary</Button>);
-       expect(screen.getByRole("button")).toHaveClass("bg-secondary");
-       
-       rerender(<Button variant="outline">Outline</Button>);
-       expect(screen.getByRole("button")).toHaveClass("border");
-     });
    });
+   ```
    

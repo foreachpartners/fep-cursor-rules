@@ -15,14 +15,9 @@ This rule set complements @3-nextjs-type-system.mdc, focusing specifically on en
    // PROHIBITED: String literals in code
    function getUserRole(role: string) {
      switch (role) {
-       case "admin":
-         return { canEdit: true, canDelete: true };
-       case "editor":
-         return { canEdit: true, canDelete: false };
-       case "viewer":
-         return { canEdit: false, canDelete: false };
-       default:
-         return { canEdit: false, canDelete: false };
+       case "admin": return { canEdit: true, canDelete: true };
+       case "editor": return { canEdit: true, canDelete: false };
+       default: return { canEdit: false, canDelete: false };
      }
    }
    
@@ -35,14 +30,9 @@ This rule set complements @3-nextjs-type-system.mdc, focusing specifically on en
    
    function getUserRole(role: UserRole) {
      switch (role) {
-       case UserRole.ADMIN:
-         return { canEdit: true, canDelete: true };
-       case UserRole.EDITOR:
-         return { canEdit: true, canDelete: false };
-       case UserRole.VIEWER:
-         return { canEdit: false, canDelete: false };
-       default:
-         return { canEdit: false, canDelete: false };
+       case UserRole.ADMIN: return { canEdit: true, canDelete: true };
+       case UserRole.EDITOR: return { canEdit: true, canDelete: false };
+       default: return { canEdit: false, canDelete: false };
      }
    }
    ```
@@ -51,7 +41,6 @@ This rule set complements @3-nextjs-type-system.mdc, focusing specifically on en
    ```tsx
    // PROHIBITED: Repeated string literals
    fetch("/api/users?status=active")
-   fetch("/api/users?status=inactive")
    
    // REQUIRED: Define constants
    const API_ENDPOINTS = {
@@ -62,7 +51,6 @@ This rule set complements @3-nextjs-type-system.mdc, focusing specifically on en
    } as const;
    
    fetch(API_ENDPOINTS.USERS.ACTIVE)
-   fetch(API_ENDPOINTS.USERS.INACTIVE)
    ```
 
 3. ESSENTIAL: Define ESLint rules for detection:
@@ -111,8 +99,7 @@ This rule set complements @3-nextjs-type-system.mdc, focusing specifically on en
      SERVER_ERROR: 500
    } as const;
    
-   type StatusCodeKey = keyof typeof STATUS_CODE;
-   type StatusCodeValue = typeof STATUS_CODE[StatusCodeKey];
+   type StatusCodeValue = typeof STATUS_CODE[keyof typeof STATUS_CODE];
    
    function getStatusMessage(code: StatusCodeValue): string {
      const messages: Record<StatusCodeValue, string> = {
@@ -130,11 +117,9 @@ This rule set complements @3-nextjs-type-system.mdc, focusing specifically on en
 3. ESSENTIAL: Document patterns in shared libraries:
    ```tsx
    // lib/constants.ts
-   export function createConstantLookup<T extends Record<string, unknown>>(constants: T & { [K in keyof T]: T[K] }) {
-     // Return both the constants and TypeScript types
+   export function createConstantLookup<T extends Record<string, unknown>>(constants: T) {
      return {
        values: constants,
-       // Type helpers are generated but not included in runtime
        _types: null as unknown as {
          keys: keyof typeof constants,
          values: typeof constants[keyof typeof constants]
@@ -159,11 +144,10 @@ This rule set complements @3-nextjs-type-system.mdc, focusing specifically on en
 
 ## 3. Event Handling and Actions (P1)
 
-1. CRITICAL: Define event name constants for components:
+1. CRITICAL: Define event name constants:
    ```tsx
    // PROHIBITED: String literal event names
    element.addEventListener("click", handleClick);
-   document.dispatchEvent(new CustomEvent("user-login"));
    
    // REQUIRED: Event name constants
    const EVENTS = {
@@ -172,7 +156,6 @@ This rule set complements @3-nextjs-type-system.mdc, focusing specifically on en
    } as const;
    
    element.addEventListener(EVENTS.CLICK, handleClick);
-   document.dispatchEvent(new CustomEvent(EVENTS.USER_LOGIN));
    ```
 
 2. REQUIRED: Type-safe Redux action types:
@@ -212,7 +195,7 @@ This rule set complements @3-nextjs-type-system.mdc, focusing specifically on en
    // Type-safe event payload interfaces
    interface UserPreferenceChangeEvent {
      detail: {
-       theme: typeof THEMES._types.values;
+       theme: "light" | "dark" | "system";
        notifications: boolean;
      }
    }
@@ -220,15 +203,6 @@ This rule set complements @3-nextjs-type-system.mdc, focusing specifically on en
    interface EventMap {
      [CUSTOM_EVENTS.USER_PREFERENCE_CHANGE]: UserPreferenceChangeEvent;
      [CUSTOM_EVENTS.DATA_REFRESH]: CustomEvent;
-   }
-   
-   // Type-safe event emitter
-   function emitEvent<E extends CustomEventName>(
-     eventName: E,
-     detail: EventMap[E]["detail"]
-   ) {
-     const event = new CustomEvent(eventName, { detail });
-     document.dispatchEvent(event);
    }
    ```
 
@@ -274,44 +248,13 @@ This rule set complements @3-nextjs-type-system.mdc, focusing specifically on en
      OK: 200,
      CREATED: 201,
      BAD_REQUEST: 400,
-     UNAUTHORIZED: 401,
-     FORBIDDEN: 403,
      NOT_FOUND: 404,
      SERVER_ERROR: 500
    } as const;
    
-   type HttpStatus = typeof HTTP_STATUS[keyof typeof HTTP_STATUS];
-   
    if (response.status === HTTP_STATUS.NOT_FOUND) {
      // Handle not found
    }
-   ```
-
-3. ESSENTIAL: Use enums for error categories:
-   ```tsx
-   // Define error categories
-   enum ErrorCategory {
-     VALIDATION = "validation",
-     NETWORK = "network",
-     AUTHENTICATION = "authentication",
-     AUTHORIZATION = "authorization",
-     SERVER = "server"
-   }
-   
-   // Error type with categorization
-   interface AppErrorData {
-     code: ErrorCode;
-     category: ErrorCategory;
-     details?: Record<string, unknown>;
-   }
-   
-   // Map error codes to categories
-   const ERROR_MAP: Record<ErrorCode, ErrorCategory> = {
-     [ERROR_CODES.INVALID_USER_INPUT]: ErrorCategory.VALIDATION,
-     [ERROR_CODES.NETWORK_FAILURE]: ErrorCategory.NETWORK,
-     [ERROR_CODES.AUTHENTICATION_FAILED]: ErrorCategory.AUTHENTICATION,
-     [ERROR_CODES.PERMISSION_DENIED]: ErrorCategory.AUTHORIZATION
-   };
    ```
 
 ## 5. Component Props and UI States (P1)
@@ -370,53 +313,6 @@ This rule set complements @3-nextjs-type-system.mdc, focusing specifically on en
      | { status: typeof UI_STATE.ERROR; error: E };
    
    const [state, setState] = useState<DataState<User>>({ status: UI_STATE.IDLE });
-   
-   // Type-safe state transitions
-   setState({ status: UI_STATE.LOADING });
-   ```
-
-3. RECOMMENDED: Form field types:
-   ```tsx
-   // Define form field types
-   const FIELD_TYPE = {
-     TEXT: "text",
-     EMAIL: "email",
-     PASSWORD: "password",
-     NUMBER: "number",
-     DATE: "date",
-     SELECT: "select",
-     CHECKBOX: "checkbox",
-     RADIO: "radio"
-   } as const;
-   
-   type FieldType = typeof FIELD_TYPE[keyof typeof FIELD_TYPE];
-   
-   interface Field {
-     name: string;
-     type: FieldType;
-     label: string;
-     required?: boolean;
-     options?: Array<{
-       label: string;
-       value: string | number;
-     }>;
-   }
-   
-   // Form fields configuration
-   const userFormFields: Field[] = [
-     {
-       name: "username",
-       type: FIELD_TYPE.TEXT,
-       label: "Username",
-       required: true
-     },
-     {
-       name: "email",
-       type: FIELD_TYPE.EMAIL,
-       label: "Email Address",
-       required: true
-     }
-   ];
    ```
 
 ## 6. API Parameters and Responses (P2)
@@ -446,19 +342,12 @@ This rule set complements @3-nextjs-type-system.mdc, focusing specifically on en
      order: SortOrder;
    }
    
-   // Type-safe parameter generation
-   function buildQueryString(params: QueryParams): string {
-     return Object.entries(params)
-       .map(([key, value]) => `${key}=${value}`)
-       .join("&");
-   }
-   
    const queryParams: QueryParams = {
      sortBy: SORT_FIELD.NAME,
      order: SORT_ORDER.ASC
    };
    
-   fetch(`/api/users?${buildQueryString(queryParams)}`);
+   fetch(`/api/users?sortBy=${queryParams.sortBy}&order=${queryParams.order}`);
    ```
 
 2. ESSENTIAL: Use type-safe response handling:
@@ -481,32 +370,10 @@ This rule set complements @3-nextjs-type-system.mdc, focusing specifically on en
      };
    }
    
-   // Example usage
-   async function fetchUsers(): Promise<ApiResponse<User[]>> {
-     try {
-       const response = await fetch("/api/users");
-       const users: User[] = await response.json();
-       return {
-         status: API_STATUS.SUCCESS,
-         data: users
-       };
-     } catch (error) {
-       return {
-         status: API_STATUS.ERROR,
-         error: {
-           code: ERROR_CODES.NETWORK_FAILURE,
-           message: "Failed to fetch users"
-         }
-       };
-     }
-   }
-   
    // Type-safe handling
    const result = await fetchUsers();
    if (result.status === API_STATUS.SUCCESS && result.data) {
      // Handle success
-   } else if (result.error?.code === ERROR_CODES.NETWORK_FAILURE) {
-     // Handle specific error
    }
    ```
 
@@ -540,55 +407,11 @@ This rule set complements @3-nextjs-type-system.mdc, focusing specifically on en
    const apiUrl = getEnv(ENV_VAR.API_URL);
    ```
 
-2. RECOMMENDED: Environment configuration object:
-   ```tsx
-   // Create a strongly typed config object
-   interface AppConfig {
-     api: {
-       url: string;
-       timeout: number;
-     };
-     auth: {
-       url: string;
-       clientId: string;
-     };
-     features: {
-       darkMode: boolean;
-       analytics: boolean;
-     };
-   }
-   
-   // Load config from environment
-   function loadConfig(): AppConfig {
-     return {
-       api: {
-         url: getEnv(ENV_VAR.API_URL),
-         timeout: 5000
-       },
-       auth: {
-         url: getEnv(ENV_VAR.AUTH_URL),
-         clientId: "your-client-id"
-       },
-       features: {
-         darkMode: true,
-         analytics: process.env.NODE_ENV === "production"
-       }
-     };
-   }
-   
-   // Export config as a singleton
-   export const config = loadConfig();
-   
-   // Type-safe usage
-   fetch(`${config.api.url}/users`);
-   ```
-
 ## 8. Migration Strategies (P3)
 
 1. ESSENTIAL: Gradual replacement strategy:
    ```tsx
    // Step 1: Identify string literals to replace
-   // Use a utility like ts-morph or grep to find all string literals
    
    // Step 2: Create centralized constants
    // constants/index.ts
@@ -622,14 +445,5 @@ This rule set complements @3-nextjs-type-system.mdc, focusing specifically on en
      }
    }
    ```
-
-3. RECOMMENDED: Type-safe migration plan:
-   - Document all occurrences of string literals
-   - Prioritize by frequency and importance
-   - Create types and constants for each category
-   - Implement changes incrementally, starting with core components
-   - Add automated tests to verify type safety
-   - Update documentation with new patterns
-   - Create review process for new code
 
 For additional guidance on TypeScript type system implementation, see @3-nextjs-type-system.mdc.
