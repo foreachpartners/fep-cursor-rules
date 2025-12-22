@@ -20,13 +20,13 @@ projects/
 From project root, create relative symlink:
 
 ```bash
-ln -s ../fep-cursor-rules/cursor-rules .cursor/rules
+ln -s ../../fep-cursor-rules/cursor-rules .cursor/rules
 ```
 
 Verify:
 
 ```bash
-ls -la .cursor/rules
+ls -la .cursor/rules/
 ```
 
 ## Structure
