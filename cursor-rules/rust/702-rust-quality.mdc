@@ -1,0 +1,53 @@
+---
+alwaysApply: false
+---
+
+# Rust Quality Guide (LLM Rulebook)
+
+## Purpose
+
+Testing and error handling rules for Rust projects. Apply when writing tests or handling errors. DO NOT apply to non-Rust code.
+
+## Testing (MUST)
+
+- Use `#[test]` for unit tests, `#[tokio::test]` for async tests
+- Place unit tests in `#[cfg(test)]` modules within source files
+- Place integration tests in `tests/` directory
+- Use descriptive names: `test_subject_condition_result`
+
+```rust
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn test_user_creation() {
+        let user = User::new("test@example.com".to_string());
+        assert_eq!(user.email, "test@example.com");
+    }
+}
+```
+
+## Error Handling (MUST)
+
+- Define specific error types with `thiserror`
+- Implement `std::error::Error` trait
+- Use `?` operator for error propagation
+- Avoid `Box<dyn std::error::Error>` in public APIs
+
+```rust
+#[derive(thiserror::Error, Debug)]
+pub enum AppError {
+    #[error("validation: {0}")]
+    Validation(String),
+    #[error("not found: {0}")]
+    NotFound(String),
+    #[error("database: {0}")]
+    Database(#[from] sqlx::Error),
+}
+```
+
+## Out of Scope
+
+- Specific testing frameworks beyond built-in and tokio-test
+- Custom CI/CD pipeline configurations
+- Performance profiling tools beyond cargo-flamegraph
+- Code coverage tools beyond cargo-tarpaulin

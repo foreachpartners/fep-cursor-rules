@@ -1,0 +1,29 @@
+---
+alwaysApply: true
+---
+
+# Rust Rules (LLM Rulebook)
+
+## Purpose
+
+Navigation for Rust development rules. Apply when working with Rust code.
+
+## Rules Selection (MUST)
+
+| Condition | Include |
+|-----------|---------|
+| Project structure, Cargo, conventions | 701-rust-development.mdc |
+| Code quality, testing, error handling | 702-rust-quality.mdc |
+| Architecture patterns, async, concurrency | 703-rust-architecture.mdc |
+
+## Technology Stack
+
+- Rust 2021 edition or later
+- Cargo for dependency management
+- Standard library patterns and conventions
+
+## Cross-references
+
+- LLM writing style: `../common/302-llm-oriented-writing.mdc`
+- Observability: `../common/303-observability.mdc`
+- Secret handling: `../common/304-secret-leak-detection.mdc`

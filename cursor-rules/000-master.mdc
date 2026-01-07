@@ -42,6 +42,15 @@ Root navigation for all cursor rules. Apply to any project using this ruleset.
 | nextjs/602-nextjs-components.mdc | UI, shadcn, Tailwind |
 | nextjs/603-nextjs-api-testing.mdc | API, testing |
 
+## Rust (7xx)
+
+| File | Purpose |
+|------|---------|
+| rust/700-rust-master.mdc | Navigation for Rust rules |
+| rust/701-rust-development.mdc | Code style, project structure, Cargo |
+| rust/702-rust-quality.mdc | Testing, error handling, observability |
+| rust/703-rust-architecture.mdc | Architecture patterns, design principles |
+
 ## Maintenance
 
 See `001-rules-maintenance.mdc` for update procedures.

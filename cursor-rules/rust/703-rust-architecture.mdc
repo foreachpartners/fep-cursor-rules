@@ -1,0 +1,76 @@
+---
+alwaysApply: false
+---
+
+# Rust Architecture Guide (LLM Rulebook)
+
+## Purpose
+
+Basic architecture principles for Rust applications. Apply when designing application structure. DO NOT apply to existing codebases.
+
+## Design Principles (MUST)
+
+- Follow SOLID principles
+- Prefer composition over inheritance
+- Use dependency injection
+- Keep functions small and focused
+
+## Application Structure
+
+- Separate business logic from infrastructure
+- Use repository pattern for data access
+- Group related functionality into modules
+- Keep dependencies explicit
+
+```rust
+// Good: clear module separation
+pub mod domain {
+    pub mod entities;
+    pub mod services;
+}
+
+pub mod infrastructure {
+    pub mod repositories;
+    pub mod external_apis;
+}
+```
+
+## Data Access
+
+- Abstract data operations behind traits
+- Use repository pattern for consistency
+- Keep database details out of business logic
+
+```rust
+#[async_trait]
+pub trait UserRepository {
+    async fn find_by_id(&self, id: i64) -> Result<Option<User>, RepositoryError>;
+    async fn save(&self, user: User) -> Result<User, RepositoryError>;
+}
+```
+
+## Dependency Injection
+
+- Pass dependencies through constructors
+- Use traits for testability
+- Avoid global state
+
+```rust
+pub struct UserService<R> {
+    repository: R,
+}
+
+impl<R: UserRepository> UserService<R> {
+    pub fn new(repository: R) -> Self {
+        Self { repository }
+    }
+}
+```
+
+## Out of Scope
+
+- Specific framework implementations
+- Database-specific patterns
+- Cloud provider specific architectures
+- Real-time communication protocols
+- Microservices communication patterns

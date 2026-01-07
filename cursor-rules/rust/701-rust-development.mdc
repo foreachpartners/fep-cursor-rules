@@ -1,0 +1,252 @@
+---
+alwaysApply: false
+---
+
+# Rust Development Guide (LLM Rulebook)
+
+## Purpose
+
+Code style, project structure, Cargo configuration, and development practices for Rust projects. Apply when writing or reviewing Rust code. DO NOT apply to configuration files or non-Rust artifacts.
+
+## Code Style (MUST)
+
+### Rustfmt and Clippy
+
+- Code MUST be formatted with `cargo fmt` before committing
+- Code MUST pass `cargo clippy` checks
+- Use default rustfmt configuration unless project specifies otherwise
+
+### Naming Conventions
+
+- **Modules/Packages**: `snake_case`
+- **Types/Structs/Enums/Traits**: `PascalCase`
+- **Functions/Methods/Variables**: `snake_case`
+- **Constants**: `SCREAMING_SNAKE_CASE`
+- **Lifetimes**: Short, descriptive names (e.g., `'a`, `'ctx`)
+- **Generic types**: Single uppercase letters or descriptive names (e.g., `T`, `U`, `Key`, `Value`)
+
+```rust
+// GOOD
+pub struct UserProfile {
+    user_id: i64,
+    email: String,
+}
+
+pub const DEFAULT_TIMEOUT: Duration = Duration::from_secs(30);
+
+impl UserProfile {
+    pub fn new(user_id: i64, email: String) -> Self {
+        Self { user_id, email }
+    }
+
+    pub fn get_display_name(&self) -> &str {
+        // Implementation
+        &self.email
+    }
+}
+```
+
+### Documentation (MUST)
+
+- All public APIs MUST have documentation comments (`///`)
+- Include examples for complex functions
+- Document error conditions and panics
+
+```rust
+/// Creates a new user profile with validation.
+///
+/// # Arguments
+/// * `user_id` - Unique identifier for the user
+/// * `email` - User's email address (must contain '@')
+///
+/// # Returns
+/// Returns the created UserProfile or an error if validation fails
+///
+/// # Errors
+/// Returns `ValidationError` if email format is invalid
+///
+/// # Examples
+/// ```
+/// let profile = UserProfile::new(123, "user@example.com".to_string())?;
+/// ```
+pub fn new(user_id: i64, email: String) -> Result<Self, ValidationError> {
+    // Implementation
+}
+```
+
+## Project Structure (RECOMMENDED)
+
+### Cargo Workspace
+
+For multi-crate projects, use workspace structure:
+
+```
+workspace/
+├── Cargo.toml          # Workspace root
+├── crates/
+│   ├── library/
+│   │   ├── Cargo.toml
+│   │   └── src/
+│   └── binary/
+│       ├── Cargo.toml
+│       └── src/
+└── tools/              # Optional build tools
+```
+
+### Single Crate Structure
+
+```
+my-project/
+├── Cargo.toml
+├── src/
+│   ├── main.rs         # Binary entry point
+│   ├── lib.rs          # Library interface
+│   └── modules/        # Feature modules
+│       ├── mod.rs
+│       ├── auth.rs
+│       └── db.rs
+├── tests/              # Integration tests
+│   └── integration_test.rs
+└── benches/            # Benchmarks
+```
+
+## Cargo Configuration (MUST)
+
+### Dependencies
+
+- Dependencies MUST specify version constraints (avoid `*`)
+- Use `^` for patch-level updates: `serde = "^1.0"`
+- Group dependencies logically in Cargo.toml
+
+```toml
+[dependencies]
+# Core functionality
+serde = { version = "^1.0", features = ["derive"] }
+tokio = { version = "^1.0", features = ["full"] }
+
+# HTTP client
+reqwest = { version = "^0.11", features = ["json"] }
+
+# Development dependencies
+[dev-dependencies]
+tokio-test = "^0.4"
+```
+
+### Features
+
+- Use features for optional functionality
+- Default features should provide core functionality
+
+```toml
+[features]
+default = ["json"]
+json = ["serde_json"]
+postgres = ["tokio-postgres", "postgres-types"]
+mysql = ["diesel/mysql"]
+```
+
+## Async Programming (RECOMMENDED)
+
+### Tokio Runtime
+
+- Use `#[tokio::main]` for main functions
+- Use `#[tokio::test]` for async tests
+
+```rust
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // Application logic
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_async_function() {
+    // Test logic
+}
+```
+
+### Futures and Streams
+
+- Use `futures` crate for advanced async patterns
+- Prefer `StreamExt` for stream processing
+
+## Memory Management (MUST)
+
+### Ownership and Borrowing
+
+- Follow ownership rules strictly
+- Use references when ownership transfer is not needed
+- Use `Arc`/`Rc` for shared ownership when necessary
+
+### Smart Pointers
+
+- Use `Box<T>` for heap allocation
+- Use `Rc<T>` for single-threaded reference counting
+- Use `Arc<T>` for multi-threaded reference counting
+- Use `RefCell<T>` sparingly, prefer compile-time borrowing checks
+
+## Performance Considerations (RECOMMENDED)
+
+### Zero-Cost Abstractions
+
+- Leverage Rust's zero-cost abstractions
+- Avoid unnecessary allocations
+- Use stack allocation when possible
+
+### Profiling
+
+- Use `cargo flamegraph` for performance analysis
+- Profile before optimizing
+- Focus on bottlenecks identified by profiling
+
+## Security (MUST)
+
+### Input Validation
+
+- External input MUST be validated
+- Use safe parsing functions
+- Avoid SQL injection by using prepared statements
+
+### Cryptography
+
+- Use `rust-crypto` ecosystem crates
+- Prefer `ring` or `rustls` for cryptographic operations
+- Keep dependencies updated for security patches
+
+## Tooling (RECOMMENDED)
+
+### Development Tools
+
+```bash
+# Code formatting
+cargo fmt
+
+# Linting
+cargo clippy
+
+# Testing
+cargo test
+
+# Documentation
+cargo doc --open
+
+# Benchmarking
+cargo bench
+
+# Updating dependencies
+cargo update
+```
+
+### CI/CD Integration
+
+- Run `cargo fmt --check` in CI
+- Run `cargo clippy` in CI
+- Run full test suite including integration tests
+- Check for security vulnerabilities with `cargo audit`
+
+## Out of Scope
+
+- Specific framework choices (web frameworks, async runtimes)
+- Deployment and infrastructure configuration
+- Multi-language project integration
+- Performance optimization for specific use cases
